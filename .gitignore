@@ -1,0 +1,4 @@
+pico/.vscode
+pico/__pycache__
+.env
+.vscode
