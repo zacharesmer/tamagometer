@@ -1,12 +1,12 @@
 def to_lengths(bits):
     output = [9500, 6000]
     for b in bits:
-        if b == 0:
+        if int(b) == 0:
             # print("Adding 0")
-            output += [500, 700]
+            output += [600, 600]
         else:
             # print("adding 1")
-            output += [500, 1200]
+            output += [600, 1200]
     output += [1200]
     return output
 

@@ -57,7 +57,7 @@ max_leader_mark = 10_000
 min_leader_gap = 3500
 max_leader_gap = 7500
 min_data_mark = 200
-max_data_mark = 700
+max_data_mark = 800
 min_short_data_gap = 200
 max_short_data_gap = 1000
 min_long_data_gap = max_short_data_gap
@@ -77,6 +77,7 @@ def ir_sensor_callback_decode(arg):
     global LAST_EDGE
     global STATE
     global MESSAGE_LENGTH
+    global CHANGE_LIST
     new_edge = utime.ticks_us()
     run_length = utime.ticks_diff(new_edge, LAST_EDGE)
     LAST_EDGE = new_edge
@@ -84,11 +85,12 @@ def ir_sensor_callback_decode(arg):
     if STATE == end_of_message or STATE == waiting:
         if run_length > min_leader_mark and run_length < max_leader_mark and signal.value() == 1:
             # print(f"Start of message: {run_length}")
-            print(f"\n")
+            # print(f"\n")
             STATE = leader_awaiting_gap
             MESSAGE_LENGTH = 0
         else:
             # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+            CHANGE_LIST = []
             STATE = waiting
     elif STATE == leader_awaiting_gap:
         # print(f"leader gap of {run_length}")
@@ -96,6 +98,7 @@ def ir_sensor_callback_decode(arg):
             STATE = leader_ended_awaiting_data
         else:
             # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+            CHANGE_LIST = []
             STATE = waiting
     elif STATE == leader_ended_awaiting_data:
         # print(f"Got mark: {run_length}")
@@ -103,6 +106,7 @@ def ir_sensor_callback_decode(arg):
             STATE = data_mark_awaiting_space
         else:
             # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+            CHANGE_LIST = []
             STATE = waiting
     elif STATE == data_mark_awaiting_space:
         # print(f"Got space: {run_length}")
@@ -112,37 +116,49 @@ def ir_sensor_callback_decode(arg):
             STATE = data_long_space
         else:
             # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+            CHANGE_LIST = []
             STATE = waiting
     elif STATE == data_long_space:
         # print(f"Got mark: {run_length}")
         if run_length > min_data_mark and run_length < max_data_mark:
-            print("1", end="")
+            # print("1", end="")
+            CHANGE_LIST.append("1")
             MESSAGE_LENGTH += 1
             STATE = data_mark_awaiting_space
         elif run_length >= min_message_end_mark and run_length < max_message_end_mark:
             MESSAGE_LENGTH += 1
             # print(f"0 : length {MESSAGE_LENGTH}\n")
-            print(f"1")
+            # print(f"1")
+            CHANGE_LIST.append("1")
+            print("".join(CHANGE_LIST))
+            CHANGE_LIST = []
             STATE = end_of_message
         else:
             # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+            CHANGE_LIST = []
             STATE = waiting
     elif STATE == data_short_space:
         # print(f"Got mark: {run_length}")
         if run_length > min_data_mark and run_length < max_data_mark:
-            print("0", end="")
+            # print("0", end="")
+            CHANGE_LIST.append("0")
             MESSAGE_LENGTH += 1
             STATE = data_mark_awaiting_space
         elif run_length >= min_message_end_mark and run_length < max_message_end_mark:
             MESSAGE_LENGTH += 1
             # print(f"1 : length {MESSAGE_LENGTH}\n")
-            print(f"0")
+            # print(f"0")
+            CHANGE_LIST.append("0")
+            print("".join(CHANGE_LIST))
+            CHANGE_LIST = []
             STATE = end_of_message
         else:
-            # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+            # print(f"\n{STATE}: pin was {signal.value()} for {run_length}")
+            CHANGE_LIST = []
             STATE = waiting
     else:
         # print(f"\n{STATE} error: pin was {signal.value()} for {run_length}")
+        CHANGE_LIST = []
         STATE = waiting
 
 
