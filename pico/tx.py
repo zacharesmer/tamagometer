@@ -1,52 +1,10 @@
-# Tamagotchi in the middle
+from machine import Pin 
+import utime
+from converters import to_lengths
 
-from machine import Pin
-import utime 
+vcc = Pin(2, Pin.OUT)
+signal = Pin(3, Pin.OUT)
 
-tx_vcc = Pin(2, Pin.OUT)
-tx_signal = Pin(3, Pin.OUT)
-rx_vcc = Pin(6, Pin.OUT)
-rx_signal = Pin(7, Pin.IN)
-
-tx_vcc.on()
-tx_signal.off()
-rx_vcc.on()
-
-LAST_EDGE = utime.ticks_us()
-# IR_PRESENT is whether the IR sensor is detecting a signal. 
-# It needs to be 0 when the device starts or mayhem will ensue
-IR_PRESENT = 0
-CHANGE_BUFFER = []
-# Whether to send responses to ir input. Turn it off to just observe a conversation between 2 tamagotchis
-SEND = True
-
-def change(arg):
-    global LAST_EDGE
-    global IR_PRESENT
-    global CHANGE_BUFFER
-    new_edge = utime.ticks_us()
-    run_length = utime.ticks_diff(new_edge, LAST_EDGE)
-    # # reset on long gaps (or long "on" signals I suppose)
-    if (run_length > 100_000):
-        print(f"{run_length}")
-    else:
-        # print(f"{run_length}", end=" ")
-        CHANGE_BUFFER.append(run_length)
-    if run_length > 800 and run_length < 2000 and IR_PRESENT == 1:
-        # this is the way I'm detecting the ~1200 us high ending signal
-        utime.sleep_us(300_000)
-        respond()
-        pass
-    LAST_EDGE = new_edge
-    IR_PRESENT = (IR_PRESENT + 1)%2
-
-
-def enable_interrupts():
-    # record a change on rising and falling edges
-    rx_signal.irq(change, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
-
-def disable_interrupts():
-    rx_signal.irq(None)
 
 # Start with "high" signal
 def send_run_lengths(length_list):
@@ -55,65 +13,33 @@ def send_run_lengths(length_list):
     for l in length_list:
         if state == 1:
             # print(f"{l}", end=" ")
-            tx_signal.on()
+            signal.on()
         else:
             # print(f"{l}", end=" ")
-            tx_signal.off()
+            signal.off()
         state = (state + 1) % 2
         utime.sleep_us(l)
-    tx_signal.off()
+    signal.off()
 
 def send_bits(bit_list):
     send_run_lengths(to_lengths(bit_list))
 
+# def respond():
+#     global RESPONSE_GENERATOR
+#     rx.disable_interrupts()
+#     global CHANGE_LIST
+#     print(f"Received\n{to_bits(CHANGE_LIST)}\n")
+#     # print(f"{CHANGE_LIST}")
+#     CHANGE_LIST = []
 
-def to_lengths(bits):
-    output = [9500, 6000]
-    for b in bits:
-        if b == 0:
-            # print("Adding 0")
-            output += [600, 600]
-        else:
-            # print("adding 1")
-            output += [600, 1200]
-    output += [1200]
-    return output
-
-def to_bits(lengths):
-    # ignore the header (first 2 lengths)
-    output = []
-    state = 0
-    # print(lengths)
-    for i, l in enumerate(lengths[2:]):
-        state = (state + 1) % 2 
-        if state == 1:
-            continue
-        else:
-            if l < 900:
-                output.append(0)
-            elif l < 2000:
-                output.append(1)
-            else:
-                print(f"Length of {l} detected at position {i}/{len(lengths)}")
-    return output
+#     response = RESPONSE_GENERATOR.__next__()
+#     print(f"Sending\n{response}\n\n")
+#     # send_run_lengths(RESPONSE)
+#     send_bits(response)
+#     # RESPONSE = visit_request2_bits
+#     rx.enable_interrupts()
 
 
-def respond():
-    global SEND
-    if SEND:
-        disable_interrupts()
-    global RESPONSE
-    global CHANGE_BUFFER
-    print(f"Received\n{to_bits(CHANGE_BUFFER)}\n")
-    # print(f"{CHANGE_BUFFER}")
-    CHANGE_BUFFER = []
-    if SEND:
-        print(f"Sending\n{RESPONSE}\n\n")
-        # send_run_lengths(RESPONSE)
-        send_bits(RESPONSE)
-        RESPONSE = visit_request2_bits
-    if SEND:
-        enable_interrupts()
 
 # response1 = [9504, 6053, 665, 634, 664, 647, 572, 718, 672, 634, 631, 1244, 669, 1228, 640, 1245, 661, 663, 624, 682, 635, 661, 609, 678, 623, 665, 671, 1231, 619, 691, 606, 696, 635, 661, 661, 1240, 651, 633, 628, 1261, 670, 1220, 597, 1292, 641, 1257, 610, 1268, 639, 1267, 632, 666, 665, 637, 605, 1276, 636, 688, 606, 681, 602, 690, 661, 1222, 627, 694, 662, 663, 581, 698, 662, 639, 635, 1246, 630, 1270, 628, 1254, 620, 1273, 602, 1297, 610, 686, 641, 646, 634, 694, 605, 1269, 603, 1266, 636, 717, 557, 699, 631, 1296, 575, 722, 612, 689, 612, 695, 577, 723, 606, 695, 606, 701, 581, 716, 609, 694, 618, 709, 579, 728, 573, 698, 607, 695, 603, 703, 574, 725, 603, 1300, 576, 724, 613, 714, 550, 733, 598, 702, 600, 679, 597, 726, 577, 1322, 554, 1322, 577, 1300, 603, 1293, 606, 726, 552, 725, 606, 693, 612, 719, 546, 733, 573, 726, 577, 1326, 602, 697, 576, 731, 574, 724, 601, 703, 574, 727, 576, 730, 546, 1325, 578, 1349, 551, 728, 601, 701, 604, 725, 549, 730, 572, 728, 597, 680, 599, 726, 569, 732, 599, 708, 602, 721, 550, 727, 601, 699, 616, 717, 546, 734, 571, 726, 576, 724, 601, 728, 550, 752, 574, 700, 602, 732, 546, 729, 599, 700, 581, 746, 553, 752, 601, 676, 601, 703, 596, 725, 553, 724, 608, 696, 603, 728, 548, 749, 580, 722, 579, 748, 553, 728, 583, 717, 576, 752, 551, 757, 521, 749, 581, 723, 547, 779, 549, 754, 576, 703, 576, 751, 550, 751, 552, 719, 588, 746, 523, 758, 546, 772, 579, 701, 576, 751, 552, 752, 551, 723, 553, 776, 527, 775, 546, 728, 569, 789, 525, 749, 578, 725, 553, 724, 575, 751, 527, 779, 546, 726, 551, 774, 530, 779, 548, 1354, 546, 729, 560, 1340, 551, 1349, 529, 1355, 518, 1375, 496, 808, 527, 723, 1151]
 visit_response1 = [int(i) for i in "9454 6122 603 680 602 690 666 636 633 676 629 1268 635 1264 584 1265 641 710 580 721 640 662 617 691 577 706 651 667 610 694 581 719 587 1316 584 1317 585 1314 559 718 587 1312 585 1298 580 1287 611 1269 605 746 584 717 609 1275 599 691 615 1266 606 1293 616 689 613 1261 611 718 610 695 577 718 610 698 609 687 585 719 614 690 612 1260 614 1316 608 1269 607 694 609 717 581 702 575 1316 585 697 606 692 610 746 552 1328 578 727 575 695 607 691 609 1296 605 697 583 717 606 699 606 1293 604 698 605 699 576 730 598 1295 606 677 599 724 580 737 562 1324 579 722 607 671 600 730 575 1324 554 726 571 727 605 700 602 1296 609 716 556 727 602 699 607 1291 579 699 604 723 552 755 601 700 602 722 554 723 603 699 611 717 546 736 599 722 582 695 600 754 553 726 577 1296 602 704 609 1290 578 1322 583 692 579 1350 582 725 547 758 570 1323 552 751 576 697 581 748 555 1320 551 1351 583 745 524 753 579 724 576 750 526 752 580 721 580 722 549 779 579 721 575 706 573 752 550 730 596 704 580 747 552 725 576 751 578 747 530 751 574 723 579 749 529 748 550 752 580 698 576 777 553 751 550 727 575 750 553 753 547 729 574 749 531 784 512 774 585 719 555 756 545 754 574 728 549 754 528 775 575 719 563 770 526 778 551 748 531 744 555 1353 545 1352 528 1374 529 1343 528 802 528 777 497 1400 501 1373 532 774 498 805 525 770 516 792 499 779 1098".split(" ")]
@@ -129,11 +55,16 @@ giftrp1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 giftrq2 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1]
 giftrp2 = [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
 
-RESPONSE = visit_request1_bits
+# RESPONSE = visit_request1_bits
 
-enable_interrupts()
+def next_visit_response():
+    while True:
+        for r in [visit_response1_bits, visit_request2_bits]:
+            yield r
 
-respond()
+def next_visit_request():
+    while True:
+        for r in [visit_request1_bits, visit_request2_bits]:
+            yield r
 
-while True:
-    pass
+RESPONSE_GENERATOR = next_visit_request()

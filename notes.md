@@ -92,6 +92,12 @@ For software, I'm using micropython to mess around and prototype. I used VSCode 
 ### Miscellaneous notes from writing some bad micropython
 I started by essentially replicating the flipper's raw recording format. Just print out the run lengths and split on really long gaps. This revealed that there is a 4 way back and forth conversation to arrange a visit. I was able to record that into NEC-ish format and get my tamagotchi to visit itself, so I think the NEC assumption is OK for visits at least.
 
+I want to make something better for this, but for now:
+- Upload the contents of the pico folder on a raspberry pi pico
+- Connect to it with minicom (or your preferred serial/tty/com tool)
+- Set minicom (or whichever program) to capture to a file
+- I had some decent success having the minicom.cap file open in VSCode while it was also being written to by minicom. This way I could add dividers and some notes about what each capture was
+
 At this point we have exited the physical layer, and I need a better interface to play with the data I'm sending, to see if flipping some bits will still allow for a valid code. It seems like there would be some kind of error detection/rejection, so it might make things more complicated. 
 
 An example visit, from my fake tamagotchi's perspective:
@@ -114,8 +120,24 @@ Received
 ## The next layer
 Now what? I have a proof of concept, possibly enough for a compelling tech demo if I worked in sales, but I'm not much closer to my dream of a tamagotchi build-a-friend app for the flipper.
 
-I need to clean it up, and probably think about some architectural changes. It started doing some wonky stuff when I was dealing with the "buffer" of recorded lengths. Specifically, I need a way to see when no signal has been received for a long time and then 
+I need to clean it up, and probably think about some architectural changes. It started doing some wonky stuff when I was dealing with the "buffer" of recorded lengths. Specifically, I need a way to figure out when a signal has ended.
 
+## The Patent
+I had so little hope for the patent after the Pixmob research that I didn't even look up until this point. But it is actually massively helpful. It describes the data format (admittedly from an old model) in excruciating detail.
+
+The patent says the name data in in bytes 5-9 of the transmission, and I found it in bytes 6-10. 
+
+The patent says the last byte is for "parity" and I don't know with certainty that it's correct, but that's a huge shove in the right direction. I also have the name to play with, so I can experiment with that to see how it affects the parity/checksup. Once I figure that out, I can play with the other bits and figure out what they do. 
+
+The name data (so probably all of the data) is big endian, and they didn't do anything too weird with it. It's just 8 bit-aligned and the letter representations are just numbers in order, plus some special characters. That's not even a weird enough code to have a special name. Now that I know this, there's so much less I have to worry about when looking for the other data. It'll probably also be big endian, and some things are packed together, but it's mostly 8 bit aligned.
+
+## 010 Editor
+I tried a bunch of different hex editors, and 010 totally smoked all of them. I will happily give them my money when this trial ends. It's fantastic. 
+
+I made a template, filling in the different pieces of information as I went. 
+
+## Checksum
+It's just a literal sum mod 256. Damn. I was getting into the weeds with CRCs but it is just a sum. I willt ry and remember this for the rest of the project. They were clearly not overthinking it, just making something that works. I shouldn't overthink it either.
 
 ## Additional stuff
 ~
