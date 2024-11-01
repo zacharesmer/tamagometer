@@ -1,6 +1,5 @@
 from machine import Pin, Timer
 import utime
-from converters import multiple_to_bits
 
 vcc = Pin(6, Pin.OUT)
 signal = Pin(7, Pin.IN)

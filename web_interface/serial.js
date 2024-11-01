@@ -209,7 +209,7 @@ async function sendCode(code) {
 /// this should be a new file but that's a problem for future me
 //--------------
 
-let savedMessage1, savedMessage2;
+let savedMessage1, savedMessage2, savedMessage3, savedMessage4;
 
 document.getElementById("save-message-bitstrings").addEventListener("click", () => {
     // TODO: literally any validation whatsoever
@@ -217,7 +217,10 @@ document.getElementById("save-message-bitstrings").addEventListener("click", () 
     // putting incorrect values in here is only potentially hurting your pico
     savedMessage1 = document.getElementById("message1").value;
     savedMessage2 = document.getElementById("message2").value;
-    console.log(`Saved message 1: ${savedMessage1} and message 2: ${savedMessage2}`);
+    savedMessage3 = document.getElementById("message3").value;
+    savedMessage4 = document.getElementById("message4").value;
+    console.log("Saved messages");
+    // console.log(`Saved message 1: ${savedMessage1} and message 2: ${savedMessage2}`);
 });
 
 document.getElementById("initiate-visit").addEventListener("click", async () => {
@@ -229,14 +232,14 @@ document.getElementById("initiate-visit").addEventListener("click", async () => 
         sendCode(savedMessage1);
         // listen for a response
         let response1 = await readOneCommand();
-        output.innerText += response1 + "\n"
+        output.innerText += response1.join("") + "\n"
         console.log(`received ${response1}`)
         // send message 2
-        console.log(`Sending ${savedMessage2}`)
-        sendCode(savedMessage2);
+        console.log(`Sending ${savedMessage3}`)
+        sendCode(savedMessage3);
         // listen for a response
         let response2 = await readOneCommand();
-        output.innerText += response1 + "\n"
+        output.innerText += response1.join("") + "\n"
         console.log(`received ${response2}`)
     } catch (error) {
         errorLog.innerText = error;
@@ -251,16 +254,16 @@ document.getElementById("wait-for-visit").addEventListener("click", async () => 
         let response1 = await readOneCommand();
         output.innerText += response1 + "\n"
         console.log(`received ${response1}`)
-        console.log(`Sending ${savedMessage1}`)
         // Send message 1
-        sendCode(savedMessage1);
+        console.log(`Sending ${savedMessage2}`)
+        sendCode(savedMessage2);
         // listen for a response
         let response2 = await readOneCommand();
         output.innerText += response1 + "\n"
         console.log(`received ${response2}`)
         // send message 2
-        console.log(`Sending ${savedMessage2}`)
-        sendCode(savedMessage2);
+        console.log(`Sending ${savedMessage4}`)
+        sendCode(savedMessage4);
 
     } catch {
         errorLog.innerText = error;
