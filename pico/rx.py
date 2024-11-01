@@ -12,11 +12,11 @@ LAST_EDGE = utime.ticks_us()
 CHANGE_LIST = []
 
 def enable_interrupts():
-    print("Turning on IR sensor interrupts")
+    # print("Turning on IR sensor interrupts")
     signal.irq(ir_sensor_callback_decode, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
 
 def disable_interrupts():
-    print("Turning off IR sensor interrupts")
+    # print("Turning off IR sensor interrupts")
     signal.irq(None)
 
 def ir_sensor_callback(arg):
@@ -130,7 +130,7 @@ def ir_sensor_callback_decode(arg):
             # print(f"0 : length {MESSAGE_LENGTH}\n")
             # print(f"1")
             CHANGE_LIST.append("1")
-            print("".join(CHANGE_LIST))
+            print(f"[PICO]{''.join(CHANGE_LIST)}[END]")
             CHANGE_LIST = []
             STATE = end_of_message
         else:
@@ -149,7 +149,7 @@ def ir_sensor_callback_decode(arg):
             # print(f"1 : length {MESSAGE_LENGTH}\n")
             # print(f"0")
             CHANGE_LIST.append("0")
-            print("".join(CHANGE_LIST))
+            print(f"[PICO]{''.join(CHANGE_LIST)}[END]")
             CHANGE_LIST = []
             STATE = end_of_message
         else:
@@ -162,21 +162,3 @@ def ir_sensor_callback_decode(arg):
         STATE = waiting
 
 
-
-
-# # print the recorded input after TIMEOUT_US time without any input
-# def timeout_callback(t):
-#     global CHANGE_LIST
-#     global LAST_EDGE
-#     global TIMEOUT_US
-#     # Check if it's been longer than TIMEOUT since the last edge was detected, and print and clear the buffer if so
-#     time_since_edge = utime.ticks_diff(utime.ticks_us(), LAST_EDGE) 
-#     # print(f"Ding! Time since something happened: {time_since_edge}")
-#     if time_since_edge > TIMEOUT_US and CHANGE_LIST != []:
-#         # (butterfly meme) is this a mutex?
-#         disable_interrupts()
-#         print(f"Timed out after {time_since_edge} \n{multiple_to_bits(CHANGE_LIST)}")
-#         CHANGE_LIST = []    
-#         enable_interrupts()
-
-# timer = Timer(mode=Timer.PERIODIC, period=TIMEOUT_US//1000, callback=timeout_callback)
