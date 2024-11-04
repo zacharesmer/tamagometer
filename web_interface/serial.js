@@ -1,4 +1,7 @@
-// Mostly from https://whatwebcando.today/serial.html , which cites Google developers code labs
+// thanks to https://whatwebcando.today/serial.html , which cites 
+// Google developers code labs: https://codelabs.developers.google.com/codelabs/web-serial/#3
+
+export { sendCommand, readOneCommandCancellable, stopListening };
 
 let port;
 let reader;
@@ -16,19 +19,6 @@ document.getElementById('connect-to-serial').addEventListener('click', () => {
         alert('Web Serial API not supported.');
     }
 });
-
-// document.getElementById('read-serial').addEventListener('click', () => {
-//     const log = document.getElementById('error-message');
-//     if (navigator.serial) {
-//         try {
-//             readSerial();
-//         } catch (error) {
-//             log.innerText = error;
-//         }
-//     } else {
-//         alert('Web Serial API not supported.');
-//     }
-// });
 
 document.getElementById('send-serial').addEventListener('click', () => {
     const log = document.getElementById('error-message');
@@ -59,16 +49,11 @@ document.getElementById('read-one-command').addEventListener('click', async () =
     cancelListen = false;
     if (navigator.serial) {
         try {
-            let command = null;
-            while (command === null & !cancelListen) {
-                command = await readOneCommand();
+            let command = await readOneCommandCancellable();
+            if (command != null) {
+                log.innerText += command.join("");
+                log.innerText += "\n\n";
             }
-            if (cancelListen) {
-                cancelListen = false;
-                return;
-            }
-            log.innerText += command.join("");
-            log.innerText += "\n\n";
         } catch (error) {
             errorLog.innerText = error;
         }
@@ -106,25 +91,6 @@ async function resetSerial(params) {
     sendSerial('\x04');
 }
 
-// async function readSerial() {
-//     const log = document.getElementById("output")
-//     sendSerial("listen");
-//     while (true) {
-//         const { value, done } = await reader.read();
-//         if (value) {
-//             // todo: instead of logging, load the serial input into a variable. 
-//             // When a newline is received, parse that variable into the different chunks
-//             log.textContent += value;
-//         }
-//         if (done) {
-//             console.log('[readLoop] DONE', done);
-//             reader.releaseLock();
-//             break;
-//         }
-//     }
-// }
-
-
 async function readOneCommand() {
     // Returns either null or a string of 1 tamagotchi command.
 
@@ -135,26 +101,22 @@ async function readOneCommand() {
     // So, don't unplug it in the middle of this. Actually, it's possible the stream 
     // would end if it's unplug and that's handled.
 
-    // counter, resets on invalid character
-    let matching_chars = 0;
-
     const beginning = "[PICO]";
     const end = "[END]";
     const end_offset = 160 + beginning.length;
     const total_length = 160 + beginning.length + end.length;
+    // counter that resets on invalid character
+    let matching_chars = 0;
 
     const timed_out_string = "[PICO]timed out[END]";
     let timed_out_matching_chars = 0;
 
-
     let command = [];
-    let finished = false;
-    let timed_out = false;
 
     // Tell the board to listen for input
     sendSerial("listen")
 
-    while (!finished) {
+    while (true) {
         const { value, done: stream_done } = await reader.read();
         // why am I implementing another finite automaton? maybe I should learn about stream APIs someday
         if (typeof (value) === "string") {
@@ -211,7 +173,21 @@ async function readOneCommand() {
     }
 }
 
+async function readOneCommandCancellable() {
+    // cancelListen is set by a callback
+    cancelListen = false;
+    let command = null;
+    while (command === null & !cancelListen) {
+        command = await readOneCommand();
+    }
+    // reset cancelListen
+    cancelListen = false;
+    return command;
+}
 
+function stopListening() {
+    cancelListen = true;
+}
 
 async function sendSerial(...lines) {
     const writer = outputStream.getWriter();
@@ -225,76 +201,3 @@ async function sendSerial(...lines) {
 async function sendCommand(code) {
     return await sendSerial("send" + code);
 }
-
-//--------------
-/// this should be a new file but that's a problem for future me
-//--------------
-
-let savedMessage1, savedMessage2, savedMessage3, savedMessage4;
-
-document.getElementById("save-message-bitstrings").addEventListener("click", () => {
-    // TODO: literally any validation whatsoever
-    // this is all front end baybeeee! I don't have a server to care about.
-    // putting incorrect values in here is only potentially hurting your pico
-    savedMessage1 = document.getElementById("message1").value;
-    savedMessage2 = document.getElementById("message2").value;
-    savedMessage3 = document.getElementById("message3").value;
-    savedMessage4 = document.getElementById("message4").value;
-    console.log("Saved messages");
-    // console.log(`Saved message 1: ${savedMessage1} and message 2: ${savedMessage2}`);
-});
-
-document.getElementById("initiate-visit").addEventListener("click", async () => {
-    const errorLog = document.getElementById("visit-error");
-    const output = document.getElementById("visit-output");
-    try {
-        console.log(`Sending ${savedMessage1}`)
-        // Send message 1
-        sendCommand(savedMessage1);
-        // listen for a response
-        let response1 = await readOneCommand();
-        output.innerText += response1.join("") + "\n"
-        console.log(`received ${response1}`)
-        // send message 2
-        console.log(`Sending ${savedMessage3}`)
-        sendCommand(savedMessage3);
-        // listen for a response
-        let response2 = await readOneCommand();
-        output.innerText += response1.join("") + "\n"
-        console.log(`received ${response2}`)
-    } catch (error) {
-        errorLog.innerText = error;
-    }
-});
-
-document.getElementById("wait-for-visit").addEventListener("click", async () => {
-    const errorLog = document.getElementById("visit-error");
-    const output = document.getElementById("visit-output");
-    try {
-        // listen 
-        let response1 = await readOneCommand();
-        output.innerText += response1 + "\n"
-        console.log(`received ${response1}`)
-        // Send message 1
-        console.log(`Sending ${savedMessage2}`)
-        sendCommand(savedMessage2);
-        // listen for a response
-        let response2 = await readOneCommand();
-        output.innerText += response1 + "\n"
-        console.log(`received ${response2}`)
-        // send message 2
-        console.log(`Sending ${savedMessage4}`)
-        sendCommand(savedMessage4);
-
-    } catch {
-        errorLog.innerText = error;
-    }
-});
-
-document.getElementById("snoop").addEventListener("click", async () => {
-    console.log("Snooping");
-    for (let i = 0; i < 4; i++) {
-        let message = await readOneCommand();
-        document.getElementById("snoop-output").innerText += message.join("") + "\n";
-    }
-});
