@@ -24,6 +24,7 @@
         <div id="output"></div>
     </div>
     <div>
+        <h2>Messages</h2>
         <form id="messages-form" action="javascript:void(0);">
             <div>
                 <label for="message1">Message 1:</label>
@@ -34,23 +35,17 @@
                 <input type="text" id="message2">
             </div>
             <div>
-                <label for="message1">Message 3:</label>
+                <label for="message3">Message 3:</label>
                 <input type="text" id="message3">
             </div>
             <div>
-                <label for="message2">Message 4:</label>
+                <label for="message4">Message 4:</label>
                 <input type="text" id="message4">
             </div>
             <div>
                 <input type="submit" id="save-message-bitstrings" value="Save">
             </div>
         </form>
-        <div>
-            <button id="initiate-visit">Initiate</button>
-            <button id="wait-for-visit">Wait</button>
-            <div id="visit-error"></div>
-            <div id="visit-output"></div>
-        </div>
         <!-- <div>
             <button id="initiate-game">Initiate a game</button>
             <button id="wait-for-game">Wait for a game</button>
@@ -61,7 +56,14 @@
         </div> -->
         <div>
             <button id="snoop">Snoop</button>
+            <button id="cancel-snoop">Stop snooping</button>
             <div id="snoop-output"></div>
+        </div>
+        <div>
+            <button id="initiate-visit">Initiate</button>
+            <button id="wait-for-visit">Wait</button>
+            <div id="visit-error"></div>
+            <div id="visit-output"></div>
         </div>
     </div>
 

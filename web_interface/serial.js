@@ -1,7 +1,7 @@
 // thanks to https://whatwebcando.today/serial.html , which cites 
 // Google developers code labs: https://codelabs.developers.google.com/codelabs/web-serial/#3
 
-export { sendCommand, readOneCommandCancellable, stopListening };
+export { sendCommand, sendCommandUntilResponse, readOneCommandCancellable, readOneCommand, stopListening, sendCommandNTimes };
 
 let port;
 let reader;
@@ -173,18 +173,55 @@ async function readOneCommand() {
     }
 }
 
-async function readOneCommandCancellable() {
+// listen until there is a command, timeout(if not null), or until stopListening is called.
+// timeout is basically in seconds because that's how long the board listens for
+async function readOneCommandCancellable(timeout = null) {
     // cancelListen is set by a callback
     cancelListen = false;
     let command = null;
-    while (command === null & !cancelListen) {
-        command = await readOneCommand();
+    if (timeout === null) {
+        while (command === null & !cancelListen) {
+            command = await readOneCommand();
+        }
+    }
+    else {
+        for (let i = 0; i < timeout; i++) {
+            if (cancelListen) {
+                break;
+            }
+            command = await readOneCommand();
+            if (command != null) {
+                break;
+            }
+        }
     }
     // reset cancelListen
     cancelListen = false;
     return command;
 }
 
+// returns a response or null if one is not received after maxAttempts attempts
+async function sendCommandUntilResponse(message, maxAttempts = 3) {
+    for (let i = 0; i < maxAttempts; i++) {
+        // this times out after however long is set on the microcontroller (currently 1 second)
+        sendCommand(message);
+        // listen for a response
+        let response = await readOneCommand();
+        if (response != null) {
+            return response;
+        }
+    }
+    return null;
+}
+
+// send a command N times, could make it cancelleable, not sure how useful it even is
+async function sendCommandNTimes(message, maxAttempts = 3) {
+    for (let i = 0; i < maxAttempts; i++) {
+        sendCommand(message);
+    }
+}
+
+// stops the loop that's polling the microcontroller for a command
 function stopListening() {
     cancelListen = true;
 }

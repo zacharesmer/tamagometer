@@ -1,37 +1,61 @@
-import { sendCommand, readOneCommandCancellable, stopListening } from "./serial.js";
+import { sendCommand, readOneCommandCancellable, stopListening, sendCommandUntilResponse, readOneCommand, sendCommandNTimes } from "./serial.js";
 
-let savedMessage1, savedMessage2, savedMessage3, savedMessage4;
+let savedMessages = [];
 
-document.getElementById("save-message-bitstrings").addEventListener("click", loadMessages);
+document.getElementById("save-message-bitstrings").addEventListener("click", () => {
+    saveMessages();
+});
 
-async function loadMessages() {
+async function saveMessages() {
     // TODO: literally any validation whatsoever
     // this is all front end baybeeee! I don't have a server to care about.
     // putting incorrect values in here is only potentially hurting your pico
-    savedMessage1 = document.getElementById("message1").value;
-    savedMessage2 = document.getElementById("message2").value;
-    savedMessage3 = document.getElementById("message3").value;
-    savedMessage4 = document.getElementById("message4").value;
+    for (let i = 1; i <= 4; i++) {
+        let message = document.getElementById(`message${i}`).value;
+        savedMessages.push(message);
+        // keep the values even if the page reloads
+        localStorage.setItem(`savedMessage${i}`, message);
+    }
     console.log("Saved messages");
-    // console.log(`Saved message 1: ${savedMessage1} and message 2: ${savedMessage2}`);
 }
+
+window.onload = (e) => {
+    recoverMessages();
+};
+
+// Initialize the saved messages array to have either the message or null 
+// (so indexing into it will work)
+async function recoverMessages(params) {
+    for (let i = 1; i <= 4; i++) {
+        let message = localStorage.getItem(`savedMessage${i}`);
+        if (message != null) {
+            document.getElementById(`message${i}`).value = message;
+            savedMessages.push(message)
+            //TODO probably also display the messages
+        } else {
+            savedMessages.push(null)
+        }
+    }
+}
+
 
 document.getElementById("initiate-visit").addEventListener("click", async () => {
     const errorLog = document.getElementById("visit-error");
     const output = document.getElementById("visit-output");
     try {
-        console.log(`Sending ${savedMessage1}`)
-        // Send message 1
-        sendCommand(savedMessage1);
-        // listen for a response
-        let response1 = await readOneCommand();
+        let response1 = await sendCommandUntilResponse(savedMessages[0], 3);
+        if (response1 === null) {
+            errorLog.innerText = "Response 1 not received"
+            return;
+        }
         output.innerText += response1.join("") + "\n"
         console.log(`received ${response1}`)
         // send message 2
-        console.log(`Sending ${savedMessage3}`)
-        sendCommand(savedMessage3);
-        // listen for a response
-        let response2 = await readOneCommand();
+        let response2 = await sendCommandUntilResponse(savedMessages[2], 3);
+        if (response2 === null) {
+            errorLog.innerText = "Response 2 not received"
+            return;
+        }
         output.innerText += response1.join("") + "\n"
         console.log(`received ${response2}`)
     } catch (error) {
@@ -42,31 +66,61 @@ document.getElementById("initiate-visit").addEventListener("click", async () => 
 document.getElementById("wait-for-visit").addEventListener("click", async () => {
     const errorLog = document.getElementById("visit-error");
     const output = document.getElementById("visit-output");
-    try {
-        // listen 
-        let response1 = await readOneCommand();
-        output.innerText += response1 + "\n"
-        console.log(`received ${response1}`)
-        // Send message 1
-        console.log(`Sending ${savedMessage2}`)
-        sendCommand(savedMessage2);
-        // listen for a response
-        let response2 = await readOneCommand();
-        output.innerText += response1 + "\n"
-        console.log(`received ${response2}`)
-        // send message 2
-        console.log(`Sending ${savedMessage4}`)
-        sendCommand(savedMessage4);
 
-    } catch {
+    try {
+        // wait for a first message or until it's cancelled
+        let message1 = await readOneCommandCancellable();
+        if (message1 === null) {
+            errorLog.innerText = "Cancelled"
+            return;
+        }
+        console.log(`Received ${message1}`);
+        output.innerText += message1.join("") + "\n"
+        // send the response and await a second message, repeat up to 3 times if necessary
+        await sendCommand(savedMessages[1]);
+        let message2 = await readOneCommandCancellable(3);
+        if (message2 === null) {
+            errorLog.innerText = "Message 2 not received"
+            return;
+        }
+        console.log(`received ${message2}`);
+        output.innerText += message2.join("") + "\n";
+        // send the final message 2 times just in case. The repeat is probably not 
+        // necessary but my transmitter is a little wonky
+        await sendCommandNTimes(savedMessages[3], 2);
+
+    } catch (error) {
         errorLog.innerText = error;
     }
 });
 
 document.getElementById("snoop").addEventListener("click", async () => {
-    console.log("Snooping");
-    for (let i = 0; i < 4; i++) {
-        let message = await readOneCommand();
-        document.getElementById("snoop-output").innerText += message.join("") + "\n";
-    }
+    await snoop();
 });
+
+let cancelSnoop = false;
+
+function stopSnooping() {
+    cancelSnoop = true;
+    stopListening();
+}
+
+document.getElementById("cancel-snoop").addEventListener("click", () => {
+    stopSnooping();
+});
+
+async function snoop() {
+    console.log("Snooping");
+    cancelSnoop = false;
+    // wait for 4 messages, or for cancelSnoop to be set
+    for (let i = 0; i < 4; i++) {
+        if (cancelSnoop) {
+            break;
+        }
+        let message = await readOneCommandCancellable();
+        if (message != null) {
+            document.getElementById("snoop-output").innerText += message.join("") + "\n";
+        }
+    }
+    cancelSnoop = false;
+}
