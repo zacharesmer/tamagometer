@@ -13,16 +13,16 @@ def to_lengths(bits):
 def to_bits(lengths):
     # Check the header (first 2 lengths), print debug info and return empty list if invalid
     if len(lengths) < 2:
-        print("List too short!")
-        print(f"{lengths}\n")
+        # print("List too short!")
+        # print(f"{lengths}\n")
         return []
     if lengths[0] < 8000 or lengths[0] > 10000:
-        print(f"Header pulse invalid: expected ~9500 us, got {lengths[0]}us")
-        print(f"{lengths}\n")
+        # print(f"Header pulse invalid: expected ~9500 us, got {lengths[0]}us")
+        # print(f"{lengths}\n")
         return [] 
     if lengths[1] <5000 or lengths[1] > 7000:
-        print(f"Header gap invalid: expected ~6000us, got {lengths[1]}")
-        print(f"{lengths}\n")
+        # print(f"Header gap invalid: expected ~6000us, got {lengths[1]}")
+        # print(f"{lengths}\n")
         return []
     output = []
     state = 0

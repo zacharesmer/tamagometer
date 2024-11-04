@@ -13,7 +13,7 @@ rx.vcc.on()
 # # For basic testing with web serial. Turn this off later
 # rx.enable_interrupts()
 
-listen_timeout_ms = 10_000
+listen_timeout_ms = 1000
 
 # check for serial input in the form `send10101001010101010[...]10100\n` or `listen\n`
 while True:
@@ -30,7 +30,7 @@ while True:
             start = utime.ticks_ms()
             while True:
                 if utime.ticks_diff(utime.ticks_ms(), start) > listen_timeout_ms:
-                    print("timed out")
+                    print("[PICO]timed out[END]")
                     break
                 # print(rx.STATE)
                 if rx.STATE == rx.end_of_message:
@@ -38,7 +38,7 @@ while True:
                     break    
             rx.disable_interrupts()
         except:
-            print("Error")
+            # print("Error")
             pass
 
 

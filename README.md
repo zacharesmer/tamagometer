@@ -53,4 +53,4 @@ For any known parts of the transmission, select from a list of possible values.
 
 For example, the name takes up 5 bytes, so editing the bits individually would be time consuming. Choose letters/symbols to generate the correct bits.
 ### Interactions
-You can either initiate or wait for the tamagotchi to initiate. Right now this just plays back whateve
+You can either initiate or wait for the tamagotchi to initiate. Right now this just plays back whatever is loaded in via the text fields.
