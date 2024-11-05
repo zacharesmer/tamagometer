@@ -1,3 +1,4 @@
+import { TamaMessage } from "./model.js";
 import { sendCommand, readOneCommandCancellable, stopListening, sendCommandUntilResponse, readOneCommand, sendCommandNTimes } from "./serial.js";
 
 let savedMessages = [];
@@ -13,6 +14,8 @@ async function saveMessages() {
     for (let i = 1; i <= 4; i++) {
         let message = document.getElementById(`message${i}`).value;
         savedMessages.push(message);
+        new TamaMessage(message).getBitstring();
+        // console.log(new TamaMessage(message).getBitstring());
         // keep the values even if the page reloads
         localStorage.setItem(`savedMessage${i}`, message);
     }
