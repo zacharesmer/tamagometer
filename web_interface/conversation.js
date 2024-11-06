@@ -9,12 +9,12 @@ document.getElementById("save-message-bitstrings").addEventListener("click", () 
 
 async function saveMessages() {
     // TODO: literally any validation whatsoever
-    // this is all front end baybeeee! I don't have a server to care about.
+    // this is all front end baybeeee! The real "serverless" app
     // putting incorrect values in here is only potentially hurting your pico
     for (let i = 1; i <= 4; i++) {
         let message = document.getElementById(`message${i}`).value;
         savedMessages.push(message);
-        new TamaMessage(message).getBitstring();
+        console.log(new TamaMessage(message));
         // console.log(new TamaMessage(message).getBitstring());
         // keep the values even if the page reloads
         localStorage.setItem(`savedMessage${i}`, message);
