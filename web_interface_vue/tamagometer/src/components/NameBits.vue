@@ -13,6 +13,7 @@ const props = defineProps({
 
 <template>
     <div class="name-container">
+        <div>Name: </div>
         <Letter v-for="letter in model.letters" :model="letter"></Letter>
     </div>
 </template>
@@ -21,16 +22,8 @@ const props = defineProps({
 .name-container {
     display: flex;
     flex-direction: row;
-}
-
-.letter {
-    display: flex;
-    flex-direction: column;
-    border: solid;
     align-items: center;
+
 }
 
-.symbol {
-    font-size: xx-large;
-}
 </style>

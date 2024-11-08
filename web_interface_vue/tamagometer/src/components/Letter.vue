@@ -23,12 +23,26 @@ const symbol = computed({
 
 
 <template>
-    <BitChunk :model="model"></BitChunk>
-    <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
-    <select v-model="symbol">
-        <option v-for="key in model.lettersSymbols.keys()" :value="key">{{ model.lettersSymbols.get(key) }}
-        </option>
-    </select>
+    <div class="letter-container">
+        <BitChunk :model="model"></BitChunk>
+        <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
+        <select v-model="symbol" class="symbol">
+            <option v-for="key in model.lettersSymbols.keys()" :value="key">{{ model.lettersSymbols.get(key) }}
+            </option>
+        </select>
+    </div>
 </template>
 
-<style></style>
+<style>
+.letter-container {
+    display: flex;
+    flex-direction: column;
+    border: solid;
+    align-items: center;
+}
+
+
+.symbol {
+    font-size: xx-large;
+}
+</style>
