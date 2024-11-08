@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 
 import { computed } from 'vue'
+import Bit from './Bit.vue';
 
 const props = defineProps({
     bits: {type: String, required:true},
@@ -18,6 +19,6 @@ const bitList = computed(() => {
 
 <template>
     <div>
-    <span v-for="(item, index) in bitList">{{ item }}</span>
+    <bit v-for="(item, index) in bitList">{{ item }}</bit>
 </div>
 </template>

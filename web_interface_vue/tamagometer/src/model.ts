@@ -1,4 +1,4 @@
-export { TamaMessage, TamaName, UnknownBits }
+export { TamaMessage, TamaName, TamaLetter, UnknownBits }
 
 export interface TamaChunk {
     getBitstring(): string;
@@ -123,72 +123,86 @@ class TamaName implements TamaChunk {
 }
 
 class TamaLetter implements TamaChunk {
-    bitstring: string
+    bitstring: string | null
     length: number
-    lettersSymbols: Map<number, string>
-    constructor(bitstring: string) {
+    initialized = false;
+    // the key is the bitstring interpreted as an unsigned integer
+    lettersSymbols = new Map<number, string>([
+        [0, "A"],
+        [1, "B"],
+        [2, "C"],
+        [3, "D"],
+        [4, "E"],
+        [5, "F"],
+        [6, "G"],
+        [7, "H"],
+        [8, "I"],
+        [9, "J"],
+        [10, "K"],
+        [11, "L"],
+        [12, "M"],
+        [13, "N"],
+        [14, "O"],
+        [15, "P"],
+        [16, "Q"],
+        [17, "R"],
+        [18, "S"],
+        [19, "T"],
+        [20, "U"],
+        [21, "V"],
+        [22, "W"],
+        [23, "X"],
+        [24, "Y"],
+        [25, "Z"],
+        [NaN, "!"],
+        [NaN, "?"],
+        [NaN, "&"],
+        [NaN, "o"],
+        [NaN, "x"],
+        [NaN, "♥"],
+        [NaN, "✿"],
+        [129, "★"],
+        [130, "@"],
+        [131, "♫"],
+        [132, "⛶"],
+        [133, "↑"],
+        [134, "↓"],
+        [135, "→"],
+        [136, "←"],
+        [NaN, " "],
+    ])
+    constructor(bitstring: string | null) {
         // 1 byte
         this.length = 8;
-        this.bitstring = bitstring;
-        // Keys are the binary numbers intepreted as base 10 integers
-        this.lettersSymbols = new Map<number, string>([
-            [0, "A"],
-            [1, "B"],
-            [2, "C"],
-            [3, "D"],
-            [4, "E"],
-            [5, "F"],
-            [6, "G"],
-            [7, "H"],
-            [8, "I"],
-            [9, "J"],
-            [10, "K"],
-            [11, "L"],
-            [12, "M"],
-            [13, "N"],
-            [14, "O"],
-            [15, "P"],
-            [16, "Q"],
-            [17, "R"],
-            [18, "S"],
-            [19, "T"],
-            [20, "U"],
-            [21, "V"],
-            [22, "W"],
-            [23, "X"],
-            [24, "Y"],
-            [25, "Z"],
-            [NaN, "!"],
-            [NaN, "?"],
-            [NaN, "&"],
-            [NaN, "o"],
-            [NaN, "x"],
-            [NaN, "♥"],
-            [NaN, "✿"],
-            [129, "★"],
-            [130, "@"],
-            [131, "♫"],
-            [132, "⛶"],
-            [133, "↑"],
-            [134, "↓"],
-            [135, "→"],
-            [136, "←"],
-            [NaN, " "],
-        ])
+        this.bitstring = null;
+        if (bitstring !== null) {
+            this.init(bitstring)
+        }
+    }
 
-        // TODO figure out how to handle invalid letters
-
+    init(bitstring: string) {
+        this.bitstring = bitstring
+        this.initialized = true;
     }
 
     getSymbol() {
-        let lookup = this.lettersSymbols.get(parseInt(this.bitstring, 2))
+        let lookup = null
+        if (this.bitstring !== null) {
+            lookup = this.lettersSymbols.get(parseInt(this.bitstring, 2))
+        }
         return lookup ? lookup : "�"
     }
 
     getBitstring() {
-        return this.bitstring
+        return this.bitstring ? this.bitstring : ""
     }
 
+    flipBit(index: number) {
+        if (this.bitstring !== null) {
+            this.bitstring = flipBitAt(this.bitstring, index)
+            this.init(this.bitstring)
+        }
+    }
 
 
 }

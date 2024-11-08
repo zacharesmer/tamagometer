@@ -5,7 +5,14 @@ import { computed } from 'vue'
 </script>
 
 <template>
-    <span>    
+    <div class="bit">    
         <slot></slot>
-    </span>
+    </div>
 </template>
+
+<style>
+.bit{
+    display: inline;
+    margin-top: 10px;
+    }
+</style>

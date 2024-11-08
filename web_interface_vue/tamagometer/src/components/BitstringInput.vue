@@ -37,7 +37,7 @@ let bitstring = computed({
   <!-- <p>{{ message.getBitstring() }}</p> -->
 </template>
 
-<style>
+<style scoped>
 .bitstring-input {
   width: 170ch;
 }

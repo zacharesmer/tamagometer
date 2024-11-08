@@ -12,4 +12,5 @@ import UnknownByte from './components/UnknownBits.vue';
   <!-- <UnknownByte bits="10101000"></UnknownByte> -->
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>

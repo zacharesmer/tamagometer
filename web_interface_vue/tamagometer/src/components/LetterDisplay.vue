@@ -2,10 +2,10 @@
 
 import { computed } from 'vue'
 import Bit from './Bit.vue'
-import {UnknownBits} from '@/model'
+import {TamaLetter} from '@/model'
 
 const props = defineProps({
-    model: {type: UnknownBits, required:true},
+    model: {type: TamaLetter, required:true},
 })
 
 const bitList = computed(() => {
