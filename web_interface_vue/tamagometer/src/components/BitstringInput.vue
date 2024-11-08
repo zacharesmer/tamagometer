@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue'
-import UnknownBits from './UnknownBits.vue';
+import BitChunk from './BitChunk.vue';
 import { TamaMessage, TamaName } from '@/model';
 import NameBits from './NameBits.vue'
 import ChecksumBits from './ChecksumBits.vue';
@@ -11,13 +11,13 @@ let bitstring = computed({
   get() {
     console.log(`Getting bit string, ${message.value.getBitstring()}`)
     return message.value.getBitstring()
-  }, 
+  },
   set(newValue) {
-    if (/[10]{160}/.test(newValue)){
+    if (/[10]{160}/.test(newValue)) {
       console.log(`Setting value ${newValue}`)
       message.value.init(newValue)
     }
-  } 
+  }
 })
 
 // watch(bitstring, () => {
@@ -30,9 +30,9 @@ let bitstring = computed({
 
 <template>
   <input class="bitstring-input" v-model="bitstring">
-  <UnknownBits :model="message.unknown1"></UnknownBits>
+  <BitChunk :model="message.unknown1"></BitChunk>
   <NameBits :model="message.name"></NameBits>
-  <UnknownBits :model="message.unknown2"></UnknownBits>
+  <BitChunk :model="message.unknown2"></BitChunk>
   <ChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())"></ChecksumBits>
   <!-- <p>{{ message.getBitstring() }}</p> -->
 </template>

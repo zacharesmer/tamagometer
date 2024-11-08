@@ -4,21 +4,23 @@ import { computed } from 'vue'
 import Bit from './Bit.vue';
 
 const props = defineProps({
-    bits: {type: String, required:true},
+    bits: { type: String, required: true },
 })
 
 const bitList = computed(() => {
-    let l = []; 
-    for (let i=0; i<props.bits.length; i++){
+    let l = [];
+    for (let i = 0; i < props.bits.length; i++) {
         l.push(props.bits[i])
-    }; 
-    return l})
+    };
+    return l
+})
 
 
 </script>
 
 <template>
-    <div>
-    <bit v-for="(item, index) in bitList">{{ item }}</bit>
-</div>
+    <!-- reuse style from BitChunk.vue -->
+    <div class="chunk-container">
+        <bit v-for="(item, index) in bitList" :value="parseInt(item)"></bit>
+    </div>
 </template>

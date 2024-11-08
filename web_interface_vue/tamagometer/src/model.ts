@@ -1,7 +1,34 @@
-export { TamaMessage, TamaName, TamaLetter, UnknownBits }
+export { TamaMessage, TamaName, TamaLetter, TamaBits }
 
 export interface TamaChunk {
+    init(bitstring: string): void;
     getBitstring(): string;
+}
+
+class TamaBits implements TamaChunk {
+    bitstring: string | null;
+    initialized = false;
+
+    constructor(bitstring: string | null) {
+        this.bitstring = null
+        if (bitstring !== null) {
+            this.init(bitstring)
+        }
+    }
+
+    init(bitstring: string) {
+        this.bitstring = bitstring;
+        this.initialized = true;
+    }
+    getBitstring() {
+        return this.bitstring ? this.bitstring : ""
+    }
+    flipBit(index: number) {
+        if (this.bitstring !== null) {
+            this.bitstring = flipBitAt(this.bitstring, index)
+            this.init(this.bitstring)
+        }
+    }
 }
 
 class TamaMessage {
@@ -118,12 +145,9 @@ class TamaName implements TamaChunk {
         } else return ""
 
     }
-
-
 }
 
-class TamaLetter implements TamaChunk {
-    bitstring: string | null
+class TamaLetter extends TamaBits {
     length: number
     initialized = false;
     // the key is the bitstring interpreted as an unsigned integer
@@ -172,17 +196,9 @@ class TamaLetter implements TamaChunk {
         [NaN, " "],
     ])
     constructor(bitstring: string | null) {
+        super(bitstring)
         // 1 byte
         this.length = 8;
-        this.bitstring = null;
-        if (bitstring !== null) {
-            this.init(bitstring)
-        }
-    }
-
-    init(bitstring: string) {
-        this.bitstring = bitstring
-        this.initialized = true;
     }
 
     getSymbol() {
@@ -192,43 +208,12 @@ class TamaLetter implements TamaChunk {
         }
         return lookup ? lookup : "�"
     }
-
-    getBitstring() {
-        return this.bitstring ? this.bitstring : ""
-    }
-
-    flipBit(index: number) {
-        if (this.bitstring !== null) {
-            this.bitstring = flipBitAt(this.bitstring, index)
-            this.init(this.bitstring)
-        }
-    }
-
-
 }
 
-class UnknownBits implements TamaChunk {
+class UnknownBits extends TamaBits {
     // length: number
-    bitstring: string
-    initialized = false;
     constructor(bitstring: string | null) {
-        this.init(bitstring)
-    }
-
-    init(bitstring: string | null) {
-        // this.length = bitstring.length;
-        this.bitstring = bitstring ? bitstring : "";
-        this.initialized = true;
-    }
-
-    getBitstring() {
-        return this.bitstring;
-    }
-
-
-    flipBit(index: number) {
-        this.bitstring = flipBitAt(this.bitstring, index)
-        this.init(this.bitstring)
+        super(bitstring)
     }
 }
 
