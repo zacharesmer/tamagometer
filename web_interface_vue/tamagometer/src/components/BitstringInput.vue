@@ -1,9 +1,15 @@
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, defineProps, watch, onMounted } from 'vue'
 import BitChunk from './BitChunk.vue';
 import { TamaMessage, TamaName } from '@/model';
 import NameBits from './NameBits.vue'
 import ChecksumBits from './ChecksumBits.vue';
+
+let props = defineProps({
+  bitstringId: { type: String, required: true }
+})
+
+
 
 let message = ref(new TamaMessage(null))
 
@@ -20,11 +26,21 @@ let bitstring = computed({
   }
 })
 
-// watch(bitstring, () => {
-//   if (bitstring.value.length === 160 && /[10]{160}/.test(bitstring.value)){
-//     message.value.init(bitstring.value)
-//   }
-// })
+
+watch(bitstring, () => {
+  localStorage.setItem(props.bitstringId, bitstring.value)
+})
+
+onMounted(() => {
+  const stored = localStorage.getItem(props.bitstringId)
+  if (stored !== null) {
+    bitstring.value = stored
+  }
+})
+
+defineExpose({
+  bitstring
+})
 
 </script>
 

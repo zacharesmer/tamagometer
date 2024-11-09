@@ -1,8 +1,8 @@
-import { reactive } from 'vue'
+export { connection }
 
 // A singleton object that holds a connection to a serial device, 
 // and has some methods to write to and read from it
-export class SerialConnection {
+class SerialConnection {
     private reader: ReadableStreamDefaultReader | null;
     private outputStream: WritableStream | null;
     private cancelListen = false;
@@ -82,6 +82,10 @@ export class SerialConnection {
 
     }
 
+
+    async sendCommand(code: string) {
+        return await this.sendSerial("send" + code);
+    }
 
     async readOneCommand(): Promise<String | null> {
         // Returns either null or a string of 1 tamagotchi command.
@@ -195,7 +199,21 @@ export class SerialConnection {
         this.cancelListen = true;
     }
 
+    // returns a response or null if one is not received after maxAttempts attempts
+    async sendCommandUntilResponse(message: string, maxAttempts = 3) {
+        for (let i = 0; i < maxAttempts; i++) {
+            // this times out after however long is set on the microcontroller (currently 1 second)
+            this.sendCommand(message);
+            // listen for a response
+            let response = await this.readOneCommand();
+            if (response != null) {
+                return response;
+            }
+        }
+        return null;
+    }
+
 }
 
-export const connection = new SerialConnection();
-
+// Singleton connection that the whole page uses
+const connection = new SerialConnection();
