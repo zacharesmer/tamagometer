@@ -169,7 +169,7 @@ class SerialConnection {
     }
 
     // listen for a command until it's received, cancelled, or times out, whatever happens first.
-    async readOneCommandCancellable(timeout = null) {
+    async readOneCommandCancellable(timeout: number | null = null) {
         // cancelListen can be set by a separate callback for a button
         this.cancelListen = false;
         let command = null;
@@ -212,6 +212,13 @@ class SerialConnection {
             }
         }
         return null;
+    }
+
+    // send a command N times, could make it cancelleable, not sure how useful it even is
+    async sendCommandNTimes(message: string, maxAttempts = 3) {
+        for (let i = 0; i < maxAttempts; i++) {
+            this.sendCommand(message);
+        }
     }
 
 }
