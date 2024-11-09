@@ -19,8 +19,11 @@ const bitList = computed(() => {
 </script>
 
 <template>
-    <!-- reuse style from BitChunk.vue -->
     <div class="chunk-container">
         <bit v-for="(item, index) in bitList" :value="parseInt(item)"></bit>
     </div>
 </template>
+
+<style>
+/* reuse style from BitChunk.vue */
+</style>

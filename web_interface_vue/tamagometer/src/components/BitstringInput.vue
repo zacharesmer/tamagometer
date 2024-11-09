@@ -15,12 +15,12 @@ let message = ref(new TamaMessage(null))
 
 let bitstring = computed({
   get() {
-    console.log(`Getting bit string, ${message.value.getBitstring()}`)
+    // console.log(`Getting bit string, ${message.value.getBitstring()}`)
     return message.value.getBitstring()
   },
   set(newValue) {
     if (/[10]{160}/.test(newValue)) {
-      console.log(`Setting value ${newValue}`)
+      // console.log(`Setting value ${newValue}`)
       message.value.init(newValue)
     }
   }

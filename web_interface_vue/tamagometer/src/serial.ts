@@ -54,14 +54,14 @@ class SerialConnection {
         }
         if (this.reader !== null) {
             const line = await this.reader.read()
-            console.log("[READ]", line)
+            // console.log("[READ]", line)
             return line
         }
         else { throw Error("Could not read serial.") }
     }
 
     // send text via serial, or do nothing if it's not initialized
-    async sendSerial(...lines: String[]) {
+    async sendSerial(...lines: string[]) {
         // If it hasn't been initialized (possibly the connect button hasn't been clicked), prompt for it again
         if (this.outputStream === null) {
             try {
@@ -87,7 +87,7 @@ class SerialConnection {
         return await this.sendSerial("send" + code);
     }
 
-    async readOneCommand(): Promise<String | null> {
+    async readOneCommand(): Promise<string | null> {
         // Returns either null or a string of 1 tamagotchi command.
 
         // match and return a string in the format [PICO]160 1s and 0s[END]
@@ -116,7 +116,7 @@ class SerialConnection {
             // why am I implementing another finite automaton? maybe I should learn about stream APIs someday
             if (typeof (value) === "string") {
                 for (let i = 0; i < value.length; i++) {
-                    let current = String(value[i]);
+                    let current = value[i].toString();
                     // console.log(`current: ${current}, command so far: ${command}, characters matched: ${matching_chars}`);
                     // if we are in the header and match it, continue
                     if (matching_chars < beginning.length && current === beginning[matching_chars]) {
@@ -191,6 +191,7 @@ class SerialConnection {
         }
         // reset cancelListen
         this.cancelListen = false;
+        // console.log(command)
         return command;
     }
 

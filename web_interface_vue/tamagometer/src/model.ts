@@ -100,7 +100,7 @@ class TamaMessage {
             try {
                 let bitsNoChecksum = this.getBitsNoChecksum();
                 let checksum = this.getChecksumString(bitsNoChecksum);
-                console.log(`Length: ${bitsNoChecksum.length + checksum.length}, ${bitsNoChecksum + checksum}`);
+                // console.log(`Length: ${bitsNoChecksum.length + checksum.length}, ${bitsNoChecksum + checksum}`);
                 return bitsNoChecksum + checksum;
             } catch (error) {
                 console.error(error)

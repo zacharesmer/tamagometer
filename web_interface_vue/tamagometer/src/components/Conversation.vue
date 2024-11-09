@@ -7,26 +7,27 @@ const props = defineProps({
     conversationId: { type: String, required: true },
 })
 
-let messages: any[] = []
+let messages: Map<string, any> = new Map
+
 for (let i = 1; i <= 4; i++) {
-    messages.push(useTemplateRef("message" + i))
+    messages.set("message" + i, useTemplateRef("message" + i))
 }
 
 // get whatever bitstrings are stored in the child components so I can send them over serial
 function getBitstrings() {
-    for (let i = 0; i < messages.length; i++) {
-        console.log(messages[i].value.bitstring)
+    for (let i = 1; i <= messages.keys.length; i++) {
+        console.log(messages.get("message" + i).value.bitstring)
     }
 }
 
 async function startConversation() {
-    let response1 = await connection.sendCommandUntilResponse(messages[1].value.bitstring);
+    let response1 = await connection.sendCommandUntilResponse(messages.get("message1").value.bitstring);
     if (response1 === null) {
         console.error("Response 1 not received")
         return;
     }
     console.log(`received ${response1}`)
-    let response2 = await connection.sendCommandUntilResponse(messages[3].value.bitstring, 3);
+    let response2 = await connection.sendCommandUntilResponse(messages.get("message3").value.bitstring, 3);
     if (response2 === null) {
         console.error("Response 2 not received")
         return;
@@ -46,8 +47,8 @@ const initiateConversation = true
 
 <template>
     <BitstringInput ref="message1" :bitstring-id="conversationId + '1'"></BitstringInput>
-    <BitstringInput ref="message3" :bitstring-id="conversationId + '3'"></BitstringInput>
-    <BitstringInput ref="message2" :bitstring-id="conversationId + '2'"></BitstringInput>
+    <BitstringInput ref="message2" :bitstring-id="conversationId + '3'"></BitstringInput>
+    <BitstringInput ref="message3" :bitstring-id="conversationId + '2'"></BitstringInput>
     <BitstringInput ref="message4" :bitstring-id="conversationId + '4'"></BitstringInput>
     <div v-if="initiateConversation">
         <button @click="startConversation">Start interaction</button>
