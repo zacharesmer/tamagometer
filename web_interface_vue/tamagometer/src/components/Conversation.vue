@@ -7,56 +7,59 @@ const props = defineProps({
     conversationId: { type: String, required: true },
 })
 
-// current implementation of this is a total footgun
-// TODO fix it because accessing it with `messages.get("message1").value.bitstring` 
-// is a total abomination
-let messages: Map<string, any> = new Map
+let message1 = useTemplateRef("message1")
+let message2 = useTemplateRef("message2")
+let message3 = useTemplateRef("message3")
+let message4 = useTemplateRef("message4")
 
-for (let i = 1; i <= 4; i++) {
-    messages.set("message" + i, useTemplateRef("message" + i))
-}
 
-// get whatever bitstrings are stored in the child components so I can send them over serial
-function getBitstrings() {
-    for (let i = 1; i <= messages.keys.length; i++) {
-        console.log(messages.get("message" + i).value.bitstring)
-    }
-}
-
+// Send messages 1 and 3 from the conversation UI
 async function startConversation() {
-    let response1 = await connection.sendCommandUntilResponse(messages.get("message1").value.bitstring);
-    if (response1 === null) {
-        console.error("Response 1 not received")
-        return;
+    // this is kind of silly because these won't be null as soon as the stuff is mounted, and the button
+    // to make this happen also can't be clicked until then, but typescript doesn't know that
+    if (message1.value !== null && message2.value !== null && message3.value !== null && message4.value !== null) {
+        let received1 = await connection.sendCommandUntilResponse(message1.value.bitstring);
+        if (received1 === null) {
+            console.error("Response 1 not received")
+            return;
+        }
+        console.log(`received ${received1}`)
+        let received2 = await connection.sendCommandUntilResponse(message3.value.bitstring, 3);
+        if (received2 === null) {
+            console.error("Response 2 not received")
+            return;
+        }
+        console.log(`received ${received2}`)
+        // not a typo, I'm setting every other message
+        message2.value.bitstring = received1
+        message4.value.bitstring = received2
     }
-    console.log(`received ${response1}`)
-    let response2 = await connection.sendCommandUntilResponse(messages.get("message3").value.bitstring, 3);
-    if (response2 === null) {
-        console.error("Response 2 not received")
-        return;
-    }
-    console.log(`received ${response2}`)
 }
 
+// Respond with messages 2 and 4 from the conversation UI
 async function awaitConversation() {
-    // wait for a first message or until it's cancelled
-    let message1 = await connection.readOneCommandCancellable();
-    if (message1 === null) {
-        console.error("Cancelled, message 1 not received")
-        return;
+    // this is kind of silly because these won't be null as soon as the stuff is mounted, and the button
+    // to make this happen also can't be clicked until then, but typescript doesn't know that
+    if (message1.value !== null && message2.value !== null && message3.value !== null && message4.value !== null) {
+        // wait for a first message or until it's cancelled
+        let received1 = await connection.readOneCommandCancellable();
+        if (received1 === null) {
+            console.error("Cancelled, message 1 not received")
+            return;
+        }
+        console.log(`Received ${received1}`);
+        await connection.sendCommand(message2.value.bitstring);
+        // send the response and await a second message, repeat up to 3 times if necessary
+        let received2 = await connection.readOneCommandCancellable(3);
+        if (received2 === null) {
+            console.error("Message 2 not received")
+            return;
+        }
+        console.log(`received ${received2}`);
+        // send the final message 2 times just in case. The repeat is probably not 
+        // necessary but my transmitter is a little wonky
+        await connection.sendCommandNTimes(message4.value.bitstring, 2);
     }
-    console.log(`Received ${message1}`);
-    await connection.sendCommand(messages.get("message2").value.bitstring);
-    // send the response and await a second message, repeat up to 3 times if necessary
-    let message2 = await connection.readOneCommandCancellable(3);
-    if (message2 === null) {
-        console.error("Message 2 not received")
-        return;
-    }
-    console.log(`received ${message2}`);
-    // send the final message 2 times just in case. The repeat is probably not 
-    // necessary but my transmitter is a little wonky
-    await connection.sendCommandNTimes(messages.get("message4").value.bitstring, 2);
 }
 
 
