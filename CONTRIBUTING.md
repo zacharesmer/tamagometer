@@ -19,7 +19,9 @@ The encoding is similar to NEC: 9600-ish microseconds on, 6000-ish off. A 0 is 6
 The front end is currently only paying attention to output between the strings `[PICO]` and `[END]`. This is mostly because I haven't figured out how to make webserial not also see everything it sends to the pico as input from the pico, and I think it is an issue with the device driver. Even if I fix it on my computer, I'm guessing other people will have the same problem, so it seems better to just design around it. A happy side effect of this is that you can print whatever you want for debugging purposes and it shouldn't interfere.
 
 ## The tamagotchi data format/protocol
-It would be very helpful if you have any ideas about what the unknown parts of the bitstring mean.
+This will be documented in Protocol.md.
+
+It would be very helpful if anyone is able to figure out what the unknown parts of the bitstring mean.
 
 There is a patent ([US8545324](https://patents.google.com/patent/US8545324B2/en)) that explains an older format, and it seems to have significant similarities, but not 100%. This may be helpful for a starting place, and creating some hypotheses to test.
 
@@ -29,6 +31,9 @@ For example if you have discovered that bit N determines if the tamagotchi is a 
 I initiated a visit with these bitstrings: 01010101 and 01010101, and the character was saved as a girl. I flipped bit N and then sent 0101010 and 1010101 and the character was saved as a boy.
 
 ## Web interface
-
+The interface is written in Vue 3 using composition style. To add a section
+- extend the class TamaBits in model.ts
+- edit the constructor and init methods of TamaMessage in model.ts
+- create a vue component, and then add it to BitstringInput.vue. Letter.vue is a good example of a component.
 
 ## Flipper App
