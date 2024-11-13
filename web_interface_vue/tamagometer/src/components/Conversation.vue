@@ -4,6 +4,7 @@ import BitstringInput from './BitstringInput.vue';
 import { connection } from '@/serial';
 
 const props = defineProps({
+    // this is used in BitstringInput to store the bitstrings on a page refresh
     conversationId: { type: String, required: true },
 })
 
@@ -59,6 +60,8 @@ async function awaitConversation() {
         // send the final message 2 times just in case. The repeat is probably not 
         // necessary but my transmitter is a little wonky
         await connection.sendCommandNTimes(message4.value.bitstring, 2);
+        message1.value.bitstring = received1
+        message3.value.bitstring = received2
     }
 }
 

@@ -1,10 +1,15 @@
 export { TamaMessage, TamaName, TamaLetter, TamaBits }
 
+
+// Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
+// Basically this doesn't have the bit flipping stuff because that's only used by 
+// "leaf" chunks that are directly made of bits
 export interface TamaChunk {
     init(bitstring: string): void;
     getBitstring(): string;
 }
 
+// 
 class TamaBits implements TamaChunk {
     bitstring: string | null;
     initialized = false;
@@ -47,6 +52,7 @@ class TamaMessage {
             }
             this.init(bitstring)
         } else {
+            // To add a new section, also update init() and BitstringInput.vue
             this.unknown1 = new UnknownBits(null);
             this.name = new TamaName(null);
             this.unknown2 = new UnknownBits(null);
@@ -55,11 +61,12 @@ class TamaMessage {
     }
 
     init(bitstring: string) {
+        // To add a new section, also update constructor() and BitstringInput.vue
         this.unknown1.init(bitstring.slice(0, 40));
         this.name.init(bitstring.slice(40, 80));
         // Exclude the last 8 bits because that's the checksum
         this.unknown2.init(bitstring.slice(80, 152));
-        // no checksum is stored, calculate it every time it's needed
+        // no checksum is stored, it is calculated every time
 
         this.initialized = true;
     }
@@ -112,9 +119,10 @@ class TamaMessage {
 }
 
 class TamaName implements TamaChunk {
-    // length: number
+    length = 40
     letters: TamaLetter[]
     initialized = false;
+
     constructor(bitstring: string | null) {
         this.letters = []
         if (bitstring !== null) {
@@ -123,9 +131,7 @@ class TamaName implements TamaChunk {
     }
 
     init(bitstring: string) {
-        // 5 bytes
-        // this.length = 40;
-        // there are 5 letters in the name
+        // 5 bytes, 1 per letter
         this.letters = []
         for (let i = 0; i < 5; i++) {
             let bits = bitstring.slice(i * 8, (i * 8) + 8);
@@ -148,7 +154,7 @@ class TamaName implements TamaChunk {
 }
 
 class TamaLetter extends TamaBits {
-    length: number
+    length = 8
     initialized = false;
     // the key is the bitstring interpreted as an unsigned integer
     lettersSymbols = new Map<number, string>([
@@ -197,8 +203,13 @@ class TamaLetter extends TamaBits {
     ])
     constructor(bitstring: string | null) {
         super(bitstring)
-        // 1 byte
-        this.length = 8;
+    }
+
+    init(bitstring: string) {
+        if (bitstring.length !== 8) {
+            throw Error(`Invalid bitstring length for Letter: expected 8, got ${bitstring.length}`)
+        }
+        super.init(bitstring)
     }
 
     getSymbol() {
@@ -211,7 +222,6 @@ class TamaLetter extends TamaBits {
 }
 
 class UnknownBits extends TamaBits {
-    // length: number
     constructor(bitstring: string | null) {
         super(bitstring)
     }
@@ -222,3 +232,5 @@ function flipBitAt(str: string, index: number) {
     let newBit = (parseInt(current) + 1) % 2
     return str.slice(0, index) + newBit + str.slice(index + 1)
 }
+
+export const exportForTesting = { TamaBits, flipBitAt }

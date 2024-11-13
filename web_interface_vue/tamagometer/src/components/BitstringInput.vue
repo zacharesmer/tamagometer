@@ -46,6 +46,7 @@ defineExpose({
 
 <template>
   <input class="bitstring-input" v-model="bitstring">
+  <!-- To add a new chunk also update model.ts -->
   <BitChunk :model="message.unknown1"></BitChunk>
   <NameBits :model="message.name"></NameBits>
   <BitChunk :model="message.unknown2"></BitChunk>

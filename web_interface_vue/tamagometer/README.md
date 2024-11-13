@@ -1,10 +1,10 @@
 # tamagometer
 
-This template should help get you started developing with Vue 3 in Vite.
+Automatically generate readme from Vue/Vite (leaving it here for reference)
 
 ## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+[VSCode](https://code.visualstudio.com/) + [Volar/ Vue Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
 ## Type Support for `.vue` Imports in TS
 
