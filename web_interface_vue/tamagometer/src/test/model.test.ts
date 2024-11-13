@@ -1,4 +1,4 @@
-import { exportForTesting, TamaBits, TamaLetter, TamaName } from "../model"
+import { exportForTesting, TamaBits, TamaLetter, TamaName, TamaMessage } from "../model"
 import { expect, test } from '@jest/globals'
 
 test('TamaBits getBitstring() returns the same string used to construct it', () => {
@@ -22,6 +22,17 @@ test("TamaName getBitstring() returns the same string used to construct it", () 
     }
 })
 
-test("flipBitAt flips the right bits", () => {
-    
+// test("flipBitAt flips the right bits", () => {
+
+// })
+
+test("TamaMessage getBitstring() returns the same string used to construct it", () => {
+    const bitstrings = ["0000111000000000101111110010001000110000000110010000000000000010000001111000000100000011000000000010000000000000000001100000000000000000000000000001111000001001",
+        "0000111000000001110111100101101000110010100010001000100010001000100010001000100000000000011001000010001100000000000001100000000000000000000000000001111011001100",
+        "0000111000001000101111110010001000110000000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001101",
+        "0000111000001001110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101100"
+    ]
+    for (const b of bitstrings) {
+        expect(new TamaMessage(b).getBitstring()).toBe(b)
+    }
 })

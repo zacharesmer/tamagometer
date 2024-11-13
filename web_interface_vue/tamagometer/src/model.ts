@@ -37,12 +37,62 @@ class TamaBits implements TamaChunk {
 }
 
 class TamaMessage {
+    hardcodedThing: UnknownBits
     unknown1: UnknownBits
+    id1: UnknownBits
+    id2: UnknownBits
+    appearance: TamaAppearance
     name: TamaName
-    unknown2: UnknownBits
+    unknown3: UnknownBits
+    unknown4: UnknownBits
+    unknown5: UnknownBits
+    unknown6: UnknownBits
+    unknown7: UnknownBits
+    unknown8: UnknownBits
+    unknown9: UnknownBits
+    unknown10: UnknownBits
+    unknown11: UnknownBits
+
+
     initialized = false
+
     private chunks: TamaChunk[]
     constructor(bitstring: string | null) {
+        // To add a new section, also update init() and BitstringInput.vue
+        this.hardcodedThing = new UnknownBits(null);
+        this.unknown1 = new UnknownBits(null);
+        this.id1 = new UnknownBits(null);
+        this.id2 = new UnknownBits(null);
+        this.appearance = new TamaAppearance(null);
+        this.name = new TamaName(null);
+        this.unknown3 = new UnknownBits(null)
+        this.unknown4 = new UnknownBits(null)
+        this.unknown5 = new UnknownBits(null)
+        this.unknown6 = new UnknownBits(null)
+        this.unknown7 = new UnknownBits(null)
+        this.unknown8 = new UnknownBits(null)
+        this.unknown9 = new UnknownBits(null)
+        this.unknown10 = new UnknownBits(null)
+        this.unknown11 = new UnknownBits(null)
+
+        this.chunks = [
+            this.hardcodedThing,
+            this.unknown1,
+            this.id1,
+            this.id2,
+            this.appearance,
+            this.name,
+            this.unknown3,
+            this.unknown4,
+            this.unknown5,
+            this.unknown6,
+            this.unknown7,
+            this.unknown8,
+            this.unknown9,
+            this.unknown10,
+            this.unknown11,
+        ]
+
         if (bitstring !== null) {
             if (bitstring.length != 160) {
                 console.log(`Can't construct message, bitstring must be 160 bits. Got ${bitstring.length} bits.`)
@@ -51,21 +101,27 @@ class TamaMessage {
                 console.log(`Incorrect format. Bitstring must be exactly 160 1s and 0s.\nGot: ${bitstring}`)
             }
             this.init(bitstring)
-        } else {
-            // To add a new section, also update init() and BitstringInput.vue
-            this.unknown1 = new UnknownBits(null);
-            this.name = new TamaName(null);
-            this.unknown2 = new UnknownBits(null);
-            this.chunks = [this.unknown1, this.name, this.unknown2]
         }
     }
 
     init(bitstring: string) {
         // To add a new section, also update constructor() and BitstringInput.vue
-        this.unknown1.init(bitstring.slice(0, 40));
+        this.hardcodedThing.init(bitstring.slice(0, 8));
+        this.unknown1.init(bitstring.slice(8, 16));
+        this.id1.init(bitstring.slice(16, 24));
+        this.id2.init(bitstring.slice(24, 32));
+        this.appearance.init(bitstring.slice(32, 40));
         this.name.init(bitstring.slice(40, 80));
+        this.unknown3.init(bitstring.slice(80, 88))
+        this.unknown4.init(bitstring.slice(88, 96))
+        this.unknown5.init(bitstring.slice(96, 104))
+        this.unknown6.init(bitstring.slice(104, 112))
+        this.unknown7.init(bitstring.slice(112, 120))
+        this.unknown8.init(bitstring.slice(120, 128))
+        this.unknown9.init(bitstring.slice(128, 136))
+        this.unknown10.init(bitstring.slice(136, 144))
+        this.unknown11.init(bitstring.slice(144, 152))
         // Exclude the last 8 bits because that's the checksum
-        this.unknown2.init(bitstring.slice(80, 152));
         // no checksum is stored, it is calculated every time
 
         this.initialized = true;
@@ -218,6 +274,90 @@ class TamaLetter extends TamaBits {
             lookup = this.lettersSymbols.get(parseInt(this.bitstring, 2))
         }
         return lookup ? lookup : "�"
+    }
+}
+
+class TamaAppearance extends TamaBits {
+    characterNames = new Map<number, string>([
+        [0, "Mailman"],
+        [1, "Teletchi"],
+        [2, "ShiroTeletchi"],
+        [3, "Tamatchi"],
+        [4, "MizuTamatchi"],
+        [5, "Kuchitamatchi"],
+        [6, "Mohitamatchi"],
+        [7, "Obotchi"],
+        [8, "Young Mametchi"],
+        [9, "Batabatchi"],
+        [10, "Ichigotchi"],
+        [11, "Nikatchi"],
+        [12, "Pirorirotchi"],
+        [13, "Hikotchi"],
+        [14, "Hinatchi"],
+        [15, "Young Mimitchi"],
+        [16, "Ringotchi"],
+        [17, "Hinotamatchi"],
+        [18, "Hashitamatchi"],
+        [19, "Mametchi"],
+        [20, "Flowertchi"],
+        [21, "Pyonkotchi"],
+        [22, "Kuchipatchi"],
+        [23, "Memetchi"],
+        [24, "Billotchi"],
+        [25, "Tarakotchi"],
+        [26, "Paparatchi"],
+        [27, "Mimiyoritchi"],
+        [28, "Hanatchi"],
+        [29, "Hashizotchi"],
+        [30, "Tsunotchi"],
+        [31, "Masktchi"],
+        [32, "Megatchi"],
+        [33, "Mailman"],
+        [34, "Mimitchi"],
+        [35, "ChoMametchi"],
+        [36, "Decotchi"],
+        [37, "Hidatchi"],
+        [38, "Debatchi"],
+        [39, "Bunbuntchi"],
+        [40, "Pipotchi"],
+        [41, "Dorotchi"],
+        [42, "Bill"],
+        [43, "Robotchi"],
+        [44, "Wooltchi"],
+        [45, "Teketchi"],
+        [46, "Gozarutchi"],
+        [47, "Warusotchi"],
+        [48, "Sekitoritchi"],
+        [49, "Oyajitchi"],
+        [50, "Ojitchi"],
+        [51, "Otokitchi"],
+        [52, "Nyatchi"],
+        [53, "Hohotchi"],
+        [54, "Mailman"],
+        [55, "Mailman"],
+        [56, "Mailman"],
+        [57, "Mailman"],
+        [58, "Mailman"],
+        [59, "Mailman"],
+        [60, "Mailman"],
+        [61, "Mailman"],
+        [62, "Mailman"],
+        [63, "Mailman"],
+    ])
+
+    init(bitstring: string) {
+        if (bitstring.length !== 8) {
+            throw Error(`Invalid bitstring length for Appearance: expected 8, got ${bitstring.length}`)
+        }
+        super.init(bitstring)
+    }
+
+    getName() {
+        let lookup = null;
+        if (this.bitstring !== null) {
+            lookup = this.characterNames.get(parseInt(this.bitstring, 2))
+        }
+        return lookup ? lookup : "Unknown/Invalid"
     }
 }
 

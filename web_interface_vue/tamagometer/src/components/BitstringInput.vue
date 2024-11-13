@@ -45,17 +45,46 @@ defineExpose({
 </script>
 
 <template>
-  <input class="bitstring-input" v-model="bitstring">
-  <!-- To add a new chunk also update model.ts -->
-  <BitChunk :model="message.unknown1"></BitChunk>
-  <NameBits :model="message.name"></NameBits>
-  <BitChunk :model="message.unknown2"></BitChunk>
-  <ChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())"></ChecksumBits>
+  <div class="bitstring-display-container">
+    <input class="bitstring-input" v-model="bitstring">
+    <div class="bit-chunk-container">
+      <!-- To add a new chunk also update model.ts -->
+      <BitChunk :model="message.hardcodedThing"></BitChunk>
+      <BitChunk :model="message.unknown1"></BitChunk>
+      <BitChunk :model="message.id1"></BitChunk>
+      <BitChunk :model="message.id2"></BitChunk>
+      <BitChunk :model="message.appearance"></BitChunk>
+      <NameBits :model="message.name"></NameBits>
+      <BitChunk :model="message.unknown3"></BitChunk>
+      <BitChunk :model="message.unknown4"></BitChunk>
+      <BitChunk :model="message.unknown5"></BitChunk>
+      <BitChunk :model="message.unknown6"></BitChunk>
+      <BitChunk :model="message.unknown7"></BitChunk>
+      <BitChunk :model="message.unknown8"></BitChunk>
+      <BitChunk :model="message.unknown9"></BitChunk>
+      <BitChunk :model="message.unknown10"></BitChunk>
+      <BitChunk :model="message.unknown11"></BitChunk>
+
+      <ChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())"></ChecksumBits>
+    </div>
+  </div>
+
   <!-- <p>{{ message.getBitstring() }}</p> -->
 </template>
 
 <style scoped>
 .bitstring-input {
   width: 170ch;
+}
+
+.bit-chunk-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.bitstring-display-container {
+  padding: 20px 0px;
+  margin: 5px;
+  border: solid;
 }
 </style>

@@ -71,14 +71,15 @@ async function awaitConversation() {
 <!-- The conversation ID and conversation index is used to save the text box values to localStorage so that they'll persist when the page is reloaded-->
 
 <template>
-    <BitstringInput ref="message1" :bitstring-id="conversationId + '1'"></BitstringInput>
-    <BitstringInput ref="message2" :bitstring-id="conversationId + '3'"></BitstringInput>
-    <BitstringInput ref="message3" :bitstring-id="conversationId + '2'"></BitstringInput>
-    <BitstringInput ref="message4" :bitstring-id="conversationId + '4'"></BitstringInput>
     <div>
         <button @click="startConversation">Start interaction</button>
         <button @click="awaitConversation">Wait for interaction</button>
     </div>
+    <BitstringInput ref="message1" :bitstring-id="conversationId + '1'"></BitstringInput>
+    <BitstringInput ref="message2" :bitstring-id="conversationId + '3'"></BitstringInput>
+    <BitstringInput ref="message3" :bitstring-id="conversationId + '2'"></BitstringInput>
+    <BitstringInput ref="message4" :bitstring-id="conversationId + '4'"></BitstringInput>
+
 </template>
 
 <style></style>
