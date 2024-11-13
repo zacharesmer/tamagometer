@@ -83,7 +83,7 @@ defineExpose({
 }
 
 .bitstring-display-container {
-  padding: 20px 0px;
+  padding: 20px 10px;
   margin: 5px;
   border: solid;
 }
