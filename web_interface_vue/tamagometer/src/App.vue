@@ -10,8 +10,8 @@ import Settings from './components/Settings.vue';
 
 <template>
   <div id="body-container">
-    <div><button @click="connection.init(); $emit('update:')">Connect</button>
-      <!-- <button @click="connection.readOneCommandCancellable()">Read a command</button> -->
+    <div>
+      <button id="connect-button" @click="connection.init(); $emit('update:')">Connect</button>
     </div>
     <Settings></Settings>
     <Snoop></Snoop>
@@ -26,5 +26,9 @@ import Settings from './components/Settings.vue';
 
 #body-container {
   max-width: 180ch;
+}
+
+#connect-button {
+  font-size: xx-large;
 }
 </style>
