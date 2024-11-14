@@ -4,6 +4,7 @@ import BitChunk from './BitChunk.vue';
 import { TamaMessage, TamaName } from '@/model';
 import NameBits from './NameBits.vue'
 import ChecksumBits from './ChecksumBits.vue';
+import Appearance from './Appearance.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true }
@@ -53,7 +54,7 @@ defineExpose({
       <BitChunk :model="message.unknown1"></BitChunk>
       <BitChunk :model="message.id1"></BitChunk>
       <BitChunk :model="message.id2"></BitChunk>
-      <BitChunk :model="message.appearance"></BitChunk>
+      <Appearance :model="message.appearance"></Appearance>
       <NameBits :model="message.name"></NameBits>
       <BitChunk :model="message.unknown3"></BitChunk>
       <BitChunk :model="message.unknown4"></BitChunk>
@@ -69,7 +70,6 @@ defineExpose({
     </div>
   </div>
 
-  <!-- <p>{{ message.getBitstring() }}</p> -->
 </template>
 
 <style scoped>

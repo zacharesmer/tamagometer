@@ -1,4 +1,4 @@
-export { TamaMessage, TamaName, TamaLetter, TamaBits }
+export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -240,22 +240,22 @@ class TamaLetter extends TamaBits {
         [23, "X"],
         [24, "Y"],
         [25, "Z"],
-        [NaN, "!"],
-        [NaN, "?"],
-        [NaN, "&"],
-        [NaN, "o"],
-        [NaN, "x"],
-        [NaN, "♥"],
-        [NaN, "✿"],
+        [122, "!"],
+        [123, "?"],
+        [124, "&"],
+        [125, "o"],
+        [126, "x"],
+        [127, "♥"],
+        [128, "✿"],
         [129, "★"],
         [130, "@"],
-        [131, "♫"],
+        [131, "♪"],
         [132, "⛶"],
         [133, "↑"],
         [134, "↓"],
         [135, "→"],
         [136, "←"],
-        [NaN, " "],
+        [160, "_"],
     ])
     constructor(bitstring: string | null) {
         super(bitstring)
@@ -279,11 +279,11 @@ class TamaLetter extends TamaBits {
 
 class TamaAppearance extends TamaBits {
     characterNames = new Map<number, string>([
-        [0, "Mailman"],
-        [1, "Teletchi"],
-        [2, "ShiroTeletchi"],
+        [0, "Nazotchi"],
+        [1, "Kuroteletchi"],
+        [2, "Shiroteletchi"],
         [3, "Tamatchi"],
-        [4, "MizuTamatchi"],
+        [4, "Mizutamatchi"],
         [5, "Kuchitamatchi"],
         [6, "Mohitamatchi"],
         [7, "Obotchi"],
@@ -312,7 +312,7 @@ class TamaAppearance extends TamaBits {
         [30, "Tsunotchi"],
         [31, "Masktchi"],
         [32, "Megatchi"],
-        [33, "Mailman"],
+        [33, "Nazotchi"],
         [34, "Mimitchi"],
         [35, "ChoMametchi"],
         [36, "Decotchi"],
@@ -333,16 +333,16 @@ class TamaAppearance extends TamaBits {
         [51, "Otokitchi"],
         [52, "Nyatchi"],
         [53, "Hohotchi"],
-        [54, "Mailman"],
-        [55, "Mailman"],
-        [56, "Mailman"],
-        [57, "Mailman"],
-        [58, "Mailman"],
-        [59, "Mailman"],
-        [60, "Mailman"],
-        [61, "Mailman"],
-        [62, "Mailman"],
-        [63, "Mailman"],
+        // [54, "Mailman"],
+        // [55, "Mailman"],
+        // [56, "Mailman"],
+        // [57, "Mailman"],
+        // [58, "Mailman"],
+        // [59, "Mailman"],
+        // [60, "Mailman"],
+        // [61, "Mailman"],
+        // [62, "Mailman"],
+        // [63, "Mailman"],
     ])
 
     init(bitstring: string) {
@@ -357,7 +357,7 @@ class TamaAppearance extends TamaBits {
         if (this.bitstring !== null) {
             lookup = this.characterNames.get(parseInt(this.bitstring, 2))
         }
-        return lookup ? lookup : "Unknown/Invalid"
+        return lookup ? lookup : "Nazotchi"
     }
 }
 

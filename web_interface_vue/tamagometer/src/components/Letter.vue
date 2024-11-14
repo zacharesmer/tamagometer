@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { TamaBits, TamaLetter } from '@/model';
+import { TamaLetter } from '@/model';
 import { computed } from 'vue';
 import BitChunk from './BitChunk.vue';
 
@@ -33,7 +33,7 @@ const symbol = computed({
     </div>
 </template>
 
-<style>
+<style scoped>
 .letter-container {
     display: flex;
     flex-direction: column;
