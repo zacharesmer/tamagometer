@@ -16,18 +16,17 @@ const bitList = computed(() => {
     return l
 })
 
-const bitClass = computed(() => {
-    pageSettings.hideKnownBits ? "hidden" : ""
+const showBits = computed(() => {
+    return !(pageSettings.hideKnownBits)
 })
-
 
 </script>
 
 <template>
     <div class="checksum-container">
         <label for="checksum-bits">Checksum</label>
-        <div id="checksum-bits" class="chunk-container">
-            <bit :class="bitClass" v-for="(item, index) in bitList" :value="parseInt(item)"></bit>
+        <div id="checksum-bits" class="chunk-container" v-if="showBits">
+            <bit v-for="(item, index) in bitList" :value="parseInt(item)"></bit>
         </div>
     </div>
 </template>

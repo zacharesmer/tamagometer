@@ -51,7 +51,7 @@ defineExpose({
 <template>
   <div class="bitstring-display-container">
     <input type="textarea" class="bitstring-input" v-model="bitstring">
-    <div class="bit-chunk-container">
+    <div class="bit-chunk-container" v-if="bitstring.length === 160">
       <!-- To add a new chunk also update model.ts -->
       <BitChunk :known="true" :model="message.hardcodedThing"></BitChunk>
       <BitChunk :model="message.unknown1"></BitChunk>
@@ -70,6 +70,8 @@ defineExpose({
 
       <ChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())"></ChecksumBits>
     </div>
+    <p v-else>Add a recorded signal to get started. You can record signals from a tamagotchi using the "snoop on
+      conversation" button</p>
   </div>
 
 </template>
