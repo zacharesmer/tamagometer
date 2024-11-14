@@ -1,3 +1,5 @@
+This is currently a work in progress, but the parts that exist generally work. Check back for updates!
+
 # Goals/Roadmap
 - Understand the infrared messages that the tamagotchis send
 - Make a flipper app so the tamagotchis can interact with the flipper

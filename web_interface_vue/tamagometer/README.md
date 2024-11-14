@@ -1,6 +1,6 @@
 # tamagometer
 
-Automatically generate readme from Vue/Vite (leaving it here for reference)
+Automatically generated readme from Vue/Vite (leaving it here for reference)
 
 ## Recommended IDE Setup
 
