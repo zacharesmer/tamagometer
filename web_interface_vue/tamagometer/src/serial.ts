@@ -6,7 +6,6 @@ class SerialConnection {
     private reader: ReadableStreamDefaultReader | null;
     private outputStream: WritableStream | null;
     private cancelListen = false;
-    initialized = false;
     constructor() {
         this.reader = null;
         this.outputStream = null;
@@ -16,11 +15,11 @@ class SerialConnection {
     // elaborate more on once I understand Vue a bit more. 
     async init() {
         if ("serial" in navigator) {
-            // find and open a serial port to hand to the SerialConnection constructor
-            const port = await (navigator as Navigator).serial.requestPort();
-            await port.open({ baudRate: 9600 });
-            // connecting to the device must happen in a user-initiated interaction
             try {
+                // find and open a serial port to hand to the SerialConnection constructor
+                const port = await (navigator as Navigator).serial.requestPort();
+                await port.open({ baudRate: 9600 });
+                // connecting to the device must happen in a user-initiated interaction
                 // set up a reader to get decoded text out of the port. Store the reader since we just need one
                 const decoder = new TextDecoderStream();
                 port.readable.pipeTo(decoder.writable);
@@ -33,7 +32,6 @@ class SerialConnection {
                 let outputDone = encoder.readable.pipeTo(port.writable);
                 this.outputStream = encoder.writable;
 
-                this.initialized = true;
             } catch (err) {
                 console.error('There was an error opening the serial port:', err);
             }
@@ -79,7 +77,9 @@ class SerialConnection {
             });
             writer.releaseLock();
         }
-
+        else {
+            throw Error("Could not send serial")
+        }
     }
 
 
@@ -88,7 +88,7 @@ class SerialConnection {
     }
 
     async readOneCommand(): Promise<string | null> {
-        // Returns either null or a string of 1 tamagotchi command.
+        // Returns either null (if timed out or the stream closed) or a string of 1 tamagotchi command.
 
         // match and return a string in the format [PICO]160 1s and 0s[END]
         // out of a stream that may be broken up in arbitrary chunks
@@ -108,11 +108,11 @@ class SerialConnection {
         let timed_out_matching_chars = 0;
 
         let command = [];
-
         // Tell the board to listen for input
-        this.sendSerial("listen")
+        await this.sendSerial("listen")
         while (true) {
-            const { value, done: stream_done } = await this.readSerial();
+            const readSerialResult = await this.readSerial();
+            const { value, done: stream_done } = readSerialResult
             // why am I implementing another finite automaton? maybe I should learn about stream APIs someday
             if (typeof (value) === "string") {
                 for (let i = 0; i < value.length; i++) {
@@ -197,11 +197,20 @@ class SerialConnection {
 
     // stops the loop that's polling the microcontroller for a command
     stopListening() {
+        console.log("Listening cancelled")
         this.cancelListen = true;
     }
 
     // returns a response or null if one is not received after maxAttempts attempts
     async sendCommandUntilResponse(message: string, maxAttempts = 3) {
+        if (this.reader === null || this.outputStream === null) {
+            try {
+                await this.init()
+            } catch (e) {
+                console.log(e)
+                return null
+            }
+        }
         for (let i = 0; i < maxAttempts; i++) {
             // this times out after however long is set on the microcontroller (currently 1 second)
             this.sendCommand(message);

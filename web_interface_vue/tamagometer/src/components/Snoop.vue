@@ -7,26 +7,33 @@ let snoopOutput = ref([""])
 let cancelSnoop = false;
 
 function stopSnooping() {
+    console.log("Snooping is cancelled :(")
     cancelSnoop = true;
     connection.stopListening();
 }
 
 async function snoop() {
+    // stop any existing listening 
+    stopSnooping()
     console.log("Snooping");
     cancelSnoop = false;
-    // wait for 4 messages, or for cancelSnoop to be set
-    for (let i = 0; i < 4; i++) {
-        if (cancelSnoop) {
-            console.log("Snooping is cancelled :(")
-            break;
-        }
-        let snoopedMessage = await connection.readOneCommandCancellable(null);
-        console.log(snoopedMessage)
+    // wait for cancelSnoop to be set
+    try {
+        while (true) {
+            if (cancelSnoop) {
+                break;
+            }
+            let snoopedMessage = await connection.readOneCommandCancellable(null);
+            // console.log(snoopedMessage)
 
-        if (snoopedMessage != null) {
-            snoopOutput.value.push(snoopedMessage)
+            if (snoopedMessage != null) {
+                snoopOutput.value.push(snoopedMessage)
+            }
         }
+    } catch (e) {
+        console.log(e)
     }
+
     cancelSnoop = false;
 }
 </script>

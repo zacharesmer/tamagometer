@@ -65,6 +65,10 @@ async function awaitConversation() {
     }
 }
 
+function stopWaiting() {
+    connection.stopListening()
+}
+
 
 </script>
 
@@ -74,6 +78,7 @@ async function awaitConversation() {
     <div>
         <button @click="startConversation">Start interaction</button>
         <button @click="awaitConversation">Wait for interaction</button>
+        <button @click="stopWaiting">Stop waiting</button>
     </div>
     <BitstringInput ref="message1" :bitstring-id="conversationId + '1'"></BitstringInput>
     <BitstringInput ref="message2" :bitstring-id="conversationId + '3'"></BitstringInput>
