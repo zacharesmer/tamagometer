@@ -5,6 +5,7 @@ import { TamaMessage, TamaName } from '@/model';
 import NameBits from './NameBits.vue'
 import ChecksumBits from './ChecksumBits.vue';
 import Appearance from './Appearance.vue';
+import DeviceID from './DeviceID.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true }
@@ -34,8 +35,10 @@ watch(bitstring, () => {
 
 onMounted(() => {
   const stored = localStorage.getItem(props.bitstringId)
+  console.log(stored)
   if (stored !== null) {
     bitstring.value = stored
+    console.log(bitstring.value)
   }
 })
 
@@ -47,13 +50,12 @@ defineExpose({
 
 <template>
   <div class="bitstring-display-container">
-    <input class="bitstring-input" v-model="bitstring">
+    <input type="textarea" class="bitstring-input" v-model="bitstring">
     <div class="bit-chunk-container">
       <!-- To add a new chunk also update model.ts -->
       <BitChunk :known="true" :model="message.hardcodedThing"></BitChunk>
       <BitChunk :model="message.unknown1"></BitChunk>
-      <BitChunk :known="true" :model="message.id1"></BitChunk>
-      <BitChunk :known="true" :model="message.id2"></BitChunk>
+      <DeviceID :known="true" :model="message.deviceID"></DeviceID>
       <Appearance :model="message.appearance"></Appearance>
       <NameBits :model="message.name"></NameBits>
       <BitChunk :model="message.unknown3"></BitChunk>
@@ -74,7 +76,8 @@ defineExpose({
 
 <style scoped>
 .bitstring-input {
-  width: 170ch;
+  width: 161ch;
+  font-family: monospace;
 }
 
 .bit-chunk-container {

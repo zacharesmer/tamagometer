@@ -13,17 +13,24 @@ const props = defineProps({
 
 <template>
     <div class="name-container">
-        <div>Name: </div>
-        <Letter v-for="letter in model.letters" :model="letter"></Letter>
+        <label for="letters">Name</label>
+        <div id="letters" class="letters-container">
+            <Letter v-for="letter in model.letters" :model="letter"></Letter>
+        </div>
     </div>
 </template>
 
 <style>
-.name-container {
+.letters-container {
     display: flex;
     flex-direction: row;
     align-items: center;
-
 }
 
+.name-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: solid;
+}
 </style>

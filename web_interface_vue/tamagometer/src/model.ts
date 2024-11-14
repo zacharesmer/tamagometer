@@ -1,4 +1,4 @@
-export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance }
+export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -39,8 +39,7 @@ class TamaBits implements TamaChunk {
 class TamaMessage {
     hardcodedThing: UnknownBits
     unknown1: UnknownBits
-    id1: UnknownBits
-    id2: UnknownBits
+    deviceID: TamaID
     appearance: TamaAppearance
     name: TamaName
     unknown3: UnknownBits
@@ -61,8 +60,7 @@ class TamaMessage {
         // To add a new section, also update init() and BitstringInput.vue
         this.hardcodedThing = new UnknownBits(null);
         this.unknown1 = new UnknownBits(null);
-        this.id1 = new UnknownBits(null);
-        this.id2 = new UnknownBits(null);
+        this.deviceID = new TamaID(null);
         this.appearance = new TamaAppearance(null);
         this.name = new TamaName(null);
         this.unknown3 = new UnknownBits(null)
@@ -78,8 +76,7 @@ class TamaMessage {
         this.chunks = [
             this.hardcodedThing,
             this.unknown1,
-            this.id1,
-            this.id2,
+            this.deviceID,
             this.appearance,
             this.name,
             this.unknown3,
@@ -108,8 +105,7 @@ class TamaMessage {
         // To add a new section, also update constructor() and BitstringInput.vue
         this.hardcodedThing.init(bitstring.slice(0, 8));
         this.unknown1.init(bitstring.slice(8, 16));
-        this.id1.init(bitstring.slice(16, 24));
-        this.id2.init(bitstring.slice(24, 32));
+        this.deviceID.init(bitstring.slice(16, 32));
         this.appearance.init(bitstring.slice(32, 40));
         this.name.init(bitstring.slice(40, 80));
         this.unknown3.init(bitstring.slice(80, 88))
@@ -357,7 +353,25 @@ class TamaAppearance extends TamaBits {
         if (this.bitstring !== null) {
             lookup = this.characterNames.get(parseInt(this.bitstring, 2))
         }
+        // this is the character who shows up as the fallback if an unknown code 
+        // is received
         return lookup ? lookup : "Nazotchi"
+    }
+}
+
+class TamaID extends TamaBits {
+    init(bitstring: string) {
+        if (bitstring.length != 16) {
+            throw Error(`Invalid bitstring length for ID: expected 16, got ${bitstring.length}`)
+        }
+        super.init(bitstring)
+    }
+
+    getNumber() {
+        if (this.bitstring !== null) {
+            return parseInt(this.bitstring, 2)
+        }
+        return 0
     }
 }
 
