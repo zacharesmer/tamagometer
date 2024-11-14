@@ -50,10 +50,10 @@ defineExpose({
     <input class="bitstring-input" v-model="bitstring">
     <div class="bit-chunk-container">
       <!-- To add a new chunk also update model.ts -->
-      <BitChunk :model="message.hardcodedThing"></BitChunk>
+      <BitChunk :known="true" :model="message.hardcodedThing"></BitChunk>
       <BitChunk :model="message.unknown1"></BitChunk>
-      <BitChunk :model="message.id1"></BitChunk>
-      <BitChunk :model="message.id2"></BitChunk>
+      <BitChunk :known="true" :model="message.id1"></BitChunk>
+      <BitChunk :known="true" :model="message.id2"></BitChunk>
       <Appearance :model="message.appearance"></Appearance>
       <NameBits :model="message.name"></NameBits>
       <BitChunk :model="message.unknown3"></BitChunk>

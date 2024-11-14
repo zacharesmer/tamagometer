@@ -3,9 +3,11 @@
 import { computed } from 'vue'
 import Bit from './Bit.vue'
 import { TamaBits } from '@/model'
+import { pageSettings } from '@/settings';
 
 const props = defineProps({
     model: { type: TamaBits, required: true },
+    known: { type: Boolean, required: false, default: false }
 })
 
 const bitList = computed(() => {
@@ -16,10 +18,14 @@ const bitList = computed(() => {
     return l
 })
 
+const showBits = computed(() => {
+    return !(props.known && pageSettings.hideKnownBits)
+})
+
 </script>
 
 <template>
-    <div class="chunk-container">
+    <div class="chunk-container" v-if="showBits">
         <bit v-for="(item, index) in bitList" @click="() => { model.flipBit(index); $emit('update:modelValue'); }"
             :value="parseInt(item)"></bit>
     </div>

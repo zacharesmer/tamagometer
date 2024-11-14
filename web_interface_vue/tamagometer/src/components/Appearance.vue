@@ -29,7 +29,7 @@ const imageSource = computed(() => {
 
 <template>
     <div class="appearance-container">
-        <BitChunk :model="model"></BitChunk>
+        <BitChunk :known="true" :model="model"></BitChunk>
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
         <img :src="imageSource">
         <select v-model="character" class="symbol">
