@@ -47,7 +47,7 @@ class SerialConnection {
                 await this.init()
             }
             catch (error) {
-                console.log(error)
+                console.error(error)
             }
         }
         if (this.reader !== null) {
@@ -55,6 +55,7 @@ class SerialConnection {
             // console.log("[READ]", line)
             return line
         }
+        // this error should only be thrown in a case 
         else { throw Error("Could not read serial.") }
     }
 
@@ -66,7 +67,8 @@ class SerialConnection {
                 await this.init()
             }
             catch (error) {
-                console.log(error)
+                console.error(error)
+                return
             }
         }
         if (this.outputStream !== null) {
@@ -108,6 +110,9 @@ class SerialConnection {
         let timed_out_matching_chars = 0;
 
         let command = [];
+
+        // some of the error handling in here feels like it could be better
+
         // Tell the board to listen for input
         await this.sendSerial("listen")
         while (true) {
@@ -170,11 +175,14 @@ class SerialConnection {
 
     // listen for a command until it's received, cancelled, or times out, whatever happens first.
     async readOneCommandCancellable(timeout: number | null = null) {
-        // cancelListen can be set by a separate callback for a button
+        // cancelListen can be set by a callback for a button, so reset it in case that's happened
         this.cancelListen = false;
         let command = null;
         if (timeout === null) {
             while (command === null && !this.cancelListen) {
+                // An error may bubble up from readOneCommand, but so far the other options I've tried
+                // let to weird behavior and infinite loops that crash the browser. 
+                // The uncaught error doesn't seem to actually do anything bad so I'll leave it for now
                 command = await this.readOneCommand();
             }
         }
@@ -213,7 +221,7 @@ class SerialConnection {
         }
         for (let i = 0; i < maxAttempts; i++) {
             // this times out after however long is set on the microcontroller (currently 1 second)
-            this.sendCommand(message);
+            await this.sendCommand(message);
             // listen for a response
             let response = await this.readOneCommand();
             if (response != null) {

@@ -45,7 +45,7 @@ async function awaitConversation() {
         // wait for a first message or until it's cancelled
         let received1 = await connection.readOneCommandCancellable();
         if (received1 === null) {
-            console.error("Cancelled, message 1 not received")
+            console.log("Cancelled, message 1 not received")
             return;
         }
         console.log(`Received ${received1}`);

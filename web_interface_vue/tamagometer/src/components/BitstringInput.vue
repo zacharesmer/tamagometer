@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, defineProps, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import BitChunk from './BitChunk.vue';
 import { TamaMessage, TamaName } from '@/model';
 import NameBits from './NameBits.vue'
