@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import BitChunk from './BitChunk.vue';
 import { TamaMessage, TamaName } from '@/model';
 import NameBits from './NameBits.vue'
@@ -8,26 +8,25 @@ import Appearance from './Appearance.vue';
 import DeviceID from './DeviceID.vue';
 
 let props = defineProps({
-  bitstringId: { type: String, required: true }
+  bitstringId: { type: String, required: true },
+  model: { type: TamaMessage, required: true }
 })
 
-
-
-let message = ref(new TamaMessage(null))
+let message = props.model
 
 let bitstring = computed({
   get() {
     // console.log(`Getting bit string, ${message.value.getBitstring()}`)
-    return message.value.getBitstring()
+    return message.getBitstring()
   },
   set(newValue) {
+    // console.log("New value: " + newValue)
     if (/[10]{160}/.test(newValue)) {
       // console.log(`Setting value ${newValue}`)
-      message.value.init(newValue)
+      message.init(newValue)
     }
   }
 })
-
 
 watch(bitstring, () => {
   localStorage.setItem(props.bitstringId, bitstring.value)

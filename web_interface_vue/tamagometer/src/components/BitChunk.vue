@@ -15,6 +15,7 @@ const bitList = computed(() => {
     for (let i = 0; i < props.model.getBitstring().length; i++) {
         l.push(props.model.getBitstring()[i])
     };
+    // console.log(l)
     return l
 })
 
