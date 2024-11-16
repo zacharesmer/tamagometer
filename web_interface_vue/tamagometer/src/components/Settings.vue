@@ -17,7 +17,7 @@ watch(pageSettings, () => {
 
 <template>
     <div>
-        <input type="checkbox" v-model="pageSettings.hideKnownBits">Hide bits in known
-        sections</input>
+        <input id="hide-known-bits-checkbox" type="checkbox" v-model="pageSettings.hideKnownBits"></input>
+        <label for="hide-known-bits-checkbox">Hide bit buttons in known sections</label>
     </div>
 </template>

@@ -8,14 +8,14 @@ const props = defineProps({
 </script>
 
 <template>
-    <div v-if="value === 1" class="bit one">
+    <button v-if="value === 1" class="bit one">
         {{ value }}
-    </div>
-    <div v-else-if="value === 0" class="bit zero">
+    </button>
+    <button v-else-if="value === 0" class="bit zero">
         {{ value }}
-    </div>
-    <div v-else class="bit invalid">
-    </div>
+    </button>
+    <button v-else class="bit invalid">
+    </button>
 </template>
 
 <style>

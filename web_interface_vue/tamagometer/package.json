@@ -14,7 +14,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "vue": "^3.5.12"
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

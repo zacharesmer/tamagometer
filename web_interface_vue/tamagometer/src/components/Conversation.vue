@@ -80,10 +80,10 @@ function stopWaiting() {
         <button @click="awaitConversation">Wait for interaction</button>
         <button @click="stopWaiting">Stop waiting</button>
     </div>
-    <BitstringInput ref="message1" :bitstring-id="conversationId + '1'"></BitstringInput>
-    <BitstringInput ref="message2" :bitstring-id="conversationId + '3'"></BitstringInput>
-    <BitstringInput ref="message3" :bitstring-id="conversationId + '2'"></BitstringInput>
-    <BitstringInput ref="message4" :bitstring-id="conversationId + '4'"></BitstringInput>
+    <BitstringInput ref="message1" :bitstring-id="'SingletonConvo' + '1'"></BitstringInput>
+    <BitstringInput ref="message2" :bitstring-id="'SingletonConvo' + '3'"></BitstringInput>
+    <BitstringInput ref="message3" :bitstring-id="'SingletonConvo' + '2'"></BitstringInput>
+    <BitstringInput ref="message4" :bitstring-id="'SingletonConvo' + '4'"></BitstringInput>
 
 </template>
 

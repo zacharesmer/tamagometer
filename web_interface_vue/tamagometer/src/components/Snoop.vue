@@ -31,7 +31,7 @@ async function snoop() {
             }
         }
     } catch (e) {
-        console.log(e)
+        console.error(e)
     }
 
     cancelSnoop = false;
