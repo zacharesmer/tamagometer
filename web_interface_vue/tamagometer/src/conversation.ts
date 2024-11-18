@@ -1,4 +1,4 @@
-export { Conversation }
+export { Conversation, StoredConversation }
 
 import { reactive } from "vue"
 import { TamaMessage } from "./model"
@@ -12,18 +12,15 @@ class Conversation {
     message2: TamaMessage
     message3: TamaMessage
     message4: TamaMessage
-    conversationID: string
-    constructor(
-        conversationID: string,
-        message1: TamaMessage,
-        message2: TamaMessage,
-        message3: TamaMessage,
-        message4: TamaMessage) {
-        this.conversationID = conversationID
-        this.message1 = message1
-        this.message2 = message2
-        this.message3 = message3
-        this.message4 = message4
+    conversationID: any
+    name: string
+    constructor(dbId: number | null) {
+        // this.conversationID = conversationID
+        this.message1 = new TamaMessage(null)
+        this.message2 = new TamaMessage(null)
+        this.message3 = new TamaMessage(null)
+        this.message4 = new TamaMessage(null)
+        // If the conversation came from the database, it will have an ID set. 
     }
     // Send messages 1 and 3 from the conversation UI
     async startConversation() {
@@ -77,6 +74,49 @@ class Conversation {
     stopWaiting() {
         connection.stopListening()
     }
+
+    initFromStored(stored: StoredConversation) {
+        this.message1 = new TamaMessage(stored.message1 ? stored.message1 : null)
+        this.message2 = new TamaMessage(stored.message2 ? stored.message2 : null)
+        this.message3 = new TamaMessage(stored.message3 ? stored.message3 : null)
+        this.message4 = new TamaMessage(stored.message4 ? stored.message4 : null)
+        this.name = stored.name
+    }
+
+    toStored() {
+        return new StoredConversation(this)
+    }
 }
 
-export const activeConversation = reactive(new Conversation("SingletonConvo", new TamaMessage(null), new TamaMessage(null), new TamaMessage(null), new TamaMessage(null)))
+// Can't store objects with methods so this object holds a serialized conversation
+class StoredConversation {
+    message1: string
+    message2: string
+    message3: string
+    message4: string
+    name: string
+    timestamp: number
+
+    constructor(conversation: Conversation) {
+        this.message1 = conversation.message1.getBitstring()
+        this.message2 = conversation.message2.getBitstring()
+        this.message3 = conversation.message3.getBitstring()
+        this.message4 = conversation.message4.getBitstring()
+
+        this.name = conversation.name
+
+        this.timestamp = Date.now()
+    }
+
+
+    getConversation() {
+        return new Conversation(null).initFromStored(this)
+    }
+}
+
+
+
+export const selectedConversation: Conversation = reactive(new Conversation(null))
+// TODO maybe keep the last conversation that was being edited in local storage so it'll persist on page reload
+export const editingConversation: Conversation = reactive(new Conversation(null))
+export const fromRecordingConversation: Conversation = reactive(new Conversation(null))

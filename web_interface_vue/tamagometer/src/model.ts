@@ -55,7 +55,7 @@ class TamaMessage {
 
     initialized = false
 
-    private chunks: TamaChunk[]
+    chunks: TamaChunk[]
     constructor(bitstring: string | null) {
         // To add a new section, also update init() and BitstringInput.vue
         this.hardcodedThing = new UnknownBits(null);
@@ -92,10 +92,10 @@ class TamaMessage {
 
         if (bitstring !== null) {
             if (bitstring.length != 160) {
-                console.log(`Can't construct message, bitstring must be 160 bits. Got ${bitstring.length} bits.`)
+                console.error(`Can't construct message, bitstring must be 160 bits. Got ${bitstring.length} bits.`)
             }
             if (! /[10]{160}/.test(bitstring)) {
-                console.log(`Incorrect format. Bitstring must be exactly 160 1s and 0s.\nGot: ${bitstring}`)
+                console.error(`Incorrect format. Bitstring must be exactly 160 1s and 0s.\nGot: ${bitstring}`)
             }
             this.init(bitstring)
         }
