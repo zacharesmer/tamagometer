@@ -11,8 +11,8 @@ class SerialConnection {
         this.outputStream = null;
     }
 
-    // This is separate from the constructor because of reasons that I can probably 
-    // elaborate more on once I understand Vue a bit more. 
+    // This is separate from the constructor because the object needs to exist before the site 
+    // prompts you to allow access to serial. 
     async init() {
         if ("serial" in navigator) {
             try {

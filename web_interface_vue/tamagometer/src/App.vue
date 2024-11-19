@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import BitstringInput from './components/BitstringInput.vue';
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import Settings from './components/Settings.vue';
 
 let showSettings = ref(false)
@@ -8,20 +8,6 @@ let showSettings = ref(false)
 </script>
 
 <template>
-  <!--
-  <div id="body-container">
-    <div>
-      <button id="connect-button" @click="connection.init(); $emit('update:')">Connect</button>
-    </div>
-    <Settings></Settings>
-    <Snoop></Snoop>
-    <Conversation conversation-id="SingletonConvo"></Conversation>
-  </div>
-  -->
-  <!-- <h1>Hello App!</h1>
-  <p>
-    <strong>Current route path:</strong> {{ $route.fullPath }}
-  </p> -->
   <nav>
     <RouterLink class="navlink" to="/conversation">Conversation</RouterLink>
     <RouterLink class="navlink" to="/record">Record</RouterLink>

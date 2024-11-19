@@ -2,7 +2,6 @@
 import { TamaAppearance } from '@/model';
 import { computed } from 'vue';
 import BitChunk from './BitChunk.vue';
-import { isAssertsKeyword } from 'typescript';
 
 const props = defineProps({
     model: { type: TamaAppearance, required: true },

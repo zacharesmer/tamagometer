@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 
-import { computed } from 'vue'
-import Bit from './Bit.vue'
 import { TamaName } from '@/model';
 import Letter from './Letter.vue'
 const props = defineProps({

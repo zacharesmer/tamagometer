@@ -2,7 +2,6 @@
 import { TamaID } from '@/model';
 import { computed } from 'vue';
 import BitChunk from './BitChunk.vue';
-import { isAssertsKeyword } from 'typescript';
 
 const props = defineProps({
     model: { type: TamaID, required: true },

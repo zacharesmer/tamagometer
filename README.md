@@ -3,6 +3,7 @@ This is currently a work in progress, but the parts that exist generally work. C
 # Goals/Roadmap
 - Understand the infrared messages that the tamagotchis send
 - Make a flipper app so the tamagotchis can interact with the flipper
+- Internationalization: Tamagotchis are Japanese so I'm guessing it would help a decent number of people if I can translate this page into Japanese (and once the architecture is there, there's not a lot of text so it should not be too hard to do other languages too)
 
 # Web interface
 The web interface allows you to edit infrared codes and send them to a tamagotchi. It will be updated as I learn more about what the different bits in the transmission represent.  

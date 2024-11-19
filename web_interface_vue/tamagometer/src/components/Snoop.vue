@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { fromRecordingConversation, StoredConversation } from '@/conversation';
+import { fromRecordingConversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
 import { connection } from '@/serial';

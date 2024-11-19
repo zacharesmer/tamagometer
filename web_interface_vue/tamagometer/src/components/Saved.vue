@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { selectedConversation, editingConversation, StoredConversation } from '@/conversation';
 import { dbConnection } from '@/database';
-import { readSync } from 'fs';
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 
