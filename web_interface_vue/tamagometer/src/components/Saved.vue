@@ -7,19 +7,32 @@ import { useRouter } from 'vue-router';
 const conversations = ref<StoredConversation[]>([])
 const router = useRouter()
 
-
-onMounted(() => {
+async function refreshDb() {
     console.log("Getting the stuff from the database...")
     dbConnection.getAll().then(response => {
         conversations.value = response
     })
+}
+
+onMounted(() => {
+    refreshDb()
 })
 
 function openForEditing(c: StoredConversation): void {
-    console.log(c)
+    console.log("opening " + c.name)
     selectedConversation.initFromStored(c)
     editingConversation.initFromStored(c)
     router.push("/conversation")
+}
+
+// Typescript doesn't like the autoincrementing ID key, but it's a number
+// @ts-ignore
+function deleteConversation(dbId) {
+    console.log(typeof (dbId))
+    if (typeof (dbId) === "number") {
+        dbConnection.del(dbId)
+        refreshDb()
+    }
 }
 
 </script>
@@ -29,7 +42,8 @@ function openForEditing(c: StoredConversation): void {
     <div v-for="c in conversations">
         <span>{{ new Date(c.timestamp).toLocaleString() }} {{ c.name }}</span>
         <button @click="openForEditing(c)">Open in editor</button>
+        <!-- ignoring for now because typecript doesn't like the auto-incrementing key -->
         <!-- @vue-ignore -->
-        <button @click="console.log(c.id)">Delete</button>
+        <button @click="deleteConversation(c.id)">Delete</button>
     </div>
 </template>

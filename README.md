@@ -28,8 +28,8 @@ I haven't tested with an ESP32 or any other boards but it should probably work a
 
 [This looks like the receiver I used](https://www.ebay.com/itm/172087478029), and [this looks like the transmitter](https://www.ebay.com/itm/294328064400). I didn't actually order either of those from those sellers, so I'm not recommending those in particular. There are also bundles on Amazon and AliExpress with receivers and transmitters, and Adafruit even sells a transceiver where both are built into one chip. The important things to check for:
 
-- They must deal with the 38kHz modulation in hardware. A plain IR LED or an analog sensor will not work with the firmware as it is written.
-- If you're using a Pico, they need to run on 3.3V. If you get something designed for 5V, you'll need a level shifter.
+- They must deal with the 38kHz modulation in hardware. A plain IR LED or an analog sensor will not work with the firmware as it is written. It would not be very hard to make it work with a regular LED, I just didn't.
+- If you get something that only works on 5V, you'll need a level shifter since the pico is 3.3V
 
 ### Pins
 Transmitter power: GPIO 2
@@ -54,10 +54,10 @@ Click on any bit to flip it. This will update the checksum and, if it's known, t
 For any known parts of the transmission, select from a list of possible values. You can toggle whether to see the bits for the known parts in the settings.
 
 ### Record
-This allows you to snoop/listen in on a conversation between two tamagotchis. You can add the recorded messages to a conversation and save it for later
+This allows you to snoop/listen in on a conversation between two tamagotchis. You can add the recorded messages to a conversation and save it for later.
 
 ### View Saved
 Recorded messages are saved locally on your computer using IndexedDB. If you clear your cookies and cache or site storage you will lose your saved messages! Please back them up by  using the export button to save them as a file so that you can add them back if this happens. Importing a file will add onto any existing saved messages.
 
-### Diff
+### Diff (tbd)
 This lets you compare multiple bit strings. This may be helpful for understanding what the different parts do.
