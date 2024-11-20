@@ -28,7 +28,7 @@ const imageSource = computed(() => {
 
 <template>
     <div class="appearance-container">
-        <!-- <label for="character-selector">Character</label> -->
+        <label>Character</label>
         <BitChunk :known="true" :model="model"></BitChunk>
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
         <img :src="imageSource">

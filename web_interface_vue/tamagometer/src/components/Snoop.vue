@@ -62,8 +62,8 @@ onUnmounted(() => {
 <template>
     <div>
         <form @submit.prevent="saveConversation">
-            <label for="save-recorded-conversation-name">Conversation name/description</label>
-            <input v-model="fromRecordingConversation.name" id="save-recorded-conversation-name" required="true">
+            <label>Conversation name/description</label>
+            <input v-model="fromRecordingConversation.name" required="true">
             <p>Message 1: {{ fromRecordingConversation.message1.getBitstring() }}</p>
             <p>Message 2: {{ fromRecordingConversation.message2.getBitstring() }}</p>
             <p>Message 3: {{ fromRecordingConversation.message3.getBitstring() }}</p>

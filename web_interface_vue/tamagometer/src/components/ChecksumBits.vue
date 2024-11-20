@@ -24,15 +24,15 @@ const showBits = computed(() => {
 
 <template>
     <div class="checksum-container">
-        <label for="checksum-bits">Checksum</label>
-        <div id="checksum-bits" class="chunk-container" v-if="showBits">
+        <label>Checksum</label>
+        <div class="chunk-container" v-if="showBits">
             <bit v-for="(item, index) in bitList" :value="parseInt(item)"></bit>
         </div>
     </div>
 </template>
 
 <style>
-/* reuse style from BitChunk.vue */
+/* reuses some style from BitChunk.vue */
 .checksum-container {
     display: flex;
     flex-direction: column;

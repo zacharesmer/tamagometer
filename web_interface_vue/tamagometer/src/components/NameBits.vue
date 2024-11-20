@@ -11,8 +11,8 @@ const props = defineProps({
 
 <template>
     <div class="name-container">
-        <label for="letters">Name</label>
-        <div id="letters" class="letters-container">
+        <label>Name</label>
+        <div class="letters-container">
             <Letter v-for="letter in model.letters" :model="letter"></Letter>
         </div>
     </div>
