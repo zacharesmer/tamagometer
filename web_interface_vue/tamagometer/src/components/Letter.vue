@@ -27,7 +27,7 @@ const symbol = computed({
         <BitChunk :known="true" :model="model"></BitChunk>
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
         <select v-model="symbol" class="symbol">
-            <option v-for="key in model.lettersSymbols.keys()" :value="key">{{ model.lettersSymbols.get(key) }}
+            <option v-for="[key, value] in model.lettersSymbols" :value="key">{{ value }}
             </option>
         </select>
     </div>

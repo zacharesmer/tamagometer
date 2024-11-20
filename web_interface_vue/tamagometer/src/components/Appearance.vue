@@ -33,7 +33,7 @@ const imageSource = computed(() => {
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
         <img :src="imageSource">
         <select v-model="character" class="symbol" aria-label="Character selector">
-            <option v-for="key in model.characterNames.keys()" :value="key">{{ model.characterNames.get(key) }}
+            <option v-for="[key, value] in model.characterNames" :value="key">{{ value }}
             </option>
         </select>
     </div>
