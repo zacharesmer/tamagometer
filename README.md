@@ -44,7 +44,9 @@ To use different pins, change the pin numbers at the top of `rx.py` and `tx.py` 
 
 ### Troubleshooting
 On Linux if you're getting errors about permissions, you may have to add yourself to the dialout group:
+
 `sudo usermod -aG dialout` 
+
 (Or equivalently, `sudo usermod --append --groups dialout`. Do not leave out the `a` or `--append` or you'll be removed from any groups other than dialout)
 
 ### Conversation
