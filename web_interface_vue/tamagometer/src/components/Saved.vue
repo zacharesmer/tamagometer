@@ -45,7 +45,8 @@ async function exportConversations() {
 
     var element = document.createElement('a');
     element.setAttribute('href', objectURL);
-    element.setAttribute('download', "Tamagotchi recordings " + new Date(Date.now()).toLocaleDateString());
+    element.setAttribute('download', `Tamagotchi recordings ${new Date(Date.now()).toLocaleDateString()}.tgir`);
+
     element.style.display = 'none';
     element.click();
 
@@ -92,7 +93,7 @@ async function importConversation() {
     <div>
         <form @submit.prevent="importConversation">
             <input type="submit" value="Import">
-            <input id="import-conversation-file-chooser" type="file" required="true" accept=".json"
+            <input id="import-conversation-file-chooser" type="file" required="true" accept=".json,.tgir"
                 ref="importConversationFileChooser">
             <!-- <label for="import-conversation-file-chooser">Import</label> -->
 
