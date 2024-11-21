@@ -19,24 +19,25 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Install dependencies
         run: npm ci
-  
+
       - name: Build project
         run: npm run build
-        
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: web_interface_vue/tamagometer/dist
-          
 
   deploy:
     name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       id-token: write
       pages: write
     environment:
@@ -45,4 +46,4 @@ jobs:
 
     steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4        
+        uses: actions/deploy-pages@v4
