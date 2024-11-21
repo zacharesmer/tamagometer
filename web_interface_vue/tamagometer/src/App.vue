@@ -4,21 +4,32 @@ import { ref } from 'vue'
 import Settings from './components/Settings.vue';
 
 let showSettings = ref(false)
+let webSerialSupported = ("serial" in navigator)
 
 </script>
 
 <template>
-  <nav>
-    <RouterLink class="navlink" to="/conversation">Conversation</RouterLink>
-    <RouterLink class="navlink" to="/record">Record</RouterLink>
-    <RouterLink class="navlink" to="/saved">View Saved</RouterLink>
-    <div v-if="showSettings" class="settings-link" @click="() => { showSettings = !showSettings }">Settings ▾</div>
-    <div v-else class="settings-link" @click="() => { showSettings = !showSettings }">Settings ▸</div>
-  </nav>
-  <Settings v-show="showSettings"></Settings>
-  <main>
-    <RouterView />
-  </main>
+  <div v-if="webSerialSupported">
+    <nav>
+      <RouterLink class="navlink" to="/conversation">Conversation</RouterLink>
+      <RouterLink class="navlink" to="/record">Record</RouterLink>
+      <RouterLink class="navlink" to="/saved">View Saved</RouterLink>
+      <div v-if="showSettings" class="settings-link" @click="() => { showSettings = !showSettings }">Settings ▾</div>
+      <div v-else class="settings-link" @click="() => { showSettings = !showSettings }">Settings ▸</div>
+    </nav>
+    <Settings v-show="showSettings"></Settings>
+    <main>
+      <RouterView />
+    </main>
+  </div>
+  <div v-else>
+    <h1>Web serial API is not supported in your browser</h1>
+    <p>Please visit this page in a browser that supports the Web Serial API.
+      <br> <br>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility">
+        Find an option in the Mozilla developer docs</a>
+    </p>
+  </div>
 </template>
 
 <style>
