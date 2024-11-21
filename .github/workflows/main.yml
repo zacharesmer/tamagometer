@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "web_interface_vue/tamagometer/*"
 
 jobs:
   build:
