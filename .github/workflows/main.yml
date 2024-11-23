@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - "web_interface_vue/tamagometer/*"
+      - 'web_interface_vue/tamagometer/**'
+      - '.github/workflows/main.yml'
 
 jobs:
   build:
