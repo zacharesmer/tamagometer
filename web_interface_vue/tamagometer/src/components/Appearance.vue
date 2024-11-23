@@ -19,7 +19,7 @@ const character = computed({
 });
 
 const imageSource = computed(() => {
-    return "/character-sprites/" + props.model.getName().toLowerCase() + "_sprite.png"
+    return "character-sprites/" + props.model.getName().toLowerCase() + "_sprite.png"
 })
 
 </script>
