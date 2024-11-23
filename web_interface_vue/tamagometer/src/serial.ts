@@ -255,9 +255,8 @@ function matchCommandString(commandMatched: { matchingChars: number, commandSoFa
     return { complete: false, commandMatched: { matchingChars, commandSoFar } }
 }
 
-function matchTimedOutString(timeoutMatched: number, newString: string): { complete: boolean, matchingChars: number } {
+function matchTimedOutString(matchingChars: number, newString: string): { complete: boolean, matchingChars: number } {
     const timedOutString = "[PICO]timed out[END]";
-    let matchingChars = timeoutMatched
 
     for (let i = 0; i < newString.length; i++) {
         let current = newString[i].toString();
