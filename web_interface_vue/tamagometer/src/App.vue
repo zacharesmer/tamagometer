@@ -17,11 +17,14 @@ let webSerialSupported = ("serial" in navigator)
         Find a compatible browser in the Mozilla developer docs</a></p>
   </div>
   <nav>
-    <RouterLink class="navlink" to="/conversation">Conversation</RouterLink>
-    <RouterLink class="navlink" to="/record">Record</RouterLink>
-    <RouterLink class="navlink" to="/saved">View Saved</RouterLink>
-    <div v-if="showSettings" class="settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="true" aria-controls="settings-panel">Settings ▾</div>
-    <div v-else class="settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="false" aria-controls="settings-panel">Settings ▸</div>
+    <RouterLink class="navlink first-link" to="/conversation">Editor</RouterLink>
+    <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
+    <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
+    <div v-if="showSettings" class="navlink settings-link settings-link-active"
+      @click="() => { showSettings = !showSettings }" aria-expanded="true" aria-controls="settings-panel">Settings ▾
+    </div>
+    <div v-else class="navlink settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="false"
+      aria-controls="settings-panel">Settings ▸</div>
   </nav>
   <Settings v-show="showSettings" id="settings-panel"></Settings>
   <main>
@@ -48,32 +51,42 @@ nav {
 }
 
 .navlink {
-  padding: 10px;
-  margin: 5px;
-  background-color: papayawhip;
-  border: solid;
+  width: 10em;
+  height: 4em;
+  line-height: 4em;
+
+  background-color: var(--light-green);
+  border-style: none;
+  border-radius: 0% 30% / 70%;
+
+  border-color: var(--pink);
 
   color: inherit;
   text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+
+  margin: 5px;
 }
 
 .router-link-active {
-  background-color: lightblue;
+  background-color: var(--pink);
+  border-radius: 30%/70% 0%;
+  /* border-radius: 0% 30% / 70%; */
+
 }
 
-.settings-link {
-  padding: 10px;
-  margin: 5px;
-  background-color: papayawhip;
-  border: solid;
-}
+/* .settings-link {} */
 
 .settings-link-active {
-  background-color: lightblue;
+  border-radius: 30%/70% 0%;
+  /* border-radius: 0% 30% / 70%; */
+
 }
 
 .web-serial-compatibility-warning {
-  background-color: lightpink;
+  background-color: var(--pink);
   padding: 10px;
+  font-weight: bold
 }
 </style>
