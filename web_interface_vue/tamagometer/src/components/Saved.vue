@@ -101,36 +101,36 @@ async function importConversation() {
         <button @click="exportConversations">Export</button>
     </div>
     <table>
-        <tr>
-            <th>Name</th>
-            <th></th>
-            <th>Date/Time</th>
-            <th></th>
-        </tr>
-        <tr v-for="c in conversations">
+        <tbody>
+            <tr>
+                <th>Name</th>
+                <th></th>
+                <th>Date/Time</th>
+                <th></th>
+            </tr>
+            <tr v-for="c in conversations">
 
-            <td>
-                {{ c.name }}
-            </td>
-            <td>
-                <button @click="openForEditing(c)">Open in editor</button>
-            </td>
-            <td>
-                {{ new Date(c.timestamp).toLocaleString() }}
-            </td>
-            <td>
-                <!-- @vue-ignore -->
-                <button @click="deleteConversation(c.id)">Delete</button>
-            </td>
-        </tr>
+                <td>
+                    {{ c.name }}
+                </td>
+                <td>
+                    <button @click="openForEditing(c)">Open in editor</button>
+                </td>
+                <td>
+                    {{ new Date(c.timestamp).toLocaleString() }}
+                </td>
+                <td>
+                    <!-- @vue-ignore -->
+                    <button @click="deleteConversation(c.id)">Delete</button>
+                </td>
+            </tr>
+        </tbody>    
     </table>
 </template>
 
 <style>
-    tr:nth-child(even) {
-        background-color:papayawhip;
-    }
+tr:nth-child(even) {
+    background-color: papayawhip;
+}
 
-    table   {
-    }
 </style>
