@@ -61,10 +61,16 @@ onMounted(() => {
         <button @click="editingConversation.awaitConversation">Wait for interaction</button>
         <button @click="editingConversation.stopWaiting">Stop waiting</button>
     </div>
-    <BitstringInput :model="editingConversation.message1" bitstring-id="editingConversationMessage1"></BitstringInput>
-    <BitstringInput :model="editingConversation.message2" bitstring-id="editingConversationMessage2"></BitstringInput>
-    <BitstringInput :model="editingConversation.message3" bitstring-id="editingConversationMessage3"></BitstringInput>
-    <BitstringInput :model="editingConversation.message4" bitstring-id="editingConversationMessage4"></BitstringInput>
+    <div class="messages-container">
+        <BitstringInput :model="editingConversation.message1" bitstring-id="editingConversationMessage1"
+            class="message from-tama1"></BitstringInput>
+        <BitstringInput :model="editingConversation.message2" bitstring-id="editingConversationMessage2"
+            class="message from-tama2"></BitstringInput>
+        <BitstringInput :model="editingConversation.message3" bitstring-id="editingConversationMessage3"
+            class="message from-tama1"></BitstringInput>
+        <BitstringInput :model="editingConversation.message4" bitstring-id="editingConversationMessage4"
+            class="message from-tama2"></BitstringInput>
+    </div>
     <div>
         <input class="name-input" v-model="newName">
         <button @click="saveNewConversation">Save as new conversation</button>
@@ -106,5 +112,26 @@ path {
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: .5em;
+}
+
+.messages-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    width: 95%;
+}
+
+.from-tama1 {
+    background-color: var(--light-blue);
+    border-radius: 3em 3em 3em 0em;
+    align-self: start;
+}
+
+.from-tama2 {
+    background-color: var(--light-gray);
+    border-radius: 3em 3em 0em 3em;
+    align-self: end;
 }
 </style>

@@ -38,7 +38,7 @@ const props = defineProps({
 }
 
 .one {
-    background-color: var(--light-blue);
+    background-color: var(--pink);
 
 }
 

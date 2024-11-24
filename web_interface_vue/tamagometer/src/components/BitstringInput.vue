@@ -28,19 +28,6 @@ let bitstring = computed({
   }
 })
 
-// watch(bitstring, () => {
-//   localStorage.setItem(props.bitstringId, bitstring.value)
-// })
-
-// onMounted(() => {
-//   const stored = localStorage.getItem(props.bitstringId)
-//   console.log(stored)
-//   if (stored !== null) {
-//     bitstring.value = stored
-//     console.log(bitstring.value)
-//   }
-// })
-
 defineExpose({
   bitstring
 })
@@ -89,6 +76,6 @@ defineExpose({
 .bitstring-display-container {
   padding: 20px 10px;
   margin: 5px;
-  border: solid;
+  /* border: solid; */
 }
 </style>

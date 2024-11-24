@@ -10,7 +10,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="name-container">
+    <div class="chunk-container name-container">
         <label>Name</label>
         <div class="letters-container">
             <Letter v-for="letter in model.letters" :model="letter"></Letter>
@@ -26,9 +26,9 @@ const props = defineProps({
 }
 
 .name-container {
-    display: flex;
+    /* display: flex;
     flex-direction: column;
     align-items: center;
-    border: solid;
+    border: solid; */
 }
 </style>

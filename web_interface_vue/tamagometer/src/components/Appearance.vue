@@ -27,7 +27,7 @@ const imageSource = computed(() => {
 
 
 <template>
-    <div class="appearance-container">
+    <div class="chunk-container appearance-container">
         <label>Character</label>
         <BitChunk :known="true" :model="model"></BitChunk>
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
@@ -41,10 +41,10 @@ const imageSource = computed(() => {
 
 <style scoped>
 .appearance-container {
-    display: flex;
+    /* display: flex;
     flex-direction: column;
     border: solid;
-    align-items: center;
+    align-items: center; */
 }
 
 

@@ -37,7 +37,7 @@ const symbol = computed({
 .letter-container {
     display: flex;
     flex-direction: column;
-    border: solid;
+    /* border: solid; */
     align-items: center;
 }
 

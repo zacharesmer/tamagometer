@@ -26,14 +26,14 @@ const showBits = computed(() => {
 </script>
 
 <template>
-    <div class="chunk-container" v-if="showBits">
+    <div class="bits-container" v-if="showBits">
         <bit v-for="(item, index) in bitList" @click="() => { model.flipBit(index); $emit('update:modelValue'); }"
             :value="parseInt(item)"></bit>
     </div>
 </template>
 
 <style>
-.chunk-container {
+.bits-container {
     padding: 10px;
 }
 </style>
