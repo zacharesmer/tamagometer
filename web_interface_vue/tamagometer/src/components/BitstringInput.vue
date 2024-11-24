@@ -71,6 +71,7 @@ defineExpose({
 .bit-chunk-container {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .bitstring-display-container {
