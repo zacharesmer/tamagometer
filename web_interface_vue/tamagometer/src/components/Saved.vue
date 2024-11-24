@@ -100,12 +100,37 @@ async function importConversation() {
         </form>
         <button @click="exportConversations">Export</button>
     </div>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th></th>
+            <th>Date/Time</th>
+            <th></th>
+        </tr>
+        <tr v-for="c in conversations">
 
-    <div v-for="c in conversations">
-        <span>{{ new Date(c.timestamp).toLocaleString() }} {{ c.name }}</span>
-        <button @click="openForEditing(c)">Open in editor</button>
-        <!-- ignoring for now because typecript doesn't like the auto-incrementing key -->
-        <!-- @vue-ignore -->
-        <button @click="deleteConversation(c.id)">Delete</button>
-    </div>
+            <td>
+                {{ c.name }}
+            </td>
+            <td>
+                <button @click="openForEditing(c)">Open in editor</button>
+            </td>
+            <td>
+                {{ new Date(c.timestamp).toLocaleString() }}
+            </td>
+            <td>
+                <!-- @vue-ignore -->
+                <button @click="deleteConversation(c.id)">Delete</button>
+            </td>
+        </tr>
+    </table>
 </template>
+
+<style>
+    tr:nth-child(even) {
+        background-color:papayawhip;
+    }
+
+    table   {
+    }
+</style>
