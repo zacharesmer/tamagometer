@@ -26,3 +26,7 @@ body {
     border-style: solid;
     border-width: 1px;
 }
+
+button {
+    background-color: var(--light-gray);
+}
