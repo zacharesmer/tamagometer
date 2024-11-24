@@ -17,13 +17,13 @@ let webSerialSupported = ("serial" in navigator)
         Find a compatible browser in the Mozilla developer docs</a></p>
   </div>
   <nav>
-    <RouterLink class="navlink first-link" to="/conversation">Editor</RouterLink>
+    <RouterLink class="navlink first-link" to="/conversation">Edit</RouterLink>
     <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
     <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
-    <div v-if="showSettings" class="navlink settings-link settings-link-active"
-      @click="() => { showSettings = !showSettings }" aria-expanded="true" aria-controls="settings-panel">Settings ▾
+    <div v-if="showSettings" class="settings-link settings-link-active" @click="() => { showSettings = !showSettings }"
+      aria-expanded="true" aria-controls="settings-panel">Settings ▾
     </div>
-    <div v-else class="navlink settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="false"
+    <div v-else class="settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="false"
       aria-controls="settings-panel">Settings ▸</div>
   </nav>
   <Settings v-show="showSettings" id="settings-panel"></Settings>
@@ -76,7 +76,12 @@ nav {
 
 }
 
-/* .settings-link {} */
+.settings-link {
+  width: 10em;
+  height: 4em;
+  line-height: 4em;
+  margin-left: auto;
+}
 
 .settings-link-active {
   border-radius: 30%/70% 0%;
