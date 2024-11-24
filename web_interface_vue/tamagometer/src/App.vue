@@ -20,10 +20,10 @@ let webSerialSupported = ("serial" in navigator)
     <RouterLink class="navlink" to="/conversation">Conversation</RouterLink>
     <RouterLink class="navlink" to="/record">Record</RouterLink>
     <RouterLink class="navlink" to="/saved">View Saved</RouterLink>
-    <div v-if="showSettings" class="settings-link" @click="() => { showSettings = !showSettings }">Settings ▾</div>
-    <div v-else class="settings-link" @click="() => { showSettings = !showSettings }">Settings ▸</div>
+    <div v-if="showSettings" class="settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="true" aria-controls="settings-panel">Settings ▾</div>
+    <div v-else class="settings-link" @click="() => { showSettings = !showSettings }" aria-expanded="false" aria-controls="settings-panel">Settings ▸</div>
   </nav>
-  <Settings v-show="showSettings"></Settings>
+  <Settings v-show="showSettings" id="settings-panel"></Settings>
   <main>
     <RouterView />
   </main>
