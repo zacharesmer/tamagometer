@@ -1,0 +1,12 @@
+:root {
+    --vanilla: #FFF8AD;
+    --pink: #FF99CE;
+    --light-blue: #8EE3FF;
+    --dark-blue: #011936;
+    --light-green: #86DB81;
+}
+
+body {
+    color: var(--dark-blue);
+    font-family: sans-serif;
+}
