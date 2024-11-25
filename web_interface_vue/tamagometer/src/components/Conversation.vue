@@ -103,26 +103,6 @@ onMounted(() => {
     margin-left: 2em;
 }
 
-.round-button {
-    width: 2.5 em;
-    height: 2.5 em;
-    border-radius: 50%;
-    border-style: none;
-    /* background-color: var(--light-green); */
-}
-
-.round-button-icon {
-    width: 2em;
-    height: 2em;
-}
-
-path {
-    stroke: var(--dark-blue);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: .5em;
-}
-
 .messages-container {
     display: flex;
     flex-direction: column;
@@ -130,6 +110,8 @@ path {
 
 .message {
     width: 95%;
+    border-style: solid;
+    border-width: thin;
 }
 
 .from-tama1 {
@@ -139,7 +121,7 @@ path {
 }
 
 .from-tama2 {
-    background-color: var(--light-gray);
+    background-color: var(--light-green);
     border-radius: 3em 3em 0em 3em;
     align-self: end;
 }

@@ -5,11 +5,13 @@
     --dark-blue: #011936;
     --light-green: #86DB81;
     --light-gray: #E0DDE8;
+    --screen-color: #C0D5BF;
 }
 
 body {
     color: var(--dark-blue);
     font-family: sans-serif;
+    background-color: var(--screen-color);
 }
 
 .chunk-container {
@@ -22,11 +24,40 @@ body {
     padding: .5em;
     margin: .5em;
 
+    border-color: var(--dark-blue);
     border-radius: 1em;
     border-style: solid;
-    border-width: 1px;
+    border-width: thin;
 }
 
 button {
     background-color: var(--light-gray);
+}
+
+path {
+    stroke: var(--dark-blue);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: .5em;
+}
+
+.round-button {
+    width: 2.5 em;
+    height: 2.5 em;
+    border-radius: 50%;
+    border-style: none;
+    /* background-color: var(--light-green); */
+}
+
+.round-button-icon {
+    width: 2em;
+    height: 2em;
+}
+
+select {
+    background-color: inherit;
+}
+
+input {
+    background-color: inherit;
 }
