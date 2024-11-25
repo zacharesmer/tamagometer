@@ -30,7 +30,7 @@ import ConversationNameInput from './ConversationNameInput.vue';
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 1em 5em;
+    padding: 1rem 5rem;
 }
 
 .messages-container {
@@ -46,13 +46,13 @@ import ConversationNameInput from './ConversationNameInput.vue';
 
 .from-tama1 {
     background-color: var(--light-blue);
-    border-radius: 3em 3em 3em 0em;
+    border-radius: 3rem 3rem 3rem 0rem;
     align-self: start;
 }
 
 .from-tama2 {
     background-color: var(--light-green);
-    border-radius: 3em 3em 0em 3em;
+    border-radius: 3rem 3rem 0rem 3rem;
     align-self: end;
 }
 </style>

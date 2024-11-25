@@ -79,9 +79,9 @@ nav {
 }
 
 .navlink {
-  width: 10em;
-  height: 4em;
-  line-height: 4em;
+  width: 10rem;
+  height: 4rem;
+  line-height: 4rem;
 
   background-color: var(--vanilla);
   border-style: solid;
@@ -112,7 +112,7 @@ nav {
 /* For the settings disclosure menu */
 details {
   flex-grow: .5;
-  padding: 1em;
+  padding: 1rem;
 }
 
 details>summary {

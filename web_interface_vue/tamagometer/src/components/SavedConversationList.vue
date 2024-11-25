@@ -84,29 +84,5 @@ onMounted(() => {
 </template>
 
 <style scoped>
-table {
-    border-collapse: collapse;
-}
 
-th {
-    border: solid thin;
-    padding: 1em;
-}
-
-td {
-    border: solid thin;
-    padding: 1em;
-}
-
-tr:nth-child(even) {
-    background-color: var(--light-green);
-}
-
-tr:nth-child(odd) {
-    background-color: var(--light-blue);
-}
-
-tr:nth-child(1) {
-    background-color: var(--light-gray);
-}
 </style>

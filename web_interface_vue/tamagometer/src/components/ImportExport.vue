@@ -82,16 +82,16 @@ async function exportConversations() {
 .import-export {
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 1rem;
     align-items: start;
-    padding: 1em;
+    padding: 1rem;
 }
 
 form {
     display: flex;
     flex-direction: column;
     align-items: baseline;
-    gap: 1em;
+    gap: 1rem;
 }
 
 .fake-button-for-file-chooser {

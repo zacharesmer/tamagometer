@@ -23,8 +23,8 @@ const props = defineProps({
     /* padding: 5px; */
     margin: 1px;
 
-    height: 2em;
-    width: 2em;
+    height: 2rem;
+    width: 2rem;
 
     border-width: 2px;
     border-style: solid;

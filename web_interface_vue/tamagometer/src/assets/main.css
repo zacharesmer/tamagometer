@@ -19,16 +19,16 @@ body {
 
 .chunk-container {
     /* color: red; */
-    min-height: 6em;
+    min-height: 6rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    padding: .5em;
-    margin: .5em;
+    padding: .5rem;
+    margin: .5rem;
 
     border-color: var(--dark-blue);
-    border-radius: 1em;
+    border-radius: 1rem;
     border-style: solid;
     border-width: thin;
 
@@ -37,7 +37,7 @@ body {
 
 button {
     background-color: var(--light-gray);
-    border-radius: 1em;
+    border-radius: 1rem;
     /* border-color: var(--dark-blue); */
 }
 
@@ -45,26 +45,52 @@ path {
     stroke: var(--dark-blue);
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-width: .5em;
+    stroke-width: .5rem;
 }
 
 .round-button {
-    width: 3 em;
-    height: 3 em;
+    width: 3 rem;
+    height: 3 rem;
     border-radius: 50%;
+    /* font-size: large; */
     /* border-style: none; */
 }
 
 .round-button-icon {
-    width: 2em;
-    height: 2em;
+    width: 2rem;
+    height: 2rem;
 }
 
 .icon-label-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .2em;
-    padding: .5em 1em;
+    gap: .2rem;
+    padding: .5rem 1rem;
 }
 
+table {
+    border-collapse: collapse;
+}
+
+th {
+    border: solid thin;
+    padding: 1rem;
+}
+
+td {
+    border: solid thin;
+    padding: 1rem;
+}
+
+tr:nth-child(even) {
+    background-color: var(--light-green);
+}
+
+tr:nth-child(odd) {
+    background-color: var(--light-blue);
+}
+
+tr:nth-child(1) {
+    background-color: var(--light-gray);
+}

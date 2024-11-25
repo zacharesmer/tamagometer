@@ -61,24 +61,25 @@ function saveNewConversation() {
 <style scoped>
 .name-input {
     /* match the h2 style */
-    font-size: 1.5em;
+    font-size: 1.5rem;
 }
 
 .name-input-container>h2 {
     margin: 0;
+    font-size: 1.5rem;
 }
 
 .name-input-container {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1em;
+    gap: 1rem;
     width: fit-content;
 }
 
 .name-editing-buttons {
     display: flex;
     /* align-items: center; */
-    gap: 1em;
+    gap: 1rem;
 }
 </style>
