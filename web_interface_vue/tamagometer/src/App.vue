@@ -61,6 +61,8 @@ let webSerialSupported = ("serial" in navigator)
 
 footer {
   margin-top: auto;
+  border-top: solid;
+  border-width: thin;
 }
 
 /* The nav bar and the settings menu */
