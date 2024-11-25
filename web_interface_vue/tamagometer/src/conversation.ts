@@ -108,10 +108,6 @@ class StoredConversation {
         this.timestamp = Date.now()
     }
 
-
-    getConversation() {
-        return new Conversation(null).initFromStored(this)
-    }
 }
 
 
