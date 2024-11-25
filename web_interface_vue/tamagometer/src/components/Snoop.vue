@@ -5,7 +5,12 @@ import { TamaMessage } from '@/model';
 import { connection } from '@/serial';
 import { onMounted, onUnmounted, ref } from 'vue'
 
-let snoopOutput = ref(new Array<TamaMessage>)
+let snoopOutput = ref(new Array<TamaMessage>);
+
+snoopOutput.value.push(new TamaMessage("0000111000000000110111100101101000110010100010001000100010001000100010001000100000000010000000000010001100000000000001100000000000000000000000000000101001010101"))
+snoopOutput.value.push(new TamaMessage("0000111000000001101111110010001000110001000110010000000000000010000001111000000100000000011001000010001000000000000000000000000000000000000000000000101001010100"))
+snoopOutput.value.push(new TamaMessage("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011"))
+snoopOutput.value.push(new TamaMessage("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111"))
 
 let cancelSnoop = false;
 
@@ -68,20 +73,43 @@ onUnmounted(() => {
             <p>Message 2: {{ fromRecordingConversation.message2.getBitstring() }}</p>
             <p>Message 3: {{ fromRecordingConversation.message3.getBitstring() }}</p>
             <p>Message 4: {{ fromRecordingConversation.message4.getBitstring() }}</p>
-            <input type="submit" value="Save conversation"></input>
+            <button type="submit">Save conversation</button>
         </form>
         <!-- <button @click="stopSnooping">Stop snooping</button> -->
     </div>
-    <ol v-for="(message, index) in snoopOutput">
-        <div>{{ index }}</div>
-        <div>{{ message.getBitstring() }}</div>
-        <button @click="() => { fromRecordingConversation.message1.init(message.getBitstring()) }">Set Message
-            1</button>
-        <button @click="() => { fromRecordingConversation.message2.init(message.getBitstring()) }">Set Message
-            2</button>
-        <button @click="() => { fromRecordingConversation.message3.init(message.getBitstring()) }">Set Message
-            3</button>
-        <button @click="() => { fromRecordingConversation.message4.init(message.getBitstring()) }">Set Message
-            4</button>
-    </ol>
+
+    <table>
+        <tbody>
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+            <template v-for="(message, index) in snoopOutput">
+                <tr>
+                    <td>{{ index }}</td>
+                    <td>
+                        <span>{{ message.getBitstring() }}</span>
+                        <div class="set-message-buttons-container">
+                            <button class="round-button"
+                                @click="() => { fromRecordingConversation.message1.init(message.getBitstring()) }">1</button>
+                            <button class="round-button"
+                                @click="() => { fromRecordingConversation.message2.init(message.getBitstring()) }">2</button>
+                            <button class="round-button"
+                                @click="() => { fromRecordingConversation.message3.init(message.getBitstring()) }">3</button>
+                            <button class="round-button"
+                                @click="() => { fromRecordingConversation.message4.init(message.getBitstring()) }">4</button>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
 </template>
+
+<style scoped>
+.set-message-buttons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+</style>
