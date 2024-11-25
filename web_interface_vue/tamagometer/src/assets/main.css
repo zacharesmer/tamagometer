@@ -49,8 +49,8 @@ path {
 }
 
 .round-button {
-    /* width: 3 em;
-    height: 3 em; */
+    width: 3 em;
+    height: 3 em;
     border-radius: 50%;
     /* border-style: none; */
 }

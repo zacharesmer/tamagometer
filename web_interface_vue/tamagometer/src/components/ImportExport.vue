@@ -10,6 +10,7 @@ const importFileChooser = useTemplateRef("importConversationFileChooser")
 let conversationsFromFile = new Array<StoredConversation>
 const howManyConversationsFromFile = ref(0)
 
+// Any time the file input changes, read the file 
 function fileChanged() {
     if (importFileChooser.value !== null && importFileChooser.value.files !== null) {
         // console.log(importFileChooser.value.files[0])
@@ -27,14 +28,13 @@ function fileChanged() {
 }
 
 async function importConversations() {
-    console.log("Is this thing on")
-    console.log(conversationsFromFile)
     for (let i = 0; i < conversationsFromFile.length; i++) {
-        console.log(typeof (conversationsFromFile[i]))
         await dbConnection.set(conversationsFromFile[i])
     }
     if (importFileChooser.value !== null && importFileChooser.value.value !== null) {
+        conversationsFromFile = []
         importFileChooser.value.value = ""
+        howManyConversationsFromFile.value = conversationsFromFile.length;
     }
     emit("refreshDb")
 }
@@ -81,9 +81,9 @@ async function exportConversations() {
 
 .import-export {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 1em;
-    align-items: end;
+    align-items: start;
     padding: 1em;
 }
 

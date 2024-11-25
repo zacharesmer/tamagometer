@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { selectedConversation, editingConversation, StoredConversation } from '@/conversation';
+import { StoredConversation } from '@/conversation';
 import { dbConnection } from '@/database';
-import { onMounted, ref, useTemplateRef } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 import ImportExport from './ImportExport.vue';
+import SavedConversationList from './SavedConversationList.vue';
 
 const conversations = ref<StoredConversation[]>([])
-const router = useRouter()
 
 
 async function refreshDb() {
@@ -16,63 +15,20 @@ async function refreshDb() {
     })
 }
 
-onMounted(() => {
-    refreshDb()
-})
-
-function openForEditing(c: StoredConversation): void {
-    console.log("opening " + c.name)
-    selectedConversation.initFromStored(c)
-    editingConversation.initFromStored(c)
-    router.push("/conversation")
-}
-
-// Typescript doesn't like the autoincrementing ID key, but it's a number
-// @ts-ignore
-function deleteConversation(dbId) {
-    console.log(typeof (dbId))
-    if (typeof (dbId) === "number") {
-        dbConnection.del(dbId)
-        refreshDb()
-    }
-}
-
-
 </script>
 
 <template>
     <h2>Saved</h2>
-    <ImportExport @refresh-db="refreshDb" ></ImportExport>
-    <table>
-        <tbody>
-            <tr>
-                <th>Name</th>
-                <th></th>
-                <th>Date/Time</th>
-                <th></th>
-            </tr>
-            <tr v-for="c in conversations">
-
-                <td>
-                    {{ c.name }}
-                </td>
-                <td>
-                    <button @click="openForEditing(c)">Open in editor</button>
-                </td>
-                <td>
-                    {{ new Date(c.timestamp).toLocaleString() }}
-                </td>
-                <td>
-                    <!-- @vue-ignore -->
-                    <button @click="deleteConversation(c.id)">Delete</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="saved-import-container">
+        <SavedConversationList :conversations="conversations" @refresh-db="refreshDb"></SavedConversationList>
+        <ImportExport @refresh-db="refreshDb"></ImportExport>
+    </div>
 </template>
 
-<style>
-tr:nth-child(even) {
-    background-color: papayawhip;
+<style scoped>
+.saved-import-container {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
 }
 </style>
