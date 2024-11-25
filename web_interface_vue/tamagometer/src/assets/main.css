@@ -6,6 +6,9 @@
     --light-green: #86DB81;
     --light-gray: #E0DDE8;
     --screen-color: #C0D5BF;
+
+    /* This is light-gray from above but transparent */
+    --transparent-gray: rgba(224, 231, 232, .5)
 }
 
 body {
@@ -28,10 +31,14 @@ body {
     border-radius: 1em;
     border-style: solid;
     border-width: thin;
+
+    background-color: var(--transparent-gray);
 }
 
 button {
     background-color: var(--light-gray);
+    border-radius: 1em;
+    /* border-color: var(--dark-blue); */
 }
 
 path {
@@ -42,11 +49,10 @@ path {
 }
 
 .round-button {
-    width: 2.5 em;
-    height: 2.5 em;
+    /* width: 3 em;
+    height: 3 em; */
     border-radius: 50%;
-    border-style: none;
-    /* background-color: var(--light-green); */
+    /* border-style: none; */
 }
 
 .round-button-icon {
@@ -54,10 +60,18 @@ path {
     height: 2em;
 }
 
+.icon-label-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2em;
+    padding: .5em 1em;
+}
+
 select {
-    background-color: inherit;
+    /* background-color: var(--transparent-gray); */
 }
 
 input {
-    background-color: inherit;
+    /* background-color: var(--transparent-gray); */
 }

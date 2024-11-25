@@ -57,7 +57,7 @@ defineExpose({
     </div>
     <p v-else>Add a recorded signal to get started. You can record signals from a tamagotchi using the "snoop on
       conversation" button</p>
-    <input type="textarea" class="bitstring-input" v-model="bitstring" readonly>
+    <input type="textarea" class="bitstring-input" v-model="bitstring">
   </div>
 
 </template>
@@ -66,7 +66,7 @@ defineExpose({
 .bitstring-input {
   width: 161ch;
   font-family: monospace;
-  background-color: var(--light-gray);
+  /* background-color: var(--light-gray); */
 }
 
 .bit-chunk-container {

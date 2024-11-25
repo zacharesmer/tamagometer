@@ -38,14 +38,29 @@ let webSerialSupported = ("serial" in navigator)
     <main>
       <RouterView />
     </main>
+    <footer>
+      <p>This site is hosted using GitHub Pages. <a href="https://github.com/zacharesmer/tamagometer">View the source
+          code</a></p>
+      <p>Tamagotchi sprites are from the <a href="https://tamagotchi.fandom.com/">Tamagotchi Wiki</a>. Icons are from <a
+          href="https://glyphs.fyi/">Glyphs.fyi</a></p>
+    </footer>
   </div>
 </template>
 
 <style scoped>
 #body-container {
+  display: flex;
+  flex-direction: column;
+
   max-width: 180ch;
   margin-left: auto;
   margin-right: auto;
+
+  min-height: 97vh;
+}
+
+footer {
+  margin-top: auto;
 }
 
 /* The nav bar and the settings menu */
