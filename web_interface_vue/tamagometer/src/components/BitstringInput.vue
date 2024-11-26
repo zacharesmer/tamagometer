@@ -55,8 +55,7 @@ defineExpose({
 
       <ChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())"></ChecksumBits>
     </div>
-    <p v-else>Add a recorded signal to get started. You can record signals from a tamagotchi using the "snoop on
-      conversation" button</p>
+    <p v-else>Open a recorded signal in "View Saved", or record a new one in the "Record" tab.</p>
     <input type="textarea" class="bitstring-input" v-model="bitstring">
   </div>
 
