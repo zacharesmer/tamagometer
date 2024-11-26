@@ -35,10 +35,10 @@ I haven't tested with an ESP32 or any other boards but it should probably work a
 - If you get something that only works on 5V, you'll need a level shifter since the pico is 3.3V
 
 ### Pins
-Transmitter power: GPIO 2
-Transmitter data: GPIO 3
-Receiver power: GPIO 6
-Receiver data: GPIO 7
+- Transmitter power: GPIO 2
+- Transmitter data: GPIO 3
+- Receiver power: GPIO 6
+- Receiver data: GPIO 7
 
 To use different pins, change the pin numbers at the top of `rx.py` and `tx.py` to match your setup.
 
