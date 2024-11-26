@@ -23,6 +23,7 @@ const props = defineProps({
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: .2rem;
 }
 
 .name-container {

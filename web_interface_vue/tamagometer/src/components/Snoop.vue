@@ -112,4 +112,8 @@ onUnmounted(() => {
     flex-direction: row;
     gap: 1rem;
 }
+
+.round-button {
+    font-size: large;
+}
 </style>

@@ -45,4 +45,5 @@ const symbol = computed({
 .symbol {
     font-size: xx-large;
 }
+
 </style>

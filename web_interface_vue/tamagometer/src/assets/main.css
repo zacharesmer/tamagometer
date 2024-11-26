@@ -39,6 +39,7 @@ button {
     background-color: var(--light-gray);
     border-radius: 1rem;
     /* border-color: var(--dark-blue); */
+    cursor: pointer;
 }
 
 path {
@@ -49,16 +50,14 @@ path {
 }
 
 .round-button {
-    width: 3 rem;
-    height: 3 rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
-    /* font-size: large; */
-    /* border-style: none; */
 }
 
 .round-button-icon {
-    width: 2rem;
-    height: 2rem;
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 .icon-label-button {

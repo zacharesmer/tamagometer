@@ -141,6 +141,10 @@ details>summary::-webkit-details-marker {
   }
 }
 
+details>summary>svg,
+details>summary>span {
+  cursor: pointer;
+}
 
 details>summary>svg:hover {
   animation: spin-settings .5s;
