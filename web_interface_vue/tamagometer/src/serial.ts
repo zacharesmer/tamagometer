@@ -122,12 +122,14 @@ class SerialConnection {
         await this.sendSerial("listen")
         while (true) {
             const readSerialResult = await this.readSerial();
+            console.log("Result: " + readSerialResult.value ? readSerialResult.value : "")
             const { value, done: stream_done } = readSerialResult
             if (typeof (value) === "string") {
-                ({ complete: timeoutComplete, commandMatched } = matchCommandString(commandMatched, value));
+                ({ complete: commandComplete, commandMatched } = matchCommandString(commandMatched, value));
                 ({ complete: timeoutComplete, matchingChars: timeoutMatched } = matchTimedOutString(timeoutMatched, value));
                 // TODO: what happens if something is sent with both a valid message and a timeout signal? 
                 if (commandComplete) {
+                    console.log("Got a command!!")
                     return commandMatched.commandSoFar.join("")
                 }
                 if (timeoutComplete) {
@@ -169,7 +171,7 @@ class SerialConnection {
         }
         // reset cancelListen to be a good citizen
         this.cancelListen = false;
-        // console.log(command)
+        console.log("Command: " + command)
         return command;
     }
 

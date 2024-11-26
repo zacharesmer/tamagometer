@@ -31,8 +31,9 @@ async function snoop() {
     console.log("Snooping");
     cancelSnoop = false;
     // wait for cancelSnoop to be set
-    try {
-        while (true) {
+    while (true) {
+        try {
+            console.log("Loop")
             if (cancelSnoop) {
                 break;
             }
@@ -43,8 +44,9 @@ async function snoop() {
                 snoopOutput.value.push(new TamaMessage(snoopedMessage))
             }
         }
-    } catch (e) {
-        console.error(e)
+        catch (e) {
+            console.error(e)
+        }
     }
 
     cancelSnoop = false;
