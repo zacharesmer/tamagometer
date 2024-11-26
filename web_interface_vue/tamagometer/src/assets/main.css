@@ -36,7 +36,7 @@ body {
 }
 
 button {
-    background-color: var(--light-gray);
+    background-color: var(--vanilla);
     border-radius: 1rem;
     /* border-color: var(--dark-blue); */
     cursor: pointer;

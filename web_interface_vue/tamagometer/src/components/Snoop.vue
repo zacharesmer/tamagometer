@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { fromRecordingConversation } from '@/conversation';
+import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
 import { connection } from '@/serial';
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import ConversationNameInput from './ConversationNameInput.vue';
 
 let snoopOutput = ref(new Array<TamaMessage>);
 
@@ -13,6 +14,10 @@ snoopOutput.value.push(new TamaMessage("0000111000001000110111100101101000110010
 snoopOutput.value.push(new TamaMessage("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111"))
 
 let cancelSnoop = false;
+
+let fromRecordingConversation = ref(new Conversation(null))
+fromRecordingConversation.value.name = "Recorded Conversation"
+
 
 function stopSnooping() {
     console.log("Snooping is cancelled :(")
@@ -48,10 +53,15 @@ async function snoop() {
 const savedConversationName = ref("")
 
 async function saveConversation() {
-    // Name is required
-    if (fromRecordingConversation.name !== "") {
-        await dbConnection.set(fromRecordingConversation.toStored())
+    // Name is required but just in case an empty string sneaks through don't store it
+    console.log(fromRecordingConversation.value.name)
+    if (fromRecordingConversation.value.name !== "") {
+        await dbConnection.set(fromRecordingConversation.value.toStored())
     }
+}
+
+function saveName(newName: string) {
+    fromRecordingConversation.value.name = newName;
 }
 
 onMounted(async () => {
@@ -62,43 +72,65 @@ onUnmounted(() => {
     stopSnooping()
 })
 
+const recordingIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>({
+    message1: NaN,
+    message2: NaN,
+    message3: NaN,
+    message4: NaN,
+})
+
+function setStagedMessage(whichMessage: "message1" | "message2" | "message3" | "message4", recordedIndex: number) {
+    fromRecordingConversation.value[whichMessage].init(snoopOutput.value[recordedIndex].getBitstring())
+    recordingIndeces.value[whichMessage] = recordedIndex;
+}
+
+
 </script>
 
 <template>
     <div>
-        <form @submit.prevent="saveConversation">
-            <label>Conversation name/description</label>
-            <input v-model="fromRecordingConversation.name" required="true">
-            <p>Message 1: {{ fromRecordingConversation.message1.getBitstring() }}</p>
-            <p>Message 2: {{ fromRecordingConversation.message2.getBitstring() }}</p>
-            <p>Message 3: {{ fromRecordingConversation.message3.getBitstring() }}</p>
-            <p>Message 4: {{ fromRecordingConversation.message4.getBitstring() }}</p>
-            <button type="submit">Save conversation</button>
-        </form>
+        <!-- <form @submit.prevent="saveConversation"> -->
+        <!-- <input v-model="fromRecordingConversation.name" required="true"> -->
+        <ConversationNameInput :initial-name="fromRecordingConversation.name"
+            @save-name="(newName) => { saveName(newName) }" @save-new-conversation="saveConversation">
+        </ConversationNameInput>
+        <p>Message 1: {{ fromRecordingConversation.message1.getBitstring() }}</p>
+        <p>Message 2: {{ fromRecordingConversation.message2.getBitstring() }}</p>
+        <p>Message 3: {{ fromRecordingConversation.message3.getBitstring() }}</p>
+        <p>Message 4: {{ fromRecordingConversation.message4.getBitstring() }}</p>
+        <!-- <button type="submit">Save conversation</button> -->
+        <!-- </form> -->
         <!-- <button @click="stopSnooping">Stop snooping</button> -->
     </div>
 
-    <table>
+    <table class="recording-table">
         <tbody>
             <tr>
                 <th></th>
+                <th>Set as message</th>
                 <th></th>
             </tr>
             <template v-for="(message, index) in snoopOutput">
                 <tr>
                     <td>{{ index }}</td>
                     <td>
-                        <span>{{ message.getBitstring() }}</span>
                         <div class="set-message-buttons-container">
                             <button class="round-button"
-                                @click="() => { fromRecordingConversation.message1.init(message.getBitstring()) }">1</button>
+                                :class="{ 'active-message-set-button': (index === recordingIndeces.message1) }"
+                                @click="() => { setStagedMessage('message1', index) }">1</button>
                             <button class="round-button"
-                                @click="() => { fromRecordingConversation.message2.init(message.getBitstring()) }">2</button>
+                                :class="{ 'active-message-set-button': (index === recordingIndeces.message2) }"
+                                @click="() => { setStagedMessage('message2', index) }">2</button>
                             <button class="round-button"
-                                @click="() => { fromRecordingConversation.message3.init(message.getBitstring()) }">3</button>
+                                :class="{ 'active-message-set-button': (index === recordingIndeces.message3) }"
+                                @click="() => { setStagedMessage('message3', index) }">3</button>
                             <button class="round-button"
-                                @click="() => { fromRecordingConversation.message4.init(message.getBitstring()) }">4</button>
+                                :class="{ 'active-message-set-button': (index === recordingIndeces.message4) }"
+                                @click="() => { setStagedMessage('message4', index) }">4</button>
                         </div>
+                    </td>
+                    <td>
+                        <div class="bitstring">{{ message.getBitstring() }}</div>
                     </td>
                 </tr>
             </template>
@@ -107,13 +139,31 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+table {
+    /* width: 80%; */
+    /* table-layout: fixed; */
+}
+
+
+.bitstring {
+    max-width: 80ch;
+    font-family: monospace;
+    text-wrap: wrap;
+    word-wrap: break-word;
+}
+
 .set-message-buttons-container {
     display: flex;
     flex-direction: row;
     gap: 1rem;
+    align-items: baseline;
 }
 
 .round-button {
     font-size: large;
+}
+
+.active-message-set-button {
+    background-color: var(--pink);
 }
 </style>

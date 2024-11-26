@@ -1,16 +1,32 @@
 <script lang="ts" setup>
 import BitstringInput from './BitstringInput.vue';
-import { editingConversation } from '@/conversation'
-
+import { editingConversation, selectedConversation } from '@/conversation'
+import { dbConnection } from '@/database';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
+
+// Write the current conversation to the database. 
+// Update the selected conversation to the newly created one
+function saveNewConversation(newName: string) {
+    editingConversation.name = newName;
+    dbConnection.set(editingConversation.toStored()).then(response => {
+        selectedConversation.initFromStored(editingConversation.toStored())
+    })
+}
+
+function saveName(newName: string) {
+    console.log(newName)
+    editingConversation.name = newName;
+}
 
 </script>
 
 
 <template>
     <div class="name-buttons-container">
-        <ConversationNameInput class="name-input"></ConversationNameInput>
+        <ConversationNameInput class="name-input" @save-new-conversation="(newName) => { saveNewConversation(newName) }"
+            @save-name="(newName) => { saveName(newName) }" :initial-name="editingConversation.name">
+        </ConversationNameInput>
         <ConversationButtons class="conversation-buttons"></ConversationButtons>
     </div>
     <div class="messages-container">

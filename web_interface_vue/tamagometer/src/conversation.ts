@@ -115,4 +115,3 @@ class StoredConversation {
 export const selectedConversation: Conversation = reactive(new Conversation(null))
 // TODO maybe keep the last conversation that was being edited in local storage so it'll persist on page reload
 export const editingConversation: Conversation = reactive(new Conversation(null))
-export const fromRecordingConversation: Conversation = reactive(new Conversation(null))
