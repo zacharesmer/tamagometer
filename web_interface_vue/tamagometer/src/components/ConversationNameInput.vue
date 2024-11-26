@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from "vue"
+import { ref, useTemplateRef, nextTick } from "vue"
 // import { editingConversation } from '@/conversation'
 
 const emit = defineEmits<{
@@ -18,9 +18,16 @@ const editingName = ref(false)
 const newName = ref(props.initialName)
 let previousName = props.initialName
 
+const nameInputField = useTemplateRef("name-input-field")
+
 function startEditingName() {
     previousName = newName.value
     editingName.value = true
+    nextTick().then(() => {
+        if (nameInputField !== null && nameInputField.value !== null) {
+            nameInputField.value.focus()
+        }
+    })
 }
 
 // this is cursed because I'm emulating the normal regular behavior of form/event based design
@@ -37,6 +44,8 @@ function saveName() {
 // Write the current conversation to the database. 
 // Update the selected conversation to the newly created one
 function saveNewConversation() {
+    editingName.value = false
+    emit("saveName", newName.value)
     emit("saveNewConversation", newName.value)
 }
 
@@ -53,7 +62,7 @@ function handleKeyUp(e: KeyboardEvent) {
 
 <template>
     <div v-if="editingName" class="name-input-container">
-        <input class="name-input" v-model="newName" autofocus @keyup="(e) => { handleKeyUp(e) }">
+        <input class="name-input" v-model="newName" @keyup="(e) => { handleKeyUp(e) }" ref="name-input-field">
         <span class="name-editing-buttons">
             <button class="round-button" @click="saveName">
                 <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -67,10 +76,11 @@ function handleKeyUp(e: KeyboardEvent) {
                     <path d="M24 64L56 16" />
                 </svg>
             </button>
+            <button @click="saveNewConversation">Save as new conversation</button>
         </span>
     </div>
     <div v-else class="name-input-container">
-        <h2>{{ newName }}</h2>
+        <h2 @click="startEditingName">{{ newName }}</h2>
         <span class="name-editing-buttons">
             <button class="icon-label-button" @click="startEditingName">
                 <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
