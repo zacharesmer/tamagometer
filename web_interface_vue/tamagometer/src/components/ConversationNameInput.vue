@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, useTemplateRef, nextTick } from "vue"
-// import { editingConversation } from '@/conversation'
 
+// emitting signals decouples this from the database and makes it more reusable
 const emit = defineEmits<{
     saveName: [newName: string]
     saveNewConversation: [newName: string]
@@ -12,10 +12,13 @@ const props = defineProps({
 }
 )
 
-// is the name currently being edited?
+// controls if we're in the editing view or not
 const editingName = ref(false)
 
+// Some of this is cursed because I'm doing a lot to emulate the normal 
+// regular behavior of form/event based design
 const newName = ref(props.initialName)
+// this will hold the name any time someone starts editing so it can be reverted
 let previousName = props.initialName
 
 const nameInputField = useTemplateRef("name-input-field")
@@ -23,14 +26,15 @@ const nameInputField = useTemplateRef("name-input-field")
 function startEditingName() {
     previousName = newName.value
     editingName.value = true
+    // wait for the text input to render then focus on it
     nextTick().then(() => {
         if (nameInputField !== null && nameInputField.value !== null) {
             nameInputField.value.focus()
+            nameInputField.value.select()
         }
     })
 }
 
-// this is cursed because I'm emulating the normal regular behavior of form/event based design
 function cancelEditingName() {
     newName.value = previousName
     editingName.value = false
@@ -41,14 +45,14 @@ function saveName() {
     editingName.value = false
 }
 
-// Write the current conversation to the database. 
-// Update the selected conversation to the newly created one
+// Save the name and the conversation to cover cases where this is called while editing
 function saveNewConversation() {
     editingName.value = false
     emit("saveName", newName.value)
     emit("saveNewConversation", newName.value)
 }
 
+// Allow keyboard shortcuts to cancel/save the name
 function handleKeyUp(e: KeyboardEvent) {
     console.log(e)
     if (e.key === "Escape") {
