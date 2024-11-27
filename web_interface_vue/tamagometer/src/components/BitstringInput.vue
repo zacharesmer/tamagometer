@@ -68,12 +68,15 @@ let bitstring = computed({
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 1.5rem;
 }
 
 .bitstring-display-container {
-  padding: 20px 10px;
-  margin: 5px;
-  justify-items: center;
-  /* border: solid; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  padding: 2rem 1rem;
 }
 </style>

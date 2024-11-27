@@ -77,6 +77,7 @@ footer {
 nav {
   display: flex;
   flex-direction: row;
+  gap: 1rem;
 }
 
 .navlink {
@@ -94,8 +95,6 @@ nav {
   text-decoration: none;
   font-weight: bold;
   text-align: center;
-
-  margin: 5px;
 }
 
 .navlink:hover {

@@ -34,6 +34,7 @@ const showBits = computed(() => {
 
 <style>
 .bits-container {
-    padding: 10px;
+    display: flex;
+    gap: .1rem;
 }
 </style>

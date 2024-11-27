@@ -66,7 +66,7 @@ function handleKeyUp(e: KeyboardEvent) {
 
 <template>
     <div v-if="editingName" class="name-input-container">
-        <input class="name-input" v-model="newName" @keyup="(e) => { handleKeyUp(e) }" ref="name-input-field">
+        <input v-model="newName" @keyup="(e) => { handleKeyUp(e) }" ref="name-input-field">
         <span class="name-editing-buttons">
             <button class="round-button" @click="saveName">
                 <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,14 +102,9 @@ function handleKeyUp(e: KeyboardEvent) {
 </template>
 
 <style scoped>
-.name-input {
+.name-input-container > input {
     /* match the h2 style */
     font-size: 1.5rem;
-}
-
-.name-input-container>h2 {
-    /* margin: 0;
-    font-size: 1.5rem; */
 }
 
 .name-input-container {

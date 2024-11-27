@@ -9,24 +9,16 @@ const props = defineProps({
 </script>
 
 <template>
-    <button :class="['bit', (value === 0? 'zero' : 'one'), changed ? 'changed' : '']">
+    <button :class="['round-button', 'bit', (value === 0? 'zero' : 'one'), changed ? 'changed' : '']">
         {{ value }}
     </button>
 </template>
 
 <style>
 .bit {
-    display: inline;
-    /* padding: 5px; */
-    margin: 1px;
-
     height: 2rem;
     width: 2rem;
-
-    border-width: medium;
-    border-style: solid;
-    border-color: var(--dark-blue);
-    border-radius: 50%;
+    line-height: 2rem;
 }
 
 .changed {

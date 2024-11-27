@@ -85,7 +85,7 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    align-items: start center;
+    align-items: start;
     /* padding: 1rem; */
     max-width: 40rem;
 }

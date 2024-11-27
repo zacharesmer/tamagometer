@@ -46,11 +46,12 @@ function saveName(newName: string) {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 1rem 5rem;
+    /* padding: 1rem 5rem; */
 }
 
 .messages-container {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
 </style>
