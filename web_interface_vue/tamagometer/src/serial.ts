@@ -38,6 +38,14 @@ class SerialConnection {
                 let outputDone = encoder.readable.pipeTo(port.writable);
                 this.outputStream = encoder.writable;
 
+                // if the serial connection is lost, close the port and un-initialize 
+                // the object so it can be tried again
+                port.addEventListener("disconnect", () => {
+                    this.reader = null
+                    this.outputStream = null
+                    port.close()
+                })
+
             } catch (err) {
                 console.error('There was an error opening the serial port:', err);
             }
