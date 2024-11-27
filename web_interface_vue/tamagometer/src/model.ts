@@ -5,25 +5,31 @@ export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID }
 // Basically this doesn't have the bit flipping stuff because that's only used by 
 // "leaf" chunks that are directly made of bits
 export interface TamaChunk {
-    init(bitstring: string): void;
+    update(bitstring: string, init?: boolean): void;
     getBitstring(): string;
 }
 
 // 
 class TamaBits implements TamaChunk {
     bitstring: string | null;
+    // If the original bitstring is null, then differs and differsAt will always report that
+    // the bits do not differ.
+    originalBitstring: string | null;
     initialized = false;
 
     constructor(bitstring: string | null) {
         this.bitstring = null
         if (bitstring !== null) {
-            this.init(bitstring)
+            this.update(bitstring, true)
         }
     }
 
-    init(bitstring: string) {
+    update(bitstring: string, init: boolean = false) {
         this.bitstring = bitstring;
-        this.initialized = true;
+        if (init) {
+            this.originalBitstring = bitstring;
+            this.initialized = true;
+        }
     }
     getBitstring() {
         return this.bitstring ? this.bitstring : ""
@@ -31,8 +37,21 @@ class TamaBits implements TamaChunk {
     flipBit(index: number) {
         if (this.bitstring !== null) {
             this.bitstring = flipBitAt(this.bitstring, index)
-            this.init(this.bitstring)
+            this.update(this.bitstring)
         }
+    }
+    // Check if the bitstring has been modified. 
+    differs() {
+        if (this.originalBitstring === null) {
+            return false
+        }
+        return (this.bitstring !== this.originalBitstring)
+    }
+    differsAt(index: number): boolean {
+        if (this.originalBitstring === null || this.bitstring === null) {
+            return false
+        }
+        return (this.bitstring[index] !== this.originalBitstring[index])
     }
 }
 
@@ -52,12 +71,11 @@ class TamaMessage {
     unknown10: UnknownBits
     unknown11: UnknownBits
 
-
     initialized = false
 
     chunks: TamaChunk[]
     constructor(bitstring: string | null) {
-        // To add a new section, also update init() and BitstringInput.vue
+        // To add a new section, also update update() and BitstringInput.vue
         this.hardcodedThing = new UnknownBits(null);
         this.unknown1 = new UnknownBits(null);
         this.deviceID = new TamaID(null);
@@ -97,30 +115,27 @@ class TamaMessage {
             if (! /[10]{160}/.test(bitstring)) {
                 console.error(`Incorrect format. Bitstring must be exactly 160 1s and 0s.\nGot: ${bitstring}`)
             }
-            this.init(bitstring)
+            this.update(bitstring, true)
         }
     }
 
-    init(bitstring: string) {
-        // To add a new section, also update constructor() and BitstringInput.vue
-        this.hardcodedThing.init(bitstring.slice(0, 8));
-        this.unknown1.init(bitstring.slice(8, 16));
-        this.deviceID.init(bitstring.slice(16, 32));
-        this.appearance.init(bitstring.slice(32, 40));
-        this.name.init(bitstring.slice(40, 80));
-        this.unknown3.init(bitstring.slice(80, 88))
-        this.unknown4.init(bitstring.slice(88, 96))
-        this.unknown5.init(bitstring.slice(96, 104))
-        this.unknown6.init(bitstring.slice(104, 112))
-        this.unknown7.init(bitstring.slice(112, 120))
-        this.unknown8.init(bitstring.slice(120, 128))
-        this.unknown9.init(bitstring.slice(128, 136))
-        this.unknown10.init(bitstring.slice(136, 144))
-        this.unknown11.init(bitstring.slice(144, 152))
-        // Exclude the last 8 bits because that's the checksum
-        // no checksum is stored, it is calculated every time
+    update(bitstring: string, init: boolean = false) {
+        this.hardcodedThing.update(bitstring.slice(0, 8), init);
+        this.unknown1.update(bitstring.slice(8, 16), init);
+        this.deviceID.update(bitstring.slice(16, 32), init);
+        this.appearance.update(bitstring.slice(32, 40), init);
+        this.name.update(bitstring.slice(40, 80), init);
+        this.unknown3.update(bitstring.slice(80, 88), init)
+        this.unknown4.update(bitstring.slice(88, 96), init)
+        this.unknown5.update(bitstring.slice(96, 104), init)
+        this.unknown6.update(bitstring.slice(104, 112), init)
+        this.unknown7.update(bitstring.slice(112, 120), init)
+        this.unknown8.update(bitstring.slice(120, 128), init)
+        this.unknown9.update(bitstring.slice(128, 136), init)
+        this.unknown10.update(bitstring.slice(136, 144), init)
+        this.unknown11.update(bitstring.slice(144, 152), init)
 
-        this.initialized = true;
+        this.initialized = true
     }
 
     getBitsNoChecksum(): string {
@@ -178,11 +193,11 @@ class TamaName implements TamaChunk {
     constructor(bitstring: string | null) {
         this.letters = []
         if (bitstring !== null) {
-            this.init(bitstring)
+            this.update(bitstring, true)
         }
     }
 
-    init(bitstring: string) {
+    update(bitstring: string, init: boolean = false) {
         // 5 bytes, 1 per letter
         this.letters = []
         for (let i = 0; i < 5; i++) {
@@ -192,6 +207,17 @@ class TamaName implements TamaChunk {
         }
         this.initialized = true
     }
+
+    // init(bitstring: string) {
+    //     // 5 bytes, 1 per letter
+    //     this.letters = []
+    //     for (let i = 0; i < 5; i++) {
+    //         let bits = bitstring.slice(i * 8, (i * 8) + 8);
+    //         // console.log(bits);
+    //         this.letters.push(new TamaLetter(bits));
+    //     }
+    //     this.initialized = true
+    // }
 
     getBitstring() {
         if (this.initialized) {
@@ -257,11 +283,11 @@ class TamaLetter extends TamaBits {
         super(bitstring)
     }
 
-    init(bitstring: string) {
+    update(bitstring: string, init: boolean = false) {
         if (bitstring.length !== 8) {
             throw Error(`Invalid bitstring length for Letter: expected 8, got ${bitstring.length}`)
         }
-        super.init(bitstring)
+        super.update(bitstring, init)
     }
 
     getSymbol() {
@@ -341,11 +367,11 @@ class TamaAppearance extends TamaBits {
         // [63, "Mailman"],
     ])
 
-    init(bitstring: string) {
+    update(bitstring: string, init: boolean = false) {
         if (bitstring.length !== 8) {
             throw Error(`Invalid bitstring length for Appearance: expected 8, got ${bitstring.length}`)
         }
-        super.init(bitstring)
+        super.update(bitstring, init)
     }
 
     getName() {
@@ -360,11 +386,11 @@ class TamaAppearance extends TamaBits {
 }
 
 class TamaID extends TamaBits {
-    init(bitstring: string) {
+    update(bitstring: string, init: boolean = false) {
         if (bitstring.length != 16) {
             throw Error(`Invalid bitstring length for ID: expected 16, got ${bitstring.length}`)
         }
-        super.init(bitstring)
+        super.update(bitstring, init)
     }
 
     getNumber() {

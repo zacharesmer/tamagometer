@@ -28,7 +28,7 @@ const showBits = computed(() => {
 <template>
     <div class="bits-container" v-if="showBits">
         <bit v-for="(item, index) in bitList" @click="() => { model.flipBit(index); $emit('update:modelValue'); }"
-            :value="parseInt(item)"></bit>
+            :value="parseInt(item)" :changed="model.differsAt(index)"></bit>
     </div>
 </template>
 

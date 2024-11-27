@@ -39,8 +39,8 @@ class Conversation {
         }
         console.log(`received ${received2}`)
         // not a typo, I'm setting every other message
-        this.message2.init(received1)
-        this.message4.init(received2)
+        this.message2.update(received1)
+        this.message4.update(received2)
     }
 
 
@@ -66,8 +66,8 @@ class Conversation {
         // send the final message 2 times just in case. The repeat is probably not 
         // necessary but my transmitter is a little wonky
         await connection.sendCommandNTimes(this.message4.getBitstring(), 2);
-        this.message1.init(received1)
-        this.message3.init(received2)
+        this.message1.update(received1)
+        this.message3.update(received2)
     }
 
 

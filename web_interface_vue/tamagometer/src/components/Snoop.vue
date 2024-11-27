@@ -88,7 +88,7 @@ const recordingIndeces = ref<{ message1: number, message2: number, message3: num
 })
 
 function setStagedMessage(whichMessage: "message1" | "message2" | "message3" | "message4", recordedIndex: number) {
-    fromRecordingConversation.value[whichMessage].init(snoopOutput.value[recordedIndex].getBitstring())
+    fromRecordingConversation.value[whichMessage].update(snoopOutput.value[recordedIndex].getBitstring())
     recordingIndeces.value[whichMessage] = recordedIndex;
 }
 

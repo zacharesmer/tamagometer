@@ -1,19 +1,16 @@
 <script lang="ts" setup>
 
+
 const props = defineProps({
     value: { type: Number, required: true },
+    changed: { type: Boolean, required: true }
 })
 
 </script>
 
 <template>
-    <button v-if="value === 1" class="bit one">
+    <button :class="['bit', (value === 0? 'zero' : 'one'), changed ? 'changed' : '']">
         {{ value }}
-    </button>
-    <button v-else-if="value === 0" class="bit zero">
-        {{ value }}
-    </button>
-    <button v-else class="bit invalid">
     </button>
 </template>
 
@@ -26,15 +23,15 @@ const props = defineProps({
     height: 2rem;
     width: 2rem;
 
-    border-width: 2px;
+    border-width: medium;
     border-style: solid;
     border-color: var(--dark-blue);
     border-radius: 50%;
 }
 
-.edited-bit {
-    border-width: 2px;
-    border-style: dotted;
+.changed {
+    /* border-width: 2px; */
+    border-style: dashed;
 }
 
 .one {

@@ -23,7 +23,7 @@ let bitstring = computed({
     // console.log("New value: " + newValue)
     if (/[10]{160}/.test(newValue)) {
       // console.log(`Setting value ${newValue}`)
-      message.init(newValue)
+      message.update(newValue)
     }
   }
 })

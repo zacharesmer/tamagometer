@@ -14,7 +14,7 @@ const idNumber = computed(
         },
         set: (newValue: number) => {
             if (newValue <= 65535 && newValue >= 0) {
-                props.model.init(newValue.toString(2).padStart(16, "0"))
+                props.model.update(newValue.toString(2).padStart(16, "0"))
             }
         }
     }

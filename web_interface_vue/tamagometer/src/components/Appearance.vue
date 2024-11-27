@@ -14,7 +14,7 @@ const character = computed({
     },
     set: (newValue: number) => {
         // console.log(newValue)
-        props.model.init(newValue.toString(2).padStart(8, "0"))
+        props.model.update(newValue.toString(2).padStart(8, "0"), false)
     }
 });
 
