@@ -53,22 +53,4 @@ function saveName(newName: string) {
     display: flex;
     flex-direction: column;
 }
-
-.message {
-    width: 95%;
-    border-style: solid;
-    border-width: thin;
-}
-
-.from-tama1 {
-    background-color: var(--light-blue);
-    border-radius: 3rem 3rem 3rem 0rem;
-    align-self: start;
-}
-
-.from-tama2 {
-    background-color: var(--light-green);
-    border-radius: 3rem 3rem 0rem 3rem;
-    align-self: end;
-}
 </style>

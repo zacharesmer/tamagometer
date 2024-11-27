@@ -28,10 +28,6 @@ let bitstring = computed({
   }
 })
 
-defineExpose({
-  bitstring
-})
-
 </script>
 
 <template>

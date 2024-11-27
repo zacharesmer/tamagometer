@@ -108,8 +108,8 @@ function handleKeyUp(e: KeyboardEvent) {
 }
 
 .name-input-container>h2 {
-    margin: 0;
-    font-size: 1.5rem;
+    /* margin: 0;
+    font-size: 1.5rem; */
 }
 
 .name-input-container {

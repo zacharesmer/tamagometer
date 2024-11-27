@@ -9,7 +9,7 @@ import ConversationNameInput from './ConversationNameInput.vue';
 let snoopOutput = ref(new Array<TamaMessage>);
 
 // // Some test recordings to see the layout
-// snoopOutput.value.push(new TamaMessage("0000111000000000110111100101101000110010100010001000100010001000100010001000100000000010000000000010001100000000000001100000000000000000000000000000101001010101"))
+snoopOutput.value.push(new TamaMessage("0000111000000000110111100101101000110010100010001000100010001000100010001000100000000010000000000010001100000000000001100000000000000000000000000000101001010101"))
 // snoopOutput.value.push(new TamaMessage("0000111000000001101111110010001000110001000110010000000000000010000001111000000100000000011001000010001000000000000000000000000000000000000000000000101001010100"))
 // snoopOutput.value.push(new TamaMessage("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011"))
 // snoopOutput.value.push(new TamaMessage("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111"))
@@ -106,66 +106,107 @@ function reloadPage() {
         <button @click="reloadPage">Refresh the page</button>
     </div>
     <div v-else>
-        <div>
-            <!-- <form @submit.prevent="saveConversation"> -->
-            <!-- <input v-model="fromRecordingConversation.name" required="true"> -->
-            <ConversationNameInput :initial-name="fromRecordingConversation.name"
-                @save-name="(newName) => { saveName(newName) }" @save-new-conversation="saveConversation">
-            </ConversationNameInput>
-            <p>Message 1: {{ fromRecordingConversation.message1.getBitstring() }}</p>
-            <p>Message 2: {{ fromRecordingConversation.message2.getBitstring() }}</p>
-            <p>Message 3: {{ fromRecordingConversation.message3.getBitstring() }}</p>
-            <p>Message 4: {{ fromRecordingConversation.message4.getBitstring() }}</p>
-            <!-- <button type="submit">Save conversation</button> -->
-            <!-- </form> -->
-            <!-- <button @click="stopSnooping">Stop snooping</button> -->
+        <div class="recording-body-container">
+            <div class="recording-list">
+                <div class="title">
+                    <h2>Listening for input...</h2>
+                </div>
+                <table class="recording-table" v-if="snoopOutput.length > 0">
+                    <tbody>
+                        <tr>
+                            <th></th>
+                            <th>Set as message</th>
+                            <th></th>
+                        </tr>
+                        <template v-for="(message, index) in snoopOutput">
+                            <tr>
+                                <td>{{ index }}</td>
+                                <td>
+                                    <div class="set-message-buttons-container">
+                                        <button class="round-button"
+                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message1) }"
+                                            @click="() => { setStagedMessage('message1', index) }">1</button>
+                                        <button class="round-button"
+                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message2) }"
+                                            @click="() => { setStagedMessage('message2', index) }">2</button>
+                                        <button class="round-button"
+                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message3) }"
+                                            @click="() => { setStagedMessage('message3', index) }">3</button>
+                                        <button class="round-button"
+                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message4) }"
+                                            @click="() => { setStagedMessage('message4', index) }">4</button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="bitstring">{{ message.getBitstring() }}</div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <div class="staged-messages-container">
+                <ConversationNameInput :initial-name="fromRecordingConversation.name"
+                    @save-name="(newName) => { saveName(newName) }" @save-new-conversation="saveConversation"
+                    class="title">
+                </ConversationNameInput>
+                <div class="message-label-container">
+                    <div class="message-label round-button"
+                        :class="{ 'message-label-set': (fromRecordingConversation.message1.getBitstring().length !== 0) }">
+                        1
+                    </div>
+                    <div class="message from-tama1">
+                        {{ fromRecordingConversation.message1.getBitstring() }}
+                    </div>
+                </div>
+                <div class="message-label-container">
+                    <div class="message from-tama2">
+                        {{ fromRecordingConversation.message2.getBitstring() }}
+                    </div>
+                    <div class="message-label round-button"
+                        :class="{ 'message-label-set': (fromRecordingConversation.message2.getBitstring().length !== 0) }">
+                        2
+                    </div>
+                </div>
+                <div class="message-label-container">
+                    <div class="message-label round-button"
+                        :class="{ 'message-label-set': (fromRecordingConversation.message3.getBitstring().length !== 0) }">
+                        3
+                    </div>
+                    <div class="message from-tama1">
+                        {{ fromRecordingConversation.message3.getBitstring() }}
+                    </div>
+                </div>
+                <div class="message-label-container">
+                    <div class="message from-tama2">
+                        {{ fromRecordingConversation.message4.getBitstring() }}
+                    </div>
+                    <div class="message-label round-button"
+                        :class="{ 'message-label-set': (fromRecordingConversation.message4.getBitstring().length !== 0) }">
+                        4
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <table class="recording-table" v-if="snoopOutput.length > 0">
-            <tbody>
-                <tr>
-                    <th></th>
-                    <th>Set as message</th>
-                    <th></th>
-                </tr>
-                <template v-for="(message, index) in snoopOutput">
-                    <tr>
-                        <td>{{ index }}</td>
-                        <td>
-                            <div class="set-message-buttons-container">
-                                <button class="round-button"
-                                    :class="{ 'active-message-set-button': (index === recordingIndeces.message1) }"
-                                    @click="() => { setStagedMessage('message1', index) }">1</button>
-                                <button class="round-button"
-                                    :class="{ 'active-message-set-button': (index === recordingIndeces.message2) }"
-                                    @click="() => { setStagedMessage('message2', index) }">2</button>
-                                <button class="round-button"
-                                    :class="{ 'active-message-set-button': (index === recordingIndeces.message3) }"
-                                    @click="() => { setStagedMessage('message3', index) }">3</button>
-                                <button class="round-button"
-                                    :class="{ 'active-message-set-button': (index === recordingIndeces.message4) }"
-                                    @click="() => { setStagedMessage('message4', index) }">4</button>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="bitstring">{{ message.getBitstring() }}</div>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
     </div>
 </template>
 
 <style scoped>
-table {
-    /* width: 80%; */
-    /* table-layout: fixed; */
+h2 {
+    text-align: center
 }
 
+.recording-body-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+    gap: 2rem 10rem;
+    align-items: start;
+    justify-content: space-around;
+}
 
 .bitstring {
-    max-width: 80ch;
+    max-width: 40ch;
     font-family: monospace;
     text-wrap: wrap;
     word-wrap: break-word;
@@ -190,5 +231,36 @@ table {
     display: flex;
     flex-direction: column;
     align-items: center
+}
+
+.staged-messages-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.message {
+    font-family: monospace;
+    text-wrap: wrap;
+    word-wrap: break-word;
+    width: 40ch;
+    padding: 1rem;
+}
+
+.message-label {
+    background-color: var(--vanilla);
+    text-align: center;
+    border: 2px outset var(--dark-blue);
+}
+
+.message-label-set {
+    background-color: var(--pink);
+}
+
+.message-label-container {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
 }
 </style>

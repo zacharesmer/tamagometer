@@ -52,6 +52,8 @@ path {
 .round-button {
     width: 2.5rem;
     height: 2.5rem;
+    line-height: 2.5rem;
+    text-align: center;
     border-radius: 50%;
 }
 
@@ -92,4 +94,23 @@ tr:nth-child(odd) {
 
 tr:nth-child(1) {
     background-color: var(--light-gray);
+}
+
+.message {
+    width: 95%;
+    border-style: solid;
+    border-width: thin;
+}
+
+.from-tama1 {
+    background-color: var(--light-blue);
+    border-radius: 3rem 3rem 3rem 0rem;
+    align-self: start;
+    
+}
+
+.from-tama2 {
+    background-color: var(--light-green);
+    border-radius: 3rem 3rem 0rem 3rem;
+    align-self: end;
 }

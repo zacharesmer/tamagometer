@@ -18,7 +18,6 @@ async function refreshDb() {
 </script>
 
 <template>
-    <h2>Saved Conversations</h2>
     <div class="saved-import-container">
         <SavedConversationList :conversations="conversations" @refresh-db="refreshDb"></SavedConversationList>
         <ImportExport @refresh-db="refreshDb"></ImportExport>
@@ -26,9 +25,12 @@ async function refreshDb() {
 </template>
 
 <style scoped>
+
 .saved-import-container {
     display: flex;
     align-items: start;
-    gap: 10rem;
+    justify-content:space-around;
+    flex-wrap: wrap-reverse;
+    gap: 2rem 10rem;
 }
 </style>

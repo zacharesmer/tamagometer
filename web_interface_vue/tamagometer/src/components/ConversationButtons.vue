@@ -43,6 +43,7 @@ import { editingConversation, selectedConversation } from '@/conversation'
 .buttons-container {
     display: flex;
     flex-direction: row;
+    align-items: center;
     gap: 1rem;
     width: fit-content;
 }

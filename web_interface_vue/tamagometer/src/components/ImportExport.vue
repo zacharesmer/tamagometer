@@ -60,31 +60,34 @@ async function exportConversations() {
 
 <template>
     <div class="import-export">
+        <h2>Import/Export</h2>
+        <p>The saved conversations are stored in a local IndexedDB. If you clear your cookies/cache/local storage they
+            will be lost. </p>
+        <p>Export a file to back up your recordings or share them with someone else.</p>
         <form @submit.prevent="importConversations">
             <!-- <label class="fake-button-for-file-chooser" for="import-conversation-file-chooser">Import</label> -->
             <input id="import-conversation-file-chooser" type="file" required="true" accept=".json,.tgir"
                 ref="importConversationFileChooser" @change="fileChanged">
             <button class="icon-label-button" type="submit">Import {{
                 howManyConversationsFromFile
-            }} conversations</button>
+                }} conversations</button>
         </form>
         <button class="export-button icon-label-button" @click="exportConversations">Export</button>
     </div>
 </template>
 
 <style scoped>
-/* #import-conversation-file-chooser {
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-} */
+h2 {
+    text-align: center;
+}
 
 .import-export {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    align-items: start;
-    padding: 1rem;
+    align-items: start center;
+    /* padding: 1rem; */
+    max-width: 40rem;
 }
 
 form {

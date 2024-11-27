@@ -51,12 +51,13 @@ let webSerialSupported = ("serial" in navigator)
 #body-container {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 
   max-width: 180ch;
   margin-left: auto;
   margin-right: auto;
 
-  min-height: 97vh;
+  min-height: 95vh;
 }
 
 footer {
