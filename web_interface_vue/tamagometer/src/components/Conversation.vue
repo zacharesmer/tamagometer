@@ -45,8 +45,8 @@ function saveName(newName: string) {
 .name-buttons-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    /* padding: 1rem 5rem; */
+    justify-content: space-around;
+    padding-bottom: 1rem;
 }
 
 .messages-container {
