@@ -146,7 +146,7 @@ function reloadPage() {
                 </table>
             </div>
             <div class="staged-messages-container">
-                <ConversationNameInput :initial-name="fromRecordingConversation.name"
+                <ConversationNameInput :name="fromRecordingConversation.name"
                     @save-name="(newName) => { saveName(newName) }" @save-new-conversation="saveConversation"
                     class="title">
                 </ConversationNameInput>

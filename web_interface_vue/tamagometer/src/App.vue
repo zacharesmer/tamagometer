@@ -18,7 +18,7 @@ let webSerialSupported = ("serial" in navigator)
     </div>
     <div class="top-bar">
       <nav>
-        <RouterLink class="navlink first-link" to="/conversation">Edit</RouterLink>
+        <RouterLink class="navlink first-link" to="/conversation/">Edit</RouterLink>
         <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
         <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
       </nav>

@@ -16,10 +16,14 @@ const emit = defineEmits(['refreshDb'])
 const router = useRouter()
 
 function openForEditing(c: StoredConversation): void {
-    console.log("opening " + c.name)
-    selectedConversation.initFromStored(c)
-    editingConversation.initFromStored(c)
-    router.push("/conversation")
+    // @ts-ignore
+    console.log("opening " + c.id)
+    // selectedConversation.initFromStored(c)
+    // editingConversation.initFromStored(c)
+    // @ts-ignore
+    const newRoute = "/conversation/" + c.id
+    console.log(newRoute)
+    router.push(newRoute)
 }
 
 // Typescript doesn't like the autoincrementing ID key, but it's a number

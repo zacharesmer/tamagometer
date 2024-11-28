@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, useTemplateRef, nextTick } from "vue"
+import { ref, useTemplateRef, nextTick, watch } from "vue"
 
 // emitting signals decouples this from the database and makes it more reusable
 const emit = defineEmits<{
@@ -8,18 +8,25 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps({
-    initialName: { type: String, required: true },
+    name: { type: String, required: false },
 }
 )
 
 // controls if we're in the editing view or not
 const editingName = ref(false)
 
+let newName = ref<string>(props.name ? props.name : '')
+// this will hold the name any time someone starts editing so it can be reverted
+let previousName = props.name ? props.name : ''
+
 // Some of this is cursed because I'm doing a lot to emulate the normal 
 // regular behavior of form/event based design
-const newName = ref(props.initialName)
-// this will hold the name any time someone starts editing so it can be reverted
-let previousName = props.initialName
+watch(props, () => {
+    if (props.name) {
+        newName.value = props.name
+    }
+})
+
 
 const nameInputField = useTemplateRef("name-input-field")
 

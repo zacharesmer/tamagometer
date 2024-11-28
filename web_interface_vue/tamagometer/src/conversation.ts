@@ -76,10 +76,10 @@ class Conversation {
     }
 
     initFromStored(stored: StoredConversation) {
-        this.message1 = new TamaMessage(stored.message1 ? stored.message1 : null)
-        this.message2 = new TamaMessage(stored.message2 ? stored.message2 : null)
-        this.message3 = new TamaMessage(stored.message3 ? stored.message3 : null)
-        this.message4 = new TamaMessage(stored.message4 ? stored.message4 : null)
+        this.message1.update(stored.message1, true)
+        this.message2.update(stored.message2, true)
+        this.message3.update(stored.message3, true)
+        this.message4.update(stored.message4, true)
         this.name = stored.name
     }
 
