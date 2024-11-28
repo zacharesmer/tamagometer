@@ -11,7 +11,7 @@ import { Conversation } from '@/conversation';
 const route = useRoute()
 let conversation: Conversation = reactive(new Conversation(null))
 
-onBeforeMount(async () => {
+onMounted(async () => {
     if (route.params.dbId) {
         const dbId = parseInt(route.params.dbId as string)
         const stored = await dbConnection.get(dbId)
@@ -42,7 +42,9 @@ function saveName(newName: string) {
         <ConversationNameInput class="name-input" @save-new-conversation="(newName) => { saveNewConversation(newName) }"
             @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
         </ConversationNameInput>
-        <ConversationButtons class="conversation-buttons"></ConversationButtons>
+        <ConversationButtons class="conversation-buttons" @start-conversation="() => { conversation.startConversation() }"
+            @await-conversation="() => {conversation.awaitConversation()}" @stop-waiting="() => {conversation.stopWaiting()}">
+        </ConversationButtons>
     </div>
     <div class="messages-container">
         <BitstringInput :model="conversation.message1" bitstring-id="editingConversationMessage1"

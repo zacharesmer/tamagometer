@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { selectedConversation, editingConversation, StoredConversation } from '@/conversation';
+import { StoredConversation } from '@/conversation';
 import { useRouter } from 'vue-router';
 import { dbConnection } from '@/database';
 import { onMounted } from 'vue';
@@ -18,8 +18,6 @@ const router = useRouter()
 function openForEditing(c: StoredConversation): void {
     // @ts-ignore
     console.log("opening " + c.id)
-    // selectedConversation.initFromStored(c)
-    // editingConversation.initFromStored(c)
     // @ts-ignore
     const newRoute = "/conversation/" + c.id
     console.log(newRoute)

@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { editingConversation, selectedConversation } from '@/conversation'
-</script>
+const emit = defineEmits(["startConversation", "awaitConversation", "stopWaiting"])</script>
 
 <template>
     <div class="buttons-container">
-        <button class="icon-label-button" @click="editingConversation.startConversation">
+        <button class="icon-label-button" @click="emit('startConversation')">
             <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -12,7 +11,7 @@ import { editingConversation, selectedConversation } from '@/conversation'
             </svg>
             <span>Start interaction</span>
         </button>
-        <button class="icon-label-button" @click="editingConversation.awaitConversation">
+        <button class="icon-label-button" @click="emit('awaitConversation')">
             <svg class="round-button-icon" transform="rotate(45)" viewBox="0 0 80 80" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -29,7 +28,7 @@ import { editingConversation, selectedConversation } from '@/conversation'
             </svg>
             <span>Wait for interaction</span>
         </button>
-        <button class="icon-label-button" @click="editingConversation.stopWaiting">
+        <button class="icon-label-button" @click="emit('stopWaiting')">
             <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M16 18C16 16.8954 16.8954 16 18 16H62C63.1046 16 64 16.8954 64 18V62C64 63.1046 63.1046 64 62 64H18C16.8954 64 16 63.1046 16 62V18Z" />
