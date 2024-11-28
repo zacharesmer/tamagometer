@@ -27,7 +27,7 @@ const imageSource = computed(() => {
 
 
 <template>
-    <div class="chunk-container appearance-container">
+    <div :class="['chunk-container', 'appearance-container', model.differs() ? 'changed' : '']">
         <label>Character</label>
         <BitChunk :known="true" :model="model"></BitChunk>
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->

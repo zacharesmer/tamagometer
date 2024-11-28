@@ -21,11 +21,6 @@ const props = defineProps({
     line-height: 2rem;
 }
 
-.changed {
-    /* border-width: 2px; */
-    border-style: dashed;
-}
-
 .one {
     background-color: var(--pink);
 

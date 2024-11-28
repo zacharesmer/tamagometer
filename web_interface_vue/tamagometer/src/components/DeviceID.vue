@@ -25,7 +25,7 @@ const idNumber = computed(
 
 
 <template>
-    <div class="chunk-container id-container">
+    <div :class="['chunk-container', 'id-container', props.model.differs() ? 'changed' : '']">
         <label>Device ID </label>
         <BitChunk :known="true" :model="props.model"></BitChunk>
         <input class="id-number" type="number" min="0" max="65535" step="1" v-model="idNumber">
@@ -43,4 +43,5 @@ const idNumber = computed(
 .id-number {
     font-size: large;
 }
+
 </style>

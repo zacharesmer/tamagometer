@@ -208,17 +208,6 @@ class TamaName implements TamaChunk {
         this.initialized = true
     }
 
-    // init(bitstring: string) {
-    //     // 5 bytes, 1 per letter
-    //     this.letters = []
-    //     for (let i = 0; i < 5; i++) {
-    //         let bits = bitstring.slice(i * 8, (i * 8) + 8);
-    //         // console.log(bits);
-    //         this.letters.push(new TamaLetter(bits));
-    //     }
-    //     this.initialized = true
-    // }
-
     getBitstring() {
         if (this.initialized) {
             let output = [];
@@ -228,6 +217,15 @@ class TamaName implements TamaChunk {
             return output.join("");
         } else return ""
 
+    }
+
+    differs() {
+        for (let l of this.letters) {
+            if (l.differs()) {
+                return true
+            }
+        }
+        return false
     }
 }
 

@@ -10,7 +10,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="chunk-container name-container">
+    <div :class="['chunk-container', 'name-container', model.differs() ? 'changed' : '']">
         <label>Name</label>
         <div class="letters-container">
             <Letter v-for="letter in model.letters" :model="letter"></Letter>
