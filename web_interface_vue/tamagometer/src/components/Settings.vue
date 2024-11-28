@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { onMounted, watch } from 'vue';
-import { pageSettings } from '@/settings';
+import { pageSettings } from '@/state';
 
 onMounted(() => {
     if (localStorage.getItem("persistSettings") == "true") {

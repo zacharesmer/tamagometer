@@ -7,11 +7,12 @@ import ConversationNameInput from './ConversationNameInput.vue';
 import { useRoute } from 'vue-router';
 import { onBeforeMount, onMounted, reactive } from 'vue';
 import { Conversation } from '@/conversation';
+import { activeConversation as conversation } from '@/state';
 
 const route = useRoute()
-let conversation: Conversation = reactive(new Conversation(null))
 
 onMounted(async () => {
+    // TODO this might be a good place to check if the current conversation should be saved before overwriting it
     if (route.params.dbId) {
         const dbId = parseInt(route.params.dbId as string)
         const stored = await dbConnection.get(dbId)
@@ -42,8 +43,10 @@ function saveName(newName: string) {
         <ConversationNameInput class="name-input" @save-new-conversation="(newName) => { saveNewConversation(newName) }"
             @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
         </ConversationNameInput>
-        <ConversationButtons class="conversation-buttons" @start-conversation="() => { conversation.startConversation() }"
-            @await-conversation="() => {conversation.awaitConversation()}" @stop-waiting="() => {conversation.stopWaiting()}">
+        <ConversationButtons class="conversation-buttons"
+            @start-conversation="() => { conversation.startConversation() }"
+            @await-conversation="() => { conversation.awaitConversation() }"
+            @stop-waiting="() => { conversation.stopWaiting() }">
         </ConversationButtons>
     </div>
     <div class="messages-container">

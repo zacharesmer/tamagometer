@@ -3,7 +3,7 @@
 import { computed } from 'vue'
 import Bit from './Bit.vue'
 import { TamaBits } from '@/model'
-import { pageSettings } from '@/settings';
+import { pageSettings } from '@/state';
 
 const props = defineProps({
     model: { type: TamaBits, required: true },
