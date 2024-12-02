@@ -2,6 +2,8 @@
 // import BitstringInput from './components/BitstringInput.vue';
 import { ref } from 'vue'
 import Settings from './components/Settings.vue';
+import StatusIndicator from './components/StatusIndicator.vue';
+import { connection } from './serial'
 
 let webSerialSupported = ("serial" in navigator)
 
@@ -22,6 +24,7 @@ let webSerialSupported = ("serial" in navigator)
         <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
         <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
       </nav>
+      <StatusIndicator class="status-indicator"></StatusIndicator>
       <details>
         <summary>
           <span>Settings</span>
@@ -66,7 +69,7 @@ footer {
   border-width: thin;
 }
 
-/* The nav bar and the settings menu */
+/* The nav bar, status indicator, and the settings menu */
 .top-bar {
   display: flex;
   flex-direction: row;
@@ -107,6 +110,10 @@ nav {
   border-radius: 30%/70% 0%;
   /* border-radius: 0% 30% / 70%; */
 
+}
+
+.status-indicator {
+  align-self: center;
 }
 
 /* For the settings disclosure menu */

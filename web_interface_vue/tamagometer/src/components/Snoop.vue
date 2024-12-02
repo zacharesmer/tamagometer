@@ -192,8 +192,13 @@ function reloadPage() {
 </template>
 
 <style scoped>
+.title {
+    display: flex;
+    align-items: center;
+}
+
 h2 {
-    text-align: center
+    text-align: center;
 }
 
 .recording-body-container {

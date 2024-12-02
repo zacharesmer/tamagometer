@@ -24,6 +24,8 @@ class Conversation {
     }
     // Send messages 1 and 3 from the conversation UI
     async startConversation() {
+        // stop anything currently waiting for input
+        this.stopWaiting()
         // this is kind of silly because these won't be null as soon as the stuff is mounted, and the button
         // to make this happen also can't be clicked until then, but typescript doesn't know that
         console.log(this)
@@ -47,6 +49,8 @@ class Conversation {
 
     // Respond with messages 2 and 4 from the conversation UI
     async awaitConversation() {
+        // stop anything currently waiting for input
+        this.stopWaiting()
         // this is kind of silly because these won't be null as soon as the stuff is mounted, and the button
         // to make this happen also can't be clicked until then, but typescript doesn't know that
         // wait for a first message or until it's cancelled

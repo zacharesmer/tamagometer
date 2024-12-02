@@ -7,12 +7,16 @@ class SerialConnection {
     private outputStream: WritableStream | null;
     private cancelListen = false;
 
+    // Used to show a status indicator in the UI.
+    listenCallback: () => void
+
     // The constructor makes an empty object. It can't be initialized until there is user interaction, 
     // but it's helpful for it to exist before then. If you try to use the object before it is initialized,
     // it will attempt to initialize itself first and prompt for you to select a serial device.
     constructor() {
         this.reader = null;
         this.outputStream = null;
+        this.listenCallback = () => { }
     }
 
     // This is separate from the constructor because the object needs to exist before the site 
@@ -126,8 +130,7 @@ class SerialConnection {
         let timeoutMatched = 0;
         let timeoutComplete = false;
 
-        // Tell the board to listen for input
-        await this.sendSerial("listen")
+        await this.startListening()
         while (true) {
             const readSerialResult = await this.readSerial();
             // console.log("Result: " + readSerialResult.value ? readSerialResult.value : "")
@@ -182,6 +185,12 @@ class SerialConnection {
         this.cancelListen = false;
         // console.log("Command: " + command)
         return command;
+    }
+
+    async startListening() {
+        // Tell the board to listen for input
+        this.listenCallback()
+        await this.sendSerial("listen")
     }
 
     // stops the loop that's polling the microcontroller for a valid tamagotchi signal

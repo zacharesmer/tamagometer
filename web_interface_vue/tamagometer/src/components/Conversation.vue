@@ -5,8 +5,7 @@ import { dbConnection } from '@/database';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
 import { useRoute } from 'vue-router';
-import { onBeforeMount, onMounted, reactive } from 'vue';
-import { Conversation } from '@/conversation';
+import { onBeforeUnmount, onMounted, } from 'vue';
 import { activeConversation as conversation } from '@/state';
 
 const route = useRoute()
@@ -18,6 +17,10 @@ onMounted(async () => {
         const stored = await dbConnection.get(dbId)
         conversation.initFromStored(stored)
     }
+})
+
+onBeforeUnmount(() => {
+    conversation.stopWaiting()
 })
 
 // Write the current conversation to the database. 
@@ -67,6 +70,7 @@ function saveName(newName: string) {
     flex-direction: row;
     justify-content: space-around;
     padding-bottom: 1rem;
+    align-items: center;
 }
 
 .messages-container {
