@@ -13,7 +13,7 @@ const symbol = computed({
         return parseInt(props.model.getBitstring(), 2)
     },
     set: (newValue: number) => {
-        console.log(newValue)
+        // console.log(newValue)
         props.model.update(newValue.toString(2).padStart(8, "0"))
     }
 });

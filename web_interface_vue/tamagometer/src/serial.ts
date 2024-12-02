@@ -71,7 +71,7 @@ class SerialConnection {
         // check again if it's initialized (if not there was an error, or someone clicked "cancel")
         if (this.reader !== null) {
             const line = await this.reader.read()
-            // console.log("[READ]", line)
+            console.log("[READ]", line)
             return line
         }
         // if it still isn't initialized after the prompt, give up.

@@ -71,13 +71,11 @@ path {
 }
 
 table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-th {
-    border: solid thin;
-    padding: 1rem;
-}
+
 
 td {
     border: solid thin;
@@ -92,7 +90,9 @@ tr:nth-child(odd) {
     background-color: var(--light-blue);
 }
 
-tr:nth-child(1) {
+th {
+    border: solid thin;
+    padding: 1rem;
     background-color: var(--light-gray);
 }
 

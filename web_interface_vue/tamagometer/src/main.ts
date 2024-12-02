@@ -3,6 +3,8 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify'
+import 'vue3-toastify/dist/index.css'
 
 import Conversation from './components/Conversation.vue'
 import Settings from './components/Settings.vue'
@@ -22,4 +24,10 @@ const router = createRouter({
     routes,
 })
 
-createApp(App).use(router).mount('#app')
+createApp(App).use(router).use(
+    Vue3Toastify, {
+        autoClose: 3000,
+        icon: false,
+        closeButton: false,
+    } as ToastContainerOptions
+).mount('#app')

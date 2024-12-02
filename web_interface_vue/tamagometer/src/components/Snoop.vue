@@ -3,8 +3,9 @@ import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
 import { connection } from '@/serial';
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
+import { toast } from 'vue3-toastify';
 
 let snoopOutput = ref(new Array<TamaMessage>);
 
@@ -61,10 +62,23 @@ async function snoop() {
 const savedConversationName = ref("")
 
 async function saveConversation() {
-    // Name is required but just in case an empty string sneaks through don't store it
-    console.log(fromRecordingConversation.value.name)
-    if (fromRecordingConversation.value.name !== "") {
-        await dbConnection.set(fromRecordingConversation.value.toStored())
+    // Make sure all messages have been selected
+    if (fromRecordingConversation.value.oneOrMoreMessagesAreInvalid()) {
+        toast("Could not save. Make sure all four messages are added.", {
+            autoClose: true,
+            closeOnClick: true,
+            closeButton: true,
+            type: 'error',
+            isLoading: false,
+        })
+    }
+    // Name is a required field but just in case an empty string sneaks through don't store it
+    else if (fromRecordingConversation.value.name !== "") {
+        const toastId = toast("Saving...")
+        dbConnection.set(fromRecordingConversation.value.toStored()).then(result => {
+            toast.update(toastId, { render: "Saved", })
+        }
+        )
     }
 }
 
@@ -76,7 +90,7 @@ onMounted(async () => {
     await snoop()
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
     stopSnooping()
 })
 
@@ -111,39 +125,41 @@ function reloadPage() {
                 <div class="title">
                     <h2>Listening for input...</h2>
                 </div>
-                <table class="recording-table" v-if="snoopOutput.length > 0">
-                    <tbody>
-                        <tr>
-                            <th></th>
-                            <th>Set as message</th>
-                            <th></th>
-                        </tr>
-                        <template v-for="(message, index) in snoopOutput">
+                <div class="recording-table-container">
+                    <table v-if="snoopOutput.length > 0">
+                        <tbody>
                             <tr>
-                                <td>{{ index }}</td>
-                                <td>
-                                    <div class="set-message-buttons-container">
-                                        <button class="round-button"
-                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message1) }"
-                                            @click="() => { setStagedMessage('message1', index) }">1</button>
-                                        <button class="round-button"
-                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message2) }"
-                                            @click="() => { setStagedMessage('message2', index) }">2</button>
-                                        <button class="round-button"
-                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message3) }"
-                                            @click="() => { setStagedMessage('message3', index) }">3</button>
-                                        <button class="round-button"
-                                            :class="{ 'active-message-set-button': (index === recordingIndeces.message4) }"
-                                            @click="() => { setStagedMessage('message4', index) }">4</button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="bitstring">{{ message.getBitstring() }}</div>
-                                </td>
+                                <th></th>
+                                <th>Set as message</th>
+                                <th></th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
+                            <template v-for="(message, index) in snoopOutput">
+                                <tr>
+                                    <td>{{ index }}</td>
+                                    <td>
+                                        <div class="set-message-buttons-container">
+                                            <button class="round-button"
+                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message1) }"
+                                                @click="() => { setStagedMessage('message1', index) }">1</button>
+                                            <button class="round-button"
+                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message2) }"
+                                                @click="() => { setStagedMessage('message2', index) }">2</button>
+                                            <button class="round-button"
+                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message3) }"
+                                                @click="() => { setStagedMessage('message3', index) }">3</button>
+                                            <button class="round-button"
+                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message4) }"
+                                                @click="() => { setStagedMessage('message4', index) }">4</button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="bitstring">{{ message.getBitstring() }}</div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="staged-messages-container">
                 <ConversationNameInput :name="fromRecordingConversation.name"
@@ -208,6 +224,16 @@ h2 {
     gap: 2rem 10rem;
     align-items: start;
     justify-content: space-around;
+}
+
+th {
+    position: sticky;
+    top: 0;
+}
+
+.recording-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .bitstring {

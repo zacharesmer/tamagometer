@@ -28,7 +28,7 @@ class Conversation {
         this.stopWaiting()
         // this is kind of silly because these won't be null as soon as the stuff is mounted, and the button
         // to make this happen also can't be clicked until then, but typescript doesn't know that
-        console.log(this)
+        // console.log(this)
         let received1 = await connection.sendCommandUntilResponse(this.message1.getBitstring());
         if (received1 === null) {
             console.error("Response 1 not received")
@@ -90,6 +90,15 @@ class Conversation {
 
     toStored() {
         return new StoredConversation(this)
+    }
+
+    oneOrMoreMessagesAreInvalid() {
+        const result =  (this.message1.getBitstring().length !== 160 ||
+        this.message2.getBitstring().length !== 160 ||
+        this.message3.getBitstring().length !== 160 ||
+        this.message4.getBitstring().length !== 160)
+        // console.log(result)
+        return result
     }
 }
 

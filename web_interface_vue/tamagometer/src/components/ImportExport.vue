@@ -44,7 +44,7 @@ async function exportConversations() {
     const allConversations = await dbConnection.getAll()
     // remove the IDs in the export, because I don't want to overwrite when it's imported
     const allConversationsNoIDs = allConversations.map(c => { delete c.id; return c })
-    console.log(allConversationsNoIDs)
+    // console.log(allConversationsNoIDs)
     const objectURL = URL.createObjectURL(new Blob([JSON.stringify(allConversationsNoIDs)], { type: "application/json" }))
 
     var element = document.createElement('a');
