@@ -1,3 +1,9 @@
+// This module is unfortunately not used because I couldn't figure out how to make 
+// it work with the back and forth conversation. Pulling more data from the 
+// microcontroller is automagically handled by the stream, and for the 
+// conversations I wanted something potentially less elegant but easier to 
+// understand. 
+
 class TamaMessageUnderlyingSource {
     serialPort: SerialPort
     // textEncoder: TextEncoderStream
@@ -38,10 +44,6 @@ class TamaMessageUnderlyingSource {
         this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
         this.textToBytesForSerial = textEncoder.writable
 
-        // // These are the interfaces to send or receive text to or from the serial port's streams
-        // this.textReader = this.textFromSerial.getReader()
-        // this.textWriter = this.textToBytesForSerial.getWriter()
-        // console.log(controller)
     }
 
     // This is automatically called to fill the stream's queue. It will only be called as often as the promise resolves.
