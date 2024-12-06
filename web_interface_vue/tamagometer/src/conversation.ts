@@ -1,8 +1,9 @@
 export { Conversation, StoredConversation }
 
-import { reactive } from "vue"
 import { TamaMessage } from "./model"
-import { connection } from './serial'
+import type { getSerialConnection, SerialConnection } from "./serial"
+
+let connection: SerialConnection
 
 class Conversation {
     // Store 4 messages

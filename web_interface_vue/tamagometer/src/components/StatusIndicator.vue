@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { connection } from '@/serial';
 import { onMounted, ref } from 'vue'
 
 const statusCenterHidden = ref(true)

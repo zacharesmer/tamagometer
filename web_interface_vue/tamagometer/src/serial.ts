@@ -1,15 +1,22 @@
-export { connection, exportForTesting, SerialConnection }
+export { exportForTesting, getSerialConnection }
+export type { SerialConnection }
 
-// if ("serial" in navigator) {
-//     navigator.serial.addEventListener("connect", (e) => {
-//         console.log(e)
-//     })
+if ("serial" in navigator) {
+    navigator.serial.addEventListener("connect", (e) => {
+        console.log(e)
+    })
 
-//     navigator.serial.addEventListener("disconnect", (e) => {
-//         console.log(e)
-//     })
+    navigator.serial.addEventListener("disconnect", (e) => {
+        console.log(e)
+    })
+}
+
+// interface ISerialConnection {
+//     readOneCommandCancellable(): Promise<string | null>
+//     destroy: Promise<void>
+//     sendCommandUntilResponse: Promise<string | null>
+//     sendCommandNTimes: Promise<void>
 // }
-
 
 // An object manage a connection to a serial device
 class SerialConnection {
@@ -29,24 +36,31 @@ class SerialConnection {
     // Used to show a status indicator in the UI.
     listenCallback: () => void
 
+    // Do not call 
     constructor(port: SerialPort) {
         this.serialPort = port
-        port.open({ baudRate: 9600 }).then((r) => {
-            // Set up a controller to cancel everything when it's done
-            this.abortController = new AbortController()
+        this.serialPort.addEventListener("disconnect", () => {
+            this.destroy()
+        })
+    }
 
-            // Set up text encoder and decoder
-            const textDecoder = new TextDecoderStream();
-            const textEncoder = new TextEncoderStream();
+    async init() {
+        await this.serialPort.open({ baudRate: 9600 })
+        // Set up a controller to cancel everything when it's done
+        this.abortController = new AbortController()
 
-            // Attach the text encoding and decoding to the serial port
-            this.textFromSerialPromise = this.serialPort.readable.pipeTo(textDecoder.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
-            this.textFromSerial = textDecoder.readable
-            this.textFromSerialReader = this.textFromSerial.getReader()
-            this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
-            this.textToBytesForSerial = textEncoder.writable
-            this.textToBytesForSerialWriter = this.textToBytesForSerial.getWriter()
-        }).catch(r => { console.error("Could not open serial port.", r) })
+        // Set up text encoder and decoder
+        const textDecoder = new TextDecoderStream();
+        const textEncoder = new TextEncoderStream();
+
+        // Attach the text encoding and decoding to the serial port
+        this.textFromSerialPromise = this.serialPort.readable.pipeTo(textDecoder.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
+        this.textFromSerial = textDecoder.readable
+        this.textFromSerialReader = this.textFromSerial.getReader()
+        this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
+        this.textToBytesForSerial = textEncoder.writable
+        this.textToBytesForSerialWriter = this.textToBytesForSerial.getWriter()
+        return this
     }
 
     async readSerial(): Promise<ReadableStreamReadResult<any>> {
@@ -147,8 +161,8 @@ class SerialConnection {
     }
 
     async destroy() {
-        this.textFromSerialReader.releaseLock()
-        this.textToBytesForSerialWriter.releaseLock()
+        // this.textFromSerialReader.releaseLock()
+        // this.textToBytesForSerialWriter.releaseLock()
         // Send the signal to the piped streams to cancel their sources and abort their desinations
         this.abortController.abort("Closing encoder and decoder streams from serial...")
         // Wait for them to close
@@ -179,16 +193,9 @@ class SerialConnection {
     }
 }
 
-// When this moves into a web worker this initialization strategy will change
-let port: SerialPort
-let connection: SerialConnection
-if ("serial" in navigator) {
-    navigator.serial.getPorts().then(ports => {
-        port = ports[0]
-        connection = new SerialConnection(port)
-    })
+async function getSerialConnection(port: SerialPort) {
+    return await new SerialConnection(port).init()
 }
-
 
 // These could just be methods in the serial connection object. I put them here because I thought it would be easier to test
 // but it may or may not have made a difference.

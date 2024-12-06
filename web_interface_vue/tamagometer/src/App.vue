@@ -3,7 +3,6 @@
 import { ref } from 'vue'
 import Settings from './components/Settings.vue';
 import StatusIndicator from './components/StatusIndicator.vue';
-import { connection } from './serial'
 
 let webSerialSupported = ("serial" in navigator)
 

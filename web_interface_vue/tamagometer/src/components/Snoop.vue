@@ -2,7 +2,6 @@
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { connection } from '@/serial';
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
@@ -15,51 +14,50 @@ let snoopOutput = ref(new Array<TamaMessage>);
 // snoopOutput.value.push(new TamaMessage("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011"))
 // snoopOutput.value.push(new TamaMessage("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111"))
 
-let cancelSnoop = false;
 const needToRetry = ref(false);
+let worker: Worker;
+let workerPromise: Promise<void>
 
 let fromRecordingConversation = ref(new Conversation(null))
 fromRecordingConversation.value.name = "Recorded Conversation"
 
-
-function stopSnooping() {
-    console.log("Snooping is cancelled :(")
-    cancelSnoop = true;
-    connection.stopListening();
-}
-
+// this should only be called once when the component is mounted
 async function snoop() {
-    // stop any existing listening 
-    stopSnooping()
-    console.log("Snooping");
-    cancelSnoop = false;
-    needToRetry.value = false;
-    // wait for cancelSnoop to be set
-    try {
-        while (true) {
+    needToRetry.value = false
+    console.log("Snooping...");
+    // When this moves into a web worker this initialization strategy will change
+    let port: SerialPort
+    if ("serial" in navigator) {
+        console.log(navigator.serial.getPorts())
+        port = (await navigator.serial.getPorts())[0]
+    } else {
+        needToRetry.value = true
+        throw Error("Could not create a serial connection")
+    }
 
-            // console.log("Loop")
-            if (cancelSnoop) {
-                break;
-            }
-            let snoopedMessage = await connection.readOneCommandCancellable(null);
-            // console.log(snoopedMessage)
-
-            if (snoopedMessage != null) {
-                snoopOutput.value.push(new TamaMessage(snoopedMessage))
+    workerPromise = new Promise((resolve) => {
+        worker = new Worker(new URL("@/listeningWorker.ts", import.meta.url), { type: "module" })
+        worker.onmessage = (e: MessageEvent) => {
+            const message = e.data as FromListeningWorker
+            switch (message.kind) {
+                case "receivedBitstring": {
+                    snoopOutput.value.push(new TamaMessage(message.bits))
+                    break
+                }
+                case "workerDone": {
+                    resolve()
+                    break
+                }
+                case "workerError": {
+                    needToRetry.value = true
+                    break
+                }
             }
         }
-    }
-    catch (e) {
-        console.error(e)
-        needToRetry.value = true;
-    }
-
-
-    cancelSnoop = false;
+        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+        worker.postMessage({ kind: "connectSerial" })
+    })
 }
-
-const savedConversationName = ref("")
 
 async function saveConversation() {
     // Make sure all messages have been selected
@@ -87,11 +85,14 @@ function saveName(newName: string) {
 }
 
 onMounted(async () => {
-    await snoop()
+    snoop()
 })
 
-onBeforeUnmount(() => {
-    stopSnooping()
+onBeforeUnmount(async () => {
+    worker.postMessage({ kind: "stopWork" })
+    await workerPromise.catch(r => {
+        console.log(r)
+    })
 })
 
 const recordingIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>({
