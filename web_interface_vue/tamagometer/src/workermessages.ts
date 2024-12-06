@@ -1,6 +1,8 @@
 // We have rust enums at home
 // Rust enums at home:
 
+// (I don't know if this is a good way to do this. It was slightly better than no type checking, maybe)
+
 interface conversation {
     kind: "conversation"
     message1: string
@@ -12,6 +14,10 @@ interface conversationResponse {
     kind: "conversationResponse"
     response1: string
     response2: string
+}
+
+interface stopWaitingForConversation {
+    kind: "stopWaitingForConversation"
 }
 
 interface stopWork {
@@ -36,7 +42,7 @@ interface receivedBitstring {
     bits: string
 }
 
-type ToConversationWorker = conversation | stopWork
+type ToConversationWorker = connectSerial | conversation | stopWork | stopWaitingForConversation
 
 type FromConversationWorker = conversationResponse | workerDone | Error
 

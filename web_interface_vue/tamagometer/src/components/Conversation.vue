@@ -11,19 +11,77 @@ import { activeConversation as conversation } from '@/state';
 import { toast } from 'vue3-toastify'
 
 const route = useRoute()
+let workerPromise: Promise<void>
+let worker: Worker
 
 onMounted(async () => {
     // TODO this might be a good place to check if the current conversation should be saved before overwriting it
+    // Also I need to make this a query parameter at some point
     if (route.params.dbId) {
         const dbId = parseInt(route.params.dbId as string)
         const stored = await dbConnection.get(dbId)
         conversation.initFromStored(stored)
     }
+    setUpWorker()
 })
 
-onBeforeUnmount(() => {
-    conversation.stopWaiting()
+onBeforeUnmount(async () => {
+    worker.postMessage({ kind: "stopWork" })
+    await workerPromise
 })
+
+async function setUpWorker() {
+    console.log("Setting up conversation worker...")
+    workerPromise = new Promise((resolve) => {
+        worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
+        worker.onmessage = (e: MessageEvent) => {
+            const message = e.data as FromConversationWorker
+            console.log(message)
+            switch (e.data.kind) {
+                case "conversationResponse": {
+                    console.log(e.data.response1, e.data.response2)
+                    break
+                }
+                case "workerDone": {
+                    resolve()
+                    break
+                }
+                case "workerError": {
+                    break
+                }
+            }
+        }
+        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+        worker.postMessage({ kind: "connectSerial" })
+    })
+}
+
+function startConversation() {
+    // TODO: I need something to prevent spamming the button. Maybe a promise in the 
+    // webworker so it will just ignore any messages until the conversation is complete or cancelled?
+    console.log("Starting conversation...")
+    worker.postMessage({
+        kind: "conversation",
+        message1: conversation.message1.getBitstring(),
+        message2: conversation.message3.getBitstring(),
+        conversationType: "start"
+    })
+}
+
+function awaitConversation() {
+    console.log("Sending message to await conversation...")
+    console.log(worker)
+    worker.postMessage({
+        kind: "conversation",
+        message1: conversation.message2.getBitstring(),
+        message2: conversation.message4.getBitstring(),
+        conversationType: "wait"
+    })
+}
+
+function stopWaiting() {
+    worker.postMessage({ kind: "stopWaitingForConversation" })
+}
 
 // Write the current conversation to the database. 
 // Update the selected conversation to the newly created one
@@ -57,16 +115,14 @@ function saveName(newName: string) {
 
 
 <template>
-    <div v-if=" ! conversation.oneOrMoreMessagesAreInvalid()">
+    <div v-if="!conversation.oneOrMoreMessagesAreInvalid()">
         <div class="name-buttons-container">
             <ConversationNameInput class="name-input"
                 @save-new-conversation="(newName) => { saveNewConversation(newName) }"
                 @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
             </ConversationNameInput>
-            <ConversationButtons class="conversation-buttons"
-                @start-conversation="() => { conversation.startConversation() }"
-                @await-conversation="() => { conversation.awaitConversation() }"
-                @stop-waiting="() => { conversation.stopWaiting() }">
+            <ConversationButtons class="conversation-buttons" @start-conversation="() => { startConversation() }"
+                @await-conversation="() => { awaitConversation() }" @stop-waiting="() => { stopWaiting() }">
             </ConversationButtons>
         </div>
         <div class="messages-container">

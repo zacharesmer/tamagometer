@@ -1,26 +1,10 @@
 export { exportForTesting, getSerialConnection }
 export type { SerialConnection }
 
-if ("serial" in navigator) {
-    navigator.serial.addEventListener("connect", (e) => {
-        console.log(e)
-    })
-
-    navigator.serial.addEventListener("disconnect", (e) => {
-        console.log(e)
-    })
-}
-
-// interface ISerialConnection {
-//     readOneCommandCancellable(): Promise<string | null>
-//     destroy: Promise<void>
-//     sendCommandUntilResponse: Promise<string | null>
-//     sendCommandNTimes: Promise<void>
-// }
-
-// An object manage a connection to a serial device
+// An object manage the connection to a serial device
+// It is exposed only through `getSerialConnection` because it requires async setup
 class SerialConnection {
-    private serialPort: SerialPort
+    serialPort: SerialPort
 
     private textFromSerial: ReadableStream<string>
     private textFromSerialReader: ReadableStreamDefaultReader
@@ -36,15 +20,16 @@ class SerialConnection {
     // Used to show a status indicator in the UI.
     listenCallback: () => void
 
-    // Do not call 
-    constructor(port: SerialPort) {
+    // Do not call the constructor directly; it needs to be accessed through the getSerialConnection 
+    // function so the object is actually initialized. This is necessary because opening the serial port is
+    // asynchronous, and you can't await a constructor
+
+    // The real "constructor"
+    async init(port: SerialPort) {
         this.serialPort = port
         this.serialPort.addEventListener("disconnect", () => {
             this.destroy()
         })
-    }
-
-    async init() {
         await this.serialPort.open({ baudRate: 9600 })
         // Set up a controller to cancel everything when it's done
         this.abortController = new AbortController()
@@ -74,22 +59,18 @@ class SerialConnection {
         await this.textToBytesForSerialWriter.write(line + '\r\n')
     }
 
-    // Add the prefix "send", which tells the microcontroller to transmit the message
+    // Add the prefix "send" to a message, which tells the microcontroller to transmit the message
     sendCommand(code: string) {
         this.sendLine("send" + code);
     }
 
+    // Returns either null (if timed out or the stream closed) or a string of 1 tamagotchi command.
+    // Matches /[PICO]([10]{160})[END]/ from of a stream that may be broken up in arbitrary chunks
+    //
+    // This is not implemented as a legit stream because it needs to support a back and forth conversation. 
+    // I tried it as a stream, and it was great for passively recording, but it got weird with the conversations.
+    // The matching logic is kind of wild, and at some point I will replace it with a regex
     async readOneCommand(): Promise<string | null> {
-        // Returns either null (if timed out or the stream closed) or a string of 1 tamagotchi command.
-
-        // match and return a string in the format [PICO]160 1s and 0s[END]
-        // out of a stream that may be broken up in arbitrary chunks (the arbitrary chunks 
-        // aspect is why this isn't a regex one-liner)
-
-        // This handles a successful code, and a timeout from the pico, but NOT no response from the pico
-        // So, don't unplug it in the middle of this. Actually, it's possible the stream 
-        // would end if it's unplug and that's handled. It's not planned or designed to work like that, though.
-
         let commandMatched: { matchingChars: number, commandSoFar: string[] }
         commandMatched = { matchingChars: 0, commandSoFar: [] }
         let commandComplete = false;
@@ -97,8 +78,10 @@ class SerialConnection {
         let timeoutMatched = 0;
         let timeoutComplete = false;
 
+        // Tell the microcontroller to listen for a command for 1 second
         await this.sendLine("listen")
         while (true) {
+            // This part is not in a try/catch because if there's an error with the serial connection, I actually want it to fail
             const readSerialResult = await this.readSerial();
             // console.log("Result: " + readSerialResult.value ? readSerialResult.value : "")
             const { value, done: stream_done } = readSerialResult
@@ -106,6 +89,7 @@ class SerialConnection {
                 ({ complete: commandComplete, commandMatched } = matchCommandString(commandMatched, value));
                 ({ complete: timeoutComplete, matchingChars: timeoutMatched } = matchTimedOutString(timeoutMatched, value));
                 // TODO: what happens if something is sent with both a valid message and a timeout signal? 
+                // For now the command matching takes precedence
                 if (commandComplete) {
                     // console.log("Got a command!!")
                     console.log("[READ]" + commandMatched.commandSoFar.join(""))
@@ -115,7 +99,7 @@ class SerialConnection {
                     return null
                 }
             }
-            // this probably won't happen since the serial stream stays open
+            // this might get called when the object is destroyed/cleaned up
             if (stream_done) {
                 console.log(`[readCommandLoop] DONE, ${commandMatched.commandSoFar.join("")}`);
                 return null;
@@ -123,17 +107,14 @@ class SerialConnection {
         }
     }
 
-    // listen for a command until it's received, cancelled, or this method times out
+    // listen for a command until it's received, cancelled, or times out
     async readOneCommandCancellable(timeout: number | null = null) {
         // cancelListen can be set by a callback for a button, so reset it in case that's happened
         this.cancelListen = false;
         let command = null;
+        // If no timeout is set, just listen indefinitely
         if (timeout === null) {
             while (command === null && !this.cancelListen) {
-                // An error may bubble up from readOneCommand, but that's fine. The main source of that error is if someone clicks 
-                // "cancel" on the serial connection prompt. If they do this repeatedly, the browser stops prompting (probably to 
-                // prevent a malicious site from spamming). So, readOneCommand just prompts once and gives up with an error if they cancel.
-                // No serial connection is pretty unrecoverable so I'm just letting it go
                 command = await this.readOneCommand();
             }
         }
@@ -154,24 +135,24 @@ class SerialConnection {
         return command;
     }
 
-    // stops the loop that's polling the microcontroller for a valid tamagotchi signal
+    // stops the loop in readOneCommandCancellable that's polling the microcontroller
     stopListening() {
         console.log("Listening cancelled")
         this.cancelListen = true;
     }
 
+    // Clean up the serial connection and close the port so a different script (probably a new web worker) can reconnect later
     async destroy() {
-        // this.textFromSerialReader.releaseLock()
-        // this.textToBytesForSerialWriter.releaseLock()
         // Send the signal to the piped streams to cancel their sources and abort their desinations
+        // This also closes the reader and writer
         this.abortController.abort("Closing encoder and decoder streams from serial...")
-        // Wait for them to close
+        // Wait for them to finish closing
         await Promise.all([this.textFromSerialPromise, this.textToBytesForSerialPromise])
         console.log("Closing serial port...")
         await this.serialPort.close()
     }
 
-    // returns the response, or null if one is not received after maxAttempts attempts
+    // Return the response, or null if one is not received after maxAttempts attempts
     async sendCommandUntilResponse(message: string, maxAttempts = 3): Promise<string | null> {
         for (let i = 0; i < maxAttempts; i++) {
             // this times out after however long is set on the microcontroller (currently 1 second)
@@ -194,13 +175,14 @@ class SerialConnection {
 }
 
 async function getSerialConnection(port: SerialPort) {
-    return await new SerialConnection(port).init()
+    return await new SerialConnection().init(port)
 }
 
 // These could just be methods in the serial connection object. I put them here because I thought it would be easier to test
 // but it may or may not have made a difference.
 function matchCommandString(commandMatched: { matchingChars: number, commandSoFar: string[] }, newString: string): { complete: boolean, commandMatched: { matchingChars: number, commandSoFar: string[] } } {
     // DIY regex for matching in place
+    // This is kind of ridiculous and I will probably change it to a regular old regex at some point
     let { matchingChars, commandSoFar } = commandMatched
     const beginning = "[PICO]";
     const end = "[END]";
