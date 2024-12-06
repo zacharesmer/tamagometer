@@ -1,115 +1,68 @@
-export { connection, exportForTesting }
+export { connection, exportForTesting, SerialConnection }
 
-// A singleton object that holds a connection to a serial device, 
-// and has some methods to write to and read from it.
+// if ("serial" in navigator) {
+//     navigator.serial.addEventListener("connect", (e) => {
+//         console.log(e)
+//     })
+
+//     navigator.serial.addEventListener("disconnect", (e) => {
+//         console.log(e)
+//     })
+// }
+
+
+// An object manage a connection to a serial device
 class SerialConnection {
-    private reader: ReadableStreamDefaultReader | null;
-    private outputStream: WritableStream | null;
+    private serialPort: SerialPort
+
+    private textFromSerial: ReadableStream<string>
+    private textFromSerialReader: ReadableStreamDefaultReader
+    private textFromSerialPromise: Promise<void>
+    private textToBytesForSerial: WritableStream<string>
+    private textToBytesForSerialWriter: WritableStreamDefaultWriter
+    private textToBytesForSerialPromise: Promise<void>
+
+    private abortController: AbortController
+
     private cancelListen = false;
 
     // Used to show a status indicator in the UI.
     listenCallback: () => void
 
-    // The constructor makes an empty object. It can't be initialized until there is user interaction, 
-    // but it's helpful for it to exist before then. If you try to use the object before it is initialized,
-    // it will attempt to initialize itself first and prompt for you to select a serial device.
-    constructor() {
-        this.reader = null;
-        this.outputStream = null;
-        this.listenCallback = () => { }
-    }
+    constructor(port: SerialPort) {
+        this.serialPort = port
+        port.open({ baudRate: 9600 }).then((r) => {
+            // Set up a controller to cancel everything when it's done
+            this.abortController = new AbortController()
 
-    // This is separate from the constructor because the object needs to exist before the site 
-    // prompts you to allow access to serial. 
-    async init() {
-        if ("serial" in navigator) {
-            try {
-                // find and open a serial port to hand to the SerialConnection constructor
-                // navigator will have serial because it is checked above, but typsecript doesn't know that apparently
-                // @ts-ignore
-                const port = await (navigator as Navigator).serial.requestPort();
-                await port.open({ baudRate: 9600 });
-                // connecting to the device must happen in a user-initiated interaction
-                // set up a reader to get decoded text out of the port. Store the reader since we just need one
-                const decoder = new TextDecoderStream();
-                port.readable.pipeTo(decoder.writable);
-                const inputStream = decoder.readable;
-                this.reader = inputStream.getReader();
+            // Set up text encoder and decoder
+            const textDecoder = new TextDecoderStream();
+            const textEncoder = new TextEncoderStream();
 
-                // set up an output stream so the front end can write encoded text to the port. 
-                // When this is used we'll make a new writer each time
-                const encoder = new TextEncoderStream();
-                let outputDone = encoder.readable.pipeTo(port.writable);
-                this.outputStream = encoder.writable;
-
-                // if the serial connection is lost, close the port and un-initialize 
-                // the object so it can be tried again
-                port.addEventListener("disconnect", () => {
-                    this.reader = null
-                    this.outputStream = null
-                    port.close()
-                })
-
-            } catch (err) {
-                console.error('There was an error opening the serial port:', err);
-            }
-        } else {
-            throw Error("Webserial is not enabled in your browser. Try something based on Chromium.")
-        }
+            // Attach the text encoding and decoding to the serial port
+            this.textFromSerialPromise = this.serialPort.readable.pipeTo(textDecoder.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
+            this.textFromSerial = textDecoder.readable
+            this.textFromSerialReader = this.textFromSerial.getReader()
+            this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
+            this.textToBytesForSerial = textEncoder.writable
+            this.textToBytesForSerialWriter = this.textToBytesForSerial.getWriter()
+        }).catch(r => { console.error("Could not open serial port.", r) })
     }
 
     async readSerial(): Promise<ReadableStreamReadResult<any>> {
-        // If it hasn't been initialized (possibly the connect button hasn't been clicked), prompt for it again
-        if (this.reader === null) {
-            try {
-                await this.init()
-            }
-            catch (error) {
-                console.error(error)
-            }
-        }
-        // check again if it's initialized (if not there was an error, or someone clicked "cancel")
-        if (this.reader !== null) {
-            const line = await this.reader.read()
-            console.log("[READ]", line)
-            return line
-        }
-        // if it still isn't initialized after the prompt, give up.
-        else { throw Error("Could not read serial.") }
+        const line = await this.textFromSerialReader.read()
+        console.log("[READ]", line)
+        return line
     }
 
-    // send text via serial, attempt to initialize the serial connection if it's not yet, 
-    // or do nothing if an attempt to initialize the serial connection fails
-    async sendSerial(...lines: string[]) {
-        // If the connection hasn't been initialized, prompt for it again
-        if (this.outputStream === null) {
-            try {
-                await this.init()
-            }
-            catch (error) {
-                console.error(error)
-                return
-            }
-        }
-        // Check again after the initialization attempt. If it is not initialized, then there
-        // was an error, or the person clicked "cancel" on the prompt
-        if (this.outputStream !== null) {
-            const writer = this.outputStream.getWriter();
-            lines.forEach((line) => {
-                console.log('[SEND]', line);
-                writer.write(line + '\r\n');
-            });
-            writer.releaseLock();
-        }
-        // if it still isn't initialized after the prompt, give up.
-        else {
-            throw Error("Could not send serial")
-        }
+    async sendLine(line: string) {
+        console.log('[SEND]', line);
+        await this.textToBytesForSerialWriter.write(line + '\r\n')
     }
 
     // Add the prefix "send", which tells the microcontroller to transmit the message
-    async sendCommand(code: string) {
-        return await this.sendSerial("send" + code);
+    sendCommand(code: string) {
+        this.sendLine("send" + code);
     }
 
     async readOneCommand(): Promise<string | null> {
@@ -130,7 +83,7 @@ class SerialConnection {
         let timeoutMatched = 0;
         let timeoutComplete = false;
 
-        await this.startListening()
+        await this.sendLine("listen")
         while (true) {
             const readSerialResult = await this.readSerial();
             // console.log("Result: " + readSerialResult.value ? readSerialResult.value : "")
@@ -148,7 +101,7 @@ class SerialConnection {
                     return null
                 }
             }
-            // this case was in the example, but I'm not sure in what scenario it will actually happen
+            // this probably won't happen since the serial stream stays open
             if (stream_done) {
                 console.log(`[readCommandLoop] DONE, ${commandMatched.commandSoFar.join("")}`);
                 return null;
@@ -187,31 +140,28 @@ class SerialConnection {
         return command;
     }
 
-    async startListening() {
-        // Tell the board to listen for input
-        this.listenCallback()
-        await this.sendSerial("listen")
-    }
-
     // stops the loop that's polling the microcontroller for a valid tamagotchi signal
     stopListening() {
         console.log("Listening cancelled")
         this.cancelListen = true;
     }
 
+    async destroy() {
+        this.textFromSerialReader.releaseLock()
+        this.textToBytesForSerialWriter.releaseLock()
+        // Send the signal to the piped streams to cancel their sources and abort their desinations
+        this.abortController.abort("Closing encoder and decoder streams from serial...")
+        // Wait for them to close
+        await Promise.all([this.textFromSerialPromise, this.textToBytesForSerialPromise])
+        console.log("Closing serial port...")
+        await this.serialPort.close()
+    }
+
     // returns the response, or null if one is not received after maxAttempts attempts
     async sendCommandUntilResponse(message: string, maxAttempts = 3): Promise<string | null> {
-        if (this.reader === null || this.outputStream === null) {
-            try {
-                await this.init()
-            } catch (e) {
-                console.error(e)
-                return null
-            }
-        }
         for (let i = 0; i < maxAttempts; i++) {
             // this times out after however long is set on the microcontroller (currently 1 second)
-            await this.sendCommand(message);
+            this.sendCommand(message);
             // listen for a response
             let response = await this.readOneCommand();
             if (response != null) {
@@ -229,8 +179,16 @@ class SerialConnection {
     }
 }
 
-// Singleton connection that the whole page uses
-const connection = new SerialConnection();
+// When this moves into a web worker this initialization strategy will change
+let port: SerialPort
+let connection: SerialConnection
+if ("serial" in navigator) {
+    navigator.serial.getPorts().then(ports => {
+        port = ports[0]
+        connection = new SerialConnection(port)
+    })
+}
+
 
 // These could just be methods in the serial connection object. I put them here because I thought it would be easier to test
 // but it may or may not have made a difference.

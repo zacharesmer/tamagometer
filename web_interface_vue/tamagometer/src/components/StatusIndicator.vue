@@ -8,7 +8,7 @@ const statusOuterWaveHidden = ref(true)
 
 // If a second status indicator is added it will stop the first one from working
 onMounted(() => {
-    connection.listenCallback = animateStatusIndicator
+    // connection.listenCallback = animateStatusIndicator
 })
 
 // Animate showing the status indicator for about a second, then hide it again
