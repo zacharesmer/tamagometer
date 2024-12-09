@@ -48,4 +48,4 @@ type FromConversationWorker = conversationResponse | workerDone | Error
 
 type ToListeningWorker = connectSerial | stopWork
 
-type FromListeningWorker = receivedBitstring | workerDone | workerError
+type FromListeningWorker = receivedBitstring | workerDone | workerError 

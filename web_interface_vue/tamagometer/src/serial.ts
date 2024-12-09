@@ -1,4 +1,4 @@
-export { exportForTesting, getSerialConnection }
+export { exportForTesting, getSerialConnection, getPortOrNeedToRetry }
 export type { SerialConnection }
 
 // An object manage the connection to a serial device
@@ -176,6 +176,30 @@ class SerialConnection {
 
 async function getSerialConnection(port: SerialPort) {
     return await new SerialConnection().init(port)
+}
+
+async function getPortOrNeedToRetry(): Promise<boolean> {
+    let needToRetry = false
+    let port: SerialPort
+    // Check if serial API is even available
+    if ("serial" in navigator) {
+        let ports = await navigator.serial.getPorts()
+        console.log(ports)
+        // If there's not a connected serial device that has been used before, request access to one
+        if (ports.length === 0) {
+            try { 
+                await navigator.serial.requestPort() 
+            }
+            catch (err) {
+                needToRetry = true
+                console.error(err)
+            }
+        }
+    } else {
+        needToRetry = true
+        console.error("Web Serial is not available in this browser")
+    }
+    return needToRetry
 }
 
 // These could just be methods in the serial connection object. I put them here because I thought it would be easier to test
