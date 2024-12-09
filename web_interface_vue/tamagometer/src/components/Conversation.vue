@@ -5,17 +5,19 @@ import { dbConnection } from '@/database';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
 import { useRoute } from 'vue-router';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import { activeConversation as conversation } from '@/state';
 import { getPortOrNeedToRetry } from '@/serial';
 
 import { toast } from 'vue3-toastify'
+import StatusIndicator from './StatusIndicator.vue';
 
 const route = useRoute()
 let workerPromise: Promise<void>
 let worker: Worker
 
 const needToRetry = ref(false)
+const statusIndicator = useTemplateRef("statusIndicator")
 
 onMounted(async () => {
     // TODO this might be a good place to check if the current conversation should be saved before overwriting it
@@ -36,13 +38,13 @@ onBeforeUnmount(async () => {
 async function setUpWorker() {
     console.log("Setting up conversation worker...")
     needToRetry.value = await getPortOrNeedToRetry()
-    if (! needToRetry.value) {
+    if (!needToRetry.value) {
         workerPromise = new Promise((resolve) => {
             worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
             worker.onmessage = (e: MessageEvent) => {
                 const message = e.data as FromConversationWorker
                 console.log(message)
-                switch (e.data.kind) {
+                switch (message.kind) {
                     case "conversationResponse": {
                         console.log(e.data.response1, e.data.response2)
                         break
@@ -53,6 +55,12 @@ async function setUpWorker() {
                     }
                     case "workerError": {
                         needToRetry.value = true
+                        break
+                    }
+                    case "animate": {
+                        if (message.animation === "statusIndicator") {
+                            statusIndicator.value?.animateStatusIndicator()
+                        }
                         break
                     }
                 }
@@ -132,6 +140,7 @@ function reloadPage() {
                 @save-new-conversation="(newName) => { saveNewConversation(newName) }"
                 @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
             </ConversationNameInput>
+            <StatusIndicator ref="statusIndicator"></StatusIndicator>
             <div v-if="needToRetry" class="retry">
                 <p>Could not connect to serial.</p>
                 <button @click="setUpWorker">Retry</button>

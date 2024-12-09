@@ -42,10 +42,15 @@ interface receivedBitstring {
     bits: string
 }
 
+interface animate {
+    kind: "animate"
+    animation: "statusIndicator" // | add more options as they get made
+}
+
 type ToConversationWorker = connectSerial | conversation | stopWork | stopWaitingForConversation
 
-type FromConversationWorker = conversationResponse | workerDone | Error
+type FromConversationWorker = conversationResponse | workerDone | workerError | animate
 
 type ToListeningWorker = connectSerial | stopWork
 
-type FromListeningWorker = receivedBitstring | workerDone | workerError 
+type FromListeningWorker = receivedBitstring | workerDone | workerError | animate

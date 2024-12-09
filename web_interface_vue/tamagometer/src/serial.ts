@@ -80,6 +80,7 @@ class SerialConnection {
 
         // Tell the microcontroller to listen for a command for 1 second
         await this.sendLine("listen")
+        postMessage({kind: "animate", animation: "statusIndicator"})
         while (true) {
             // This part is not in a try/catch because if there's an error with the serial connection, I actually want it to fail
             const readSerialResult = await this.readSerial();

@@ -2,10 +2,11 @@
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
 import { getPortOrNeedToRetry } from '@/serial';
+import StatusIndicator from './StatusIndicator.vue';
 
 let snoopOutput = ref(new Array<TamaMessage>);
 
@@ -21,6 +22,8 @@ let workerPromise: Promise<void>
 
 let fromRecordingConversation = ref(new Conversation(null))
 fromRecordingConversation.value.name = "Recorded Conversation"
+
+const statusIndicator = useTemplateRef("statusIndicator")
 
 // Called when the component is mounted or if it fails and the retry button is clicked
 async function snoop() {
@@ -42,6 +45,12 @@ async function snoop() {
                     }
                     case "workerError": {
                         needToRetry.value = true
+                        break
+                    }
+                    case "animate": {
+                        if (message.animation === "statusIndicator") {
+                            statusIndicator.value?.animateStatusIndicator()
+                        }
                         break
                     }
                 }
@@ -117,6 +126,7 @@ function reloadPage() {
         <div class="recording-body-container">
             <div class="recording-list">
                 <div class="title">
+                    <StatusIndicator ref="statusIndicator"></StatusIndicator>
                     <h2>Listening for input...</h2>
                 </div>
                 <div class="recording-table-container">

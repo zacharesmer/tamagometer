@@ -5,6 +5,10 @@ const statusCenterHidden = ref(true)
 const statusInnerWaveHidden = ref(true)
 const statusOuterWaveHidden = ref(true)
 
+defineExpose(
+    { animateStatusIndicator }
+)
+
 // If a second status indicator is added it will stop the first one from working
 onMounted(() => {
     // connection.listenCallback = animateStatusIndicator

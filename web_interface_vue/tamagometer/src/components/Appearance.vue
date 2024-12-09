@@ -41,10 +41,6 @@ const imageSource = computed(() => {
 
 <style scoped>
 .appearance-container {
-    /* display: flex;
-    flex-direction: column;
-    border: solid;
-    align-items: center; */
 }
 
 

@@ -35,7 +35,7 @@ onmessage = (async (e: MessageEvent) => {
 
 async function listen() {
     while (continueListening) {
-        const command = await serialConnection.readOneCommand().catch(r => { console.error(r) })
+        const command = await serialConnection.readOneCommand().catch(r => { console.log(r) })
         if (command) {
             console.log("Sending message:", command)
             postMessage({ kind: "receivedBitstring", bits: command })

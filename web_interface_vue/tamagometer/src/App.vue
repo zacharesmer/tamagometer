@@ -68,7 +68,7 @@ footer {
   border-width: thin;
 }
 
-/* The nav bar, status indicator, and the settings menu */
+/* The nav bar and the settings menu */
 .top-bar {
   display: flex;
   flex-direction: row;
