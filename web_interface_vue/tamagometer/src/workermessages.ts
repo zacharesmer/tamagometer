@@ -12,6 +12,7 @@ interface conversation {
 
 interface conversationResponse {
     kind: "conversationResponse"
+    responseTo: "initiate" | "await"
     response1: string
     response2: string
 }

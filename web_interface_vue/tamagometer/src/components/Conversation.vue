@@ -46,7 +46,15 @@ async function setUpWorker() {
                 console.log(message)
                 switch (message.kind) {
                     case "conversationResponse": {
-                        console.log(e.data.response1, e.data.response2)
+                        console.log(message.response1, message.response2)
+                        if (message.responseTo === "initiate") {
+                            conversation.message2.update(message.response1)
+                            conversation.message4.update(message.response2)
+                        }
+                        else if (message.response2 === "await") {
+                            conversation.message1.update(message.response1)
+                            conversation.message3.update(message.response2)
+                        }
                         break
                     }
                     case "workerDone": {

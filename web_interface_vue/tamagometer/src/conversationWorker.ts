@@ -64,7 +64,7 @@ async function startConversation(message1: string, message2: string) {
         return;
     }
     console.log(`received ${received2}`)
-    postMessage({ kind: "conversationResponse", response1: received1, response2: received2 })
+    postMessage({ kind: "conversationResponse", response1: received1, response2: received2, responseTo: "initiate" })
 }
 
 
@@ -92,5 +92,5 @@ async function awaitConversation(message1: string, message2: string) {
     // send the final message 2 times just in case. The repeat is probably not 
     // necessary but my transmitter is a little wonky
     await serialConnection.sendCommandNTimes(message2, 2);
-    postMessage({ kind: "conversationResponse", response1: received1, response2: received2 })
+    postMessage({ kind: "conversationResponse", response1: received1, response2: received2, responseTo: "await" })
 }
