@@ -1,3 +1,4 @@
+import { error } from "console"
 import { type SerialConnection, getSerialConnection } from "./serial"
 
 let serialPort: SerialPort
@@ -16,7 +17,7 @@ onmessage = (async (e: MessageEvent) => {
             getSerialConnection(serialPort).then(r => {
                 serialConnection = r
             }).catch((r) => {
-                postMessage({ kind: "workerError", r }); return
+                postMessage({ kind: "workerError", error: r }); return
             })
             break
         }
@@ -29,10 +30,10 @@ onmessage = (async (e: MessageEvent) => {
         }
         case "conversation": {
             if (message.conversationType === "start") {
-                startConversation(message.message1, message.message2)
+                startConversation(message.message1, message.message2).catch(r => postMessage({ kind: "workerError", error: r }))
             }
             else if (message.conversationType === "wait") {
-                awaitConversation(message.message1, message.message2)
+                awaitConversation(message.message1, message.message2).catch(r => postMessage({ kind: "workerError", error: r }))
             }
             else {
                 throw Error("Invalid conversation type:" + message.conversationType)

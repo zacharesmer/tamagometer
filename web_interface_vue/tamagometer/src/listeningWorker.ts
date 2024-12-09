@@ -16,10 +16,10 @@ onmessage = (async (e: MessageEvent) => {
             getSerialConnection(serialPort).then(r => {
                 serialConnection = r
                 listen().catch(r => {
-                    postMessage({ kind: "workerError", r })
+                    postMessage({ kind: "workerError", error: r })
                 })
             }).catch((r) => {
-                postMessage({ kind: "workerError", r }); return
+                postMessage({ kind: "workerError", error: r }); return
             })
             break
         }
@@ -27,7 +27,7 @@ onmessage = (async (e: MessageEvent) => {
             // break out of the listening loop
             continueListening = false
             // free the serial port, and then notify the main thread that the worker is done
-            serialConnection.destroy().then(r => postMessage({ kind: "workerDone" }))
+            serialConnection.destroy().then(r => postMessage({ kind: "workerDone" })).catch(r => console.log(r))
             break
         }
     }
@@ -35,7 +35,7 @@ onmessage = (async (e: MessageEvent) => {
 
 async function listen() {
     while (continueListening) {
-        const command = await serialConnection.readOneCommand().catch(r => { throw r })
+        const command = await serialConnection.readOneCommand().catch(r => { console.error(r) })
         if (command) {
             console.log("Sending message:", command)
             postMessage({ kind: "receivedBitstring", bits: command })

@@ -187,8 +187,8 @@ async function getPortOrNeedToRetry(): Promise<boolean> {
         console.log(ports)
         // If there's not a connected serial device that has been used before, request access to one
         if (ports.length === 0) {
-            try { 
-                await navigator.serial.requestPort() 
+            try {
+                await navigator.serial.requestPort()
             }
             catch (err) {
                 needToRetry = true
