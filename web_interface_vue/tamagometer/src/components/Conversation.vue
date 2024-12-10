@@ -30,62 +30,62 @@ onMounted(async () => {
     setUpWorker()
 })
 
-onBeforeRouteLeave(async () => {
+onBeforeRouteLeave(async (to, from, next) => {
     worker.postMessage({ kind: "stopWork" })
     await workerPromise.catch(r => {
         console.log(r)
     })
+    next()
 })
 
 async function setUpWorker() {
-    console.log("Setting up conversation worker...")
+    // console.log("Setting up conversation worker...")
     needToRetry.value = await getPortOrNeedToRetry()
-    if (!needToRetry.value) {
-        workerPromise = new Promise((resolve) => {
-            worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
-            worker.onmessage = (e: MessageEvent) => {
-                const message = e.data as FromConversationWorker
-                switch (message.kind) {
-                    // Update the UI with the responses
-                    case "conversationResponse": {
-                        console.log(message.response1, message.response2)
-                        if (message.responseTo === "initiate") {
-                            conversation.message2.update(message.response1)
-                            conversation.message4.update(message.response2)
-                        }
-                        else if (message.response2 === "await") {
-                            conversation.message1.update(message.response1)
-                            conversation.message3.update(message.response2)
-                        }
-                        break
+    workerPromise = new Promise((resolve, reject) => {
+        worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
+        worker.onmessage = (e: MessageEvent) => {
+            const message = e.data as FromConversationWorker
+            switch (message.kind) {
+                // Update the UI with the responses
+                case "conversationResponse": {
+                    // console.log(message.response1, message.response2)
+                    if (message.responseTo === "initiate") {
+                        conversation.message2.update(message.response1)
+                        conversation.message4.update(message.response2)
                     }
-                    case "workerDone": {
-                        console.log("Worker is done")
-                        resolve()
-                        break
+                    else if (message.response2 === "await") {
+                        conversation.message1.update(message.response1)
+                        conversation.message3.update(message.response2)
                     }
-                    case "workerError": {
-                        needToRetry.value = true
-                        break
+                    break
+                }
+                case "workerDone": {
+                    // console.log("Worker is done")
+                    resolve()
+                    break
+                }
+                case "workerError": {
+                    needToRetry.value = true
+                    reject(message.error)
+                    break
+                }
+                case "animate": {
+                    if (message.animation === "statusIndicator") {
+                        statusIndicator.value?.animateStatusIndicator()
                     }
-                    case "animate": {
-                        if (message.animation === "statusIndicator") {
-                            statusIndicator.value?.animateStatusIndicator()
-                        }
-                        break
-                    }
+                    break
                 }
             }
-            worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-            worker.postMessage({ kind: "connectSerial" })
-        })
-    }
+        }
+        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+        worker.postMessage({ kind: "connectSerial" })
+    })
 }
 
 function startConversation() {
     // TODO: I need something to prevent spamming the button. Maybe a promise in the 
     // webworker so it will just ignore any messages until the conversation is complete or cancelled?
-    console.log("Starting conversation...")
+    // console.log("Starting conversation...")
     worker.postMessage({
         kind: "conversation",
         message1: conversation.message1.getBitstring(),

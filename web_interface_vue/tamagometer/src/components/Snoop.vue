@@ -29,37 +29,36 @@ const statusIndicator = useTemplateRef("statusIndicator")
 // Called when the component is mounted or if it fails and the retry button is clicked
 async function snoop() {
     needToRetry.value = await getPortOrNeedToRetry()
-    console.log("Snooping...");
-    if (!needToRetry.value) {
-        workerPromise = new Promise((resolve) => {
-            worker = new Worker(new URL("@/listeningWorker.ts", import.meta.url), { type: "module" })
-            worker.onmessage = (e: MessageEvent) => {
-                const message = e.data as FromListeningWorker
-                switch (message.kind) {
-                    case "receivedBitstring": {
-                        snoopOutput.value.push(new TamaMessage(message.bits))
-                        break
+    // console.log("Snooping...");
+    workerPromise = new Promise((resolve, reject) => {
+        worker = new Worker(new URL("@/listeningWorker.ts", import.meta.url), { type: "module" })
+        worker.onmessage = (e: MessageEvent) => {
+            const message = e.data as FromListeningWorker
+            switch (message.kind) {
+                case "receivedBitstring": {
+                    snoopOutput.value.push(new TamaMessage(message.bits))
+                    break
+                }
+                case "workerDone": {
+                    resolve()
+                    break
+                }
+                case "workerError": {
+                    needToRetry.value = true
+                    reject(message.error)
+                    break
+                }
+                case "animate": {
+                    if (message.animation === "statusIndicator") {
+                        statusIndicator.value?.animateStatusIndicator()
                     }
-                    case "workerDone": {
-                        resolve()
-                        break
-                    }
-                    case "workerError": {
-                        needToRetry.value = true
-                        break
-                    }
-                    case "animate": {
-                        if (message.animation === "statusIndicator") {
-                            statusIndicator.value?.animateStatusIndicator()
-                        }
-                        break
-                    }
+                    break
                 }
             }
-            worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-            worker.postMessage({ kind: "connectSerial" })
-        })
-    }
+        }
+        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+        worker.postMessage({ kind: "connectSerial" })
+    })
 }
 
 async function saveConversation() {
@@ -88,14 +87,16 @@ function saveName(newName: string) {
 }
 
 onMounted(async () => {
+    // setTimeout(snoop, 500)
     snoop()
 })
 
-onBeforeRouteLeave(async () => {
+onBeforeRouteLeave(async (to, from, next) => {
     worker.postMessage({ kind: "stopWork" })
     await workerPromise.catch(r => {
         console.log(r)
     })
+    next()
 })
 
 const recordingIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>({

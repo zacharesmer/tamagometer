@@ -39,10 +39,10 @@ class SerialConnection {
         const textEncoder = new TextEncoderStream();
 
         // Attach the text encoding and decoding to the serial port
-        this.textFromSerialPromise = this.serialPort.readable.pipeTo(textDecoder.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
+        this.textFromSerialPromise = this.serialPort.readable.pipeTo(textDecoder.writable, { signal: this.abortController.signal }).catch(r => { console.log("textFromSerial:", r) })
         this.textFromSerial = textDecoder.readable
         this.textFromSerialReader = this.textFromSerial.getReader()
-        this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log(r) })
+        this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log("textToBytesForSerial:", r) })
         this.textToBytesForSerial = textEncoder.writable
         this.textToBytesForSerialWriter = this.textToBytesForSerial.getWriter()
         return this
@@ -138,18 +138,27 @@ class SerialConnection {
 
     // stops the loop in readOneCommandCancellable that's polling the microcontroller
     stopListening() {
-        console.log("Listening cancelled")
+        // console.log("Listening cancelled")
         this.cancelListen = true;
     }
 
     // Clean up the serial connection and close the port so a different script (probably a new web worker) can reconnect later
     async destroy() {
+        // console.log("Destroy has been called")
+        this.stopListening()
+        // Release the reader's lock. If this happens when it still has pending .read() requests those will be rejected
+        // with a TypeError. That's fine; when this method is called we want it to be released no matter what.
+        this.textFromSerialReader.releaseLock()
+        // Just in case, release the writer. This may be unnecessary.
+        this.textToBytesForSerialWriter.releaseLock()
         // Send the signal to the piped streams to cancel their sources and abort their desinations
-        // This also closes the reader and writer
+        // Aborting also closes the reader and writer
         this.abortController.abort("Closing encoder and decoder streams from serial...")
+        // The textFromSerial stream should get cancelled by the abort signal, but for some reason it's not, so
+        await this.textFromSerial.cancel("Reader needs to be cancelled separately??")
         // Wait for them to finish closing
         await Promise.all([this.textFromSerialPromise, this.textToBytesForSerialPromise])
-        console.log("Closing serial port...")
+        // console.log("Closing serial port...")
         await this.serialPort.close()
         console.log("Serial port closed.")
     }
@@ -177,7 +186,7 @@ class SerialConnection {
 }
 
 async function getSerialConnection(port: SerialPort) {
-    console.log("Making a new serial connection")
+    // console.log("Making a new serial connection")
     return await new SerialConnection().init(port)
 }
 

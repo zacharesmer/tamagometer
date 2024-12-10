@@ -9,28 +9,33 @@ onmessage = (async (e: MessageEvent) => {
     // matching at home:
     switch (message.kind) {
         case "connectSerial": {
-            console.log("Connecting to serial...")
+            // console.log("Connecting to serial...")
             // TODO choose a port more intelligently
             serialPort = (await navigator.serial.getPorts())[0]
             // get a serial connection object
             getSerialConnection(serialPort).then(r => {
                 serialConnection = r
             }).catch((r) => {
-                postMessage({ kind: "workerError", error: r }); return
+                postMessage({ kind: "workerError", error: r })
             })
             break
         }
         case "stopWork": {
-            console.log("Conversation worker was told to shut down")
+            // console.log("Conversation worker was told to shut down")
             // free the serial port, and then notify the main thread that the worker is done
-            serialConnection.destroy().then(
-                r => {
-                    console.log("Serial connection destroyed")
-                    postMessage({ kind: "workerDone" })
-                }
-            ).catch(
-                r => { console.log(r) }
-            )
+            try {
+                // console.log("Closing serial connection", serialConnection)
+                await serialConnection.destroy()
+                // console.log("Serial connection destroyed")
+                postMessage({ kind: "workerDone" })
+
+            }
+            catch (err) {
+                // console.log("Could not close serial connection")
+                postMessage({ kind: "workerError", error: err })
+            } finally {
+                close()
+            }
             break
         }
         case "conversation": {
@@ -53,9 +58,7 @@ onmessage = (async (e: MessageEvent) => {
 })
 
 async function startConversation(message1: string, message2: string) {
-    // // stop anything currently waiting for input
-    // this.stopWaiting()
-
+    serialConnection.stopListening()
     let received1 = await serialConnection.sendCommandUntilResponse(message1);
     if (received1 === null) {
         console.error("Response 1 not received")
