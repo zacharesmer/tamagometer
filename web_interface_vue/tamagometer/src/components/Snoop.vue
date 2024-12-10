@@ -87,14 +87,15 @@ function saveName(newName: string) {
 }
 
 onMounted(async () => {
-    // setTimeout(snoop, 500)
     snoop()
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
     worker.postMessage({ kind: "stopWork" })
     await workerPromise.catch(r => {
-        console.log(r)
+        // This is usually a TypeError because the serial reader was cancelled and closed while it was reading
+        // That's fine because it needs to stop no matter what when we leave the page.
+        // console.log(r)
     })
     next()
 })

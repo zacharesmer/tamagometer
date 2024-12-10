@@ -20,8 +20,6 @@ const needToRetry = ref(false)
 const statusIndicator = useTemplateRef("statusIndicator")
 
 onMounted(async () => {
-    // TODO this might be a good place to check if the current conversation should be saved before overwriting it
-    // Also I need to make this a query parameter at some point
     if (route.query.dbid) {
         const dbId = parseInt(route.query.dbid as string)
         const stored = await dbConnection.get(dbId)
