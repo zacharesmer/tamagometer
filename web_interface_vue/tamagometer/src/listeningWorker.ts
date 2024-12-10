@@ -41,7 +41,13 @@ onmessage = (async (e: MessageEvent) => {
 
 async function listen() {
     while (continueListening) {
-        const command = await serialConnection.readOneCommand()
+        const command = await serialConnection.readOneCommand().catch(
+            r => {
+                // Break out of the loop if there's an error with the microcontroller, to avoid an infinite loop
+                continueListening = false
+                postMessage({ kind: "workerError", error: r })
+            }
+        )
         if (command) {
             console.log("Sending message:", command)
             postMessage({ kind: "receivedBitstring", bits: command })
