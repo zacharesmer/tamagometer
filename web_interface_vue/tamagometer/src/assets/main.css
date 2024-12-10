@@ -41,7 +41,7 @@ button {
     cursor: pointer;
 }
 
-path {
+.round-button-icon>path {
     stroke: var(--dark-blue);
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -106,7 +106,7 @@ th {
     background-color: var(--light-blue);
     border-radius: 3rem 3rem 3rem 0rem;
     align-self: start;
-    
+
 }
 
 .from-tama2 {
