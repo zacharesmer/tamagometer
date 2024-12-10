@@ -13,7 +13,7 @@ import Saved from './components/Saved.vue'
 
 const routes = [
     // { path: '/', component: TBD},
-    { path: '/conversation/:dbId?', component: Conversation },
+    { path: '/conversation', component: Conversation },
     { path: '/settings', component: Settings },
     { path: '/record', component: Snoop },
     { path: '/saved', component: Saved }

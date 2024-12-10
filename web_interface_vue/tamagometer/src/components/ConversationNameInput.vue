@@ -61,7 +61,6 @@ function saveNewConversation() {
 
 // Allow keyboard shortcuts to cancel/save the name
 function handleKeyUp(e: KeyboardEvent) {
-    console.log(e)
     if (e.key === "Escape") {
         cancelEditingName()
         editingName.value = false;

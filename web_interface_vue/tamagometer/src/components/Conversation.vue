@@ -4,8 +4,8 @@ import BitstringInput from './BitstringInput.vue';
 import { dbConnection } from '@/database';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
-import { useRoute } from 'vue-router';
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { onMounted, ref, useTemplateRef } from 'vue';
 import { activeConversation as conversation } from '@/state';
 import { getPortOrNeedToRetry } from '@/serial';
 
@@ -22,17 +22,19 @@ const statusIndicator = useTemplateRef("statusIndicator")
 onMounted(async () => {
     // TODO this might be a good place to check if the current conversation should be saved before overwriting it
     // Also I need to make this a query parameter at some point
-    if (route.params.dbId) {
-        const dbId = parseInt(route.params.dbId as string)
+    if (route.query.dbid) {
+        const dbId = parseInt(route.query.dbid as string)
         const stored = await dbConnection.get(dbId)
         conversation.initFromStored(stored)
     }
     setUpWorker()
 })
 
-onBeforeUnmount(async () => {
+onBeforeRouteLeave(async () => {
     worker.postMessage({ kind: "stopWork" })
-    await workerPromise
+    await workerPromise.catch(r => {
+        console.log(r)
+    })
 })
 
 async function setUpWorker() {
@@ -43,8 +45,8 @@ async function setUpWorker() {
             worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
             worker.onmessage = (e: MessageEvent) => {
                 const message = e.data as FromConversationWorker
-                console.log(message)
                 switch (message.kind) {
+                    // Update the UI with the responses
                     case "conversationResponse": {
                         console.log(message.response1, message.response2)
                         if (message.responseTo === "initiate") {
@@ -58,6 +60,7 @@ async function setUpWorker() {
                         break
                     }
                     case "workerDone": {
+                        console.log("Worker is done")
                         resolve()
                         break
                     }
@@ -92,8 +95,6 @@ function startConversation() {
 }
 
 function awaitConversation() {
-    console.log("Sending message to await conversation...")
-    console.log(worker)
     worker.postMessage({
         kind: "conversation",
         message1: conversation.message2.getBitstring(),

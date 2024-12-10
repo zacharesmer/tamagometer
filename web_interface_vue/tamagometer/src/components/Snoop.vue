@@ -2,11 +2,12 @@
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
 import { getPortOrNeedToRetry } from '@/serial';
 import StatusIndicator from './StatusIndicator.vue';
+import { onBeforeRouteLeave } from 'vue-router';
 
 let snoopOutput = ref(new Array<TamaMessage>);
 
@@ -90,7 +91,7 @@ onMounted(async () => {
     snoop()
 })
 
-onBeforeUnmount(async () => {
+onBeforeRouteLeave(async () => {
     worker.postMessage({ kind: "stopWork" })
     await workerPromise.catch(r => {
         console.log(r)

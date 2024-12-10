@@ -9,7 +9,7 @@ const conversations = ref<StoredConversation[]>([])
 
 
 async function refreshDb() {
-    console.log("Getting the stuff from the database...")
+    // console.log("Getting the stuff from the database...")
     dbConnection.getAll().then(response => {
         conversations.value = response
     })

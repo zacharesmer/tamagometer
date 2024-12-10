@@ -38,7 +38,6 @@ class Conversation {
         this.message2.getBitstring().length !== 160 ||
         this.message3.getBitstring().length !== 160 ||
         this.message4.getBitstring().length !== 160)
-        // console.log(result)
         return result
     }
 }

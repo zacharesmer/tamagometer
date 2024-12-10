@@ -27,7 +27,13 @@ onmessage = (async (e: MessageEvent) => {
             // break out of the listening loop
             continueListening = false
             // free the serial port, and then notify the main thread that the worker is done
-            serialConnection.destroy().then(r => postMessage({ kind: "workerDone" })).catch(r => console.log(r))
+            serialConnection.destroy().then(
+                r => { 
+                    postMessage({ kind: "workerDone" }) 
+                }
+            ).catch(
+                r => console.log(r)
+            )
             break
         }
     }

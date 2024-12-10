@@ -1,4 +1,3 @@
-import { error } from "console"
 import { type SerialConnection, getSerialConnection } from "./serial"
 
 let serialPort: SerialPort
@@ -22,10 +21,16 @@ onmessage = (async (e: MessageEvent) => {
             break
         }
         case "stopWork": {
-            if (serialConnection) {
-                // free the serial port, and then notify the main thread that the worker is done
-                serialConnection.destroy().then(r => postMessage({ kind: "workerDone" }))
-            }
+            console.log("Conversation worker was told to shut down")
+            // free the serial port, and then notify the main thread that the worker is done
+            serialConnection.destroy().then(
+                r => {
+                    console.log("Serial connection destroyed")
+                    postMessage({ kind: "workerDone" })
+                }
+            ).catch(
+                r => { console.log(r) }
+            )
             break
         }
         case "conversation": {
@@ -47,7 +52,6 @@ onmessage = (async (e: MessageEvent) => {
     }
 })
 
-// Send messages 1 and 3 from the conversation UI
 async function startConversation(message1: string, message2: string) {
     // // stop anything currently waiting for input
     // this.stopWaiting()
@@ -68,12 +72,7 @@ async function startConversation(message1: string, message2: string) {
 }
 
 
-// Respond with messages 2 and 4 from the conversation UI
 async function awaitConversation(message1: string, message2: string) {
-    // // stop anything currently waiting for input
-    // this.stopWaiting()
-    // this is kind of silly because these won't be null as soon as the stuff is mounted, and the button
-    // to make this happen also can't be clicked until then, but typescript doesn't know that
     // wait for a first message or until it's cancelled
     let received1 = await serialConnection.readOneCommandCancellable();
     if (received1 === null) {

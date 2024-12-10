@@ -19,9 +19,7 @@ function openForEditing(c: StoredConversation): void {
     // @ts-ignore
     console.log("opening " + c.id)
     // @ts-ignore
-    const newRoute = "/conversation/" + c.id
-    console.log(newRoute)
-    router.push(newRoute)
+    router.push({path: "conversation", query: {dbid: c.id}})
 }
 
 // Typescript doesn't like the autoincrementing ID key, but it's a number

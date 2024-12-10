@@ -80,7 +80,7 @@ class SerialConnection {
 
         // Tell the microcontroller to listen for a command for 1 second
         await this.sendLine("listen")
-        postMessage({kind: "animate", animation: "statusIndicator"})
+        postMessage({ kind: "animate", animation: "statusIndicator" })
         while (true) {
             // This part is not in a try/catch because if there's an error with the serial connection, I actually want it to fail
             const readSerialResult = await this.readSerial();
@@ -151,6 +151,7 @@ class SerialConnection {
         await Promise.all([this.textFromSerialPromise, this.textToBytesForSerialPromise])
         console.log("Closing serial port...")
         await this.serialPort.close()
+        console.log("Serial port closed.")
     }
 
     // Return the response, or null if one is not received after maxAttempts attempts
@@ -176,6 +177,7 @@ class SerialConnection {
 }
 
 async function getSerialConnection(port: SerialPort) {
+    console.log("Making a new serial connection")
     return await new SerialConnection().init(port)
 }
 
@@ -185,7 +187,7 @@ async function getPortOrNeedToRetry(): Promise<boolean> {
     // Check if serial API is even available
     if ("serial" in navigator) {
         let ports = await navigator.serial.getPorts()
-        console.log(ports)
+        // console.log(ports)
         // If there's not a connected serial device that has been used before, request access to one
         if (ports.length === 0) {
             try {
