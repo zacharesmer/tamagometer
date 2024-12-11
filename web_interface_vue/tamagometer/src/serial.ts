@@ -38,11 +38,13 @@ class SerialConnection {
         const textDecoder = new TextDecoderStream();
         const textEncoder = new TextEncoderStream();
 
-        // Attach the text encoding and decoding to the serial port
+        // Attach the text encoder and decoder to the serial port
         this.textFromSerialPromise = this.serialPort.readable.pipeTo(textDecoder.writable, { signal: this.abortController.signal }).catch(r => { console.log("textFromSerial:", r) })
+        this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log("textToBytesForSerial:", r) })
+
+        // Save the other ends of the text encoder and decoder to send and receive from
         this.textFromSerial = textDecoder.readable
         this.textFromSerialReader = this.textFromSerial.getReader()
-        this.textToBytesForSerialPromise = textEncoder.readable.pipeTo(this.serialPort.writable, { signal: this.abortController.signal }).catch(r => { console.log("textToBytesForSerial:", r) })
         this.textToBytesForSerial = textEncoder.writable
         this.textToBytesForSerialWriter = this.textToBytesForSerial.getWriter()
         return this
@@ -149,13 +151,13 @@ class SerialConnection {
         // Release the reader's lock. If this happens when it still has pending .read() requests those will be rejected
         // with a TypeError. That's fine; when this method is called we want it to be released no matter what.
         this.textFromSerialReader.releaseLock()
-        // Just in case, release the writer. This may be unnecessary.
+        // Release the writer
         this.textToBytesForSerialWriter.releaseLock()
         // Send the signal to the piped streams to cancel their sources and abort their desinations
-        // Aborting also closes the reader and writer
+        // Aborting also closes the now-unlocked reader and writer
         this.abortController.abort("Closing encoder and decoder streams from serial...")
-        // The textFromSerial stream should get cancelled by the abort signal, but for some reason it's not, so
-        await this.textFromSerial.cancel("Reader needs to be cancelled separately??")
+        // The textFromSerial stream is supposed to get cancelled by the abort signal, but for some reason it's not, so
+        await this.textFromSerial.cancel("Reader needs to be cancelled separately")
         // Wait for them to finish closing
         await Promise.all([this.textFromSerialPromise, this.textToBytesForSerialPromise])
         // console.log("Closing serial port...")
