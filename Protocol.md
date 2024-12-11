@@ -3,7 +3,7 @@
 | Byte  | Bits | Description                  |
 |-------|------|------------------------------|
 |1      |      |Hard-coded, same for all I've tested |
-|2      |      |                              |
+|2      |      |Might define the type of interaction. In a conversation this byte in the first message is always 0, the second one is always 1, and then the next one is 8 for a visit, 4 for a gift, and 2 for a game. In the last message it is the sum (9 for a visit, 5 for a gift, 3 for a game). |
 |3      |      |ID 1                          |
 |4      |      |ID 2                          |
 |5      |      |Character appearance          |
