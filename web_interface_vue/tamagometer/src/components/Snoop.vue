@@ -132,8 +132,8 @@ function reloadPage() {
                     <StatusIndicator ref="statusIndicator"></StatusIndicator>
                     <h2>Listening for input...</h2>
                 </div>
-                <div class="recording-table-container">
-                    <table v-if="snoopOutput.length > 0">
+                <div v-if="snoopOutput.length > 0" class="recording-table-container">
+                    <table>
                         <tbody>
                             <tr>
                                 <th></th>
@@ -167,6 +167,8 @@ function reloadPage() {
                         </tbody>
                     </table>
                 </div>
+                <button v-if="snoopOutput.length > 0" @click="() => { snoopOutput = [] }" class="icon-label-button">Clear
+                    list</button>
             </div>
             <div class="staged-messages-container">
                 <ConversationNameInput :name="fromRecordingConversation.name"
@@ -218,10 +220,18 @@ function reloadPage() {
 .title {
     display: flex;
     align-items: center;
+    gap: 1rem;
 }
 
 h2 {
     text-align: center;
+}
+
+.recording-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .recording-body-container {
