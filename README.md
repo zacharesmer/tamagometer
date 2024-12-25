@@ -4,11 +4,19 @@ Check out the web app here: https://zacharesmer.github.io/tamagometer/
 
 # Goals/Roadmap
 - Understand the infrared messages that the tamagotchis send
-- Make a flipper app so the tamagotchis can interact with the flipper
+- Make a flipper app so the tamagotchis can directly interact with the flipper
 - Internationalization: Tamagotchis are Japanese so I'm guessing it might be useful if I could translate this page into Japanese (and once the architecture is there, there's not a lot of text so it should not be too hard to do other languages too)
 
 # Hardware
-The firmware for the microcontroller is written in MicroPython, so you'll need to prepare your device to run micropython programs.
+## Flipper Zero
+I made a flipper app for this, so if you have a Flipper Zero, you don't need to build any hardware. 
+
+It is currently in ultra-pre-alpha/sympathetic-developer-eyes-only stage, but hopefully it will exit that soon. 
+
+It is not yet in the app catalog, since it is hot off the presses and I haven't figured out how to do that yet. I think it might need to be in a separate repo for that, so that's where it lives. [Here's the repository](https://github.com/zacharesmer/tamagometer-companion-flipper); as soon as I figure out how git submodules interact with Github I'll try and get it in here too. 
+
+## Bring Your Own Board
+If you don't have a Flipper, you can make your own transmitter/receiver from a Raspberry Pi Pico. The firmware is written in MicroPython, so you'll need to prepare the Pico to run micropython programs. It might work on other boards that can run micropython, but I haven't tested any. 
 
 1. Load the MicroPython firmware onto your pico so that it will be able to run this program. Instructions and a link to the file are on the raspberry pi website here: https://www.raspberrypi.com/documentation/microcontrollers/micropython.html
 2. Copy all files in the `pico` folder onto the pico. 
