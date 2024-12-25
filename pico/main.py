@@ -18,13 +18,13 @@ listen_timeout_ms = 1000
 # check for serial input in the form `tamagometer send10101001010101010[...]10100\n` or `tamagometer listen\n`
 while True:
     read_in = input()
-    if read_in.lower().startswith("send"):
+    if read_in.lower().startswith("tamagometer send"):
         try:
             tx.send_bits(read_in[4:])
         except:
             print("Error")
             pass
-    elif read_in.lower() == "listen":
+    elif read_in.lower() == "tamagometer listen":
         try:
             rx.enable_interrupts()
             start = utime.ticks_ms()

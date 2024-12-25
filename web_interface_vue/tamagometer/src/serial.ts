@@ -30,7 +30,7 @@ class SerialConnection {
         this.serialPort.addEventListener("disconnect", () => {
             this.destroy()
         })
-        await this.serialPort.open({ baudRate: 9600 })
+        await this.serialPort.open({ baudRate: 460800 })
         // Set up a controller to cancel everything when it's done
         this.abortController = new AbortController()
 
@@ -63,7 +63,7 @@ class SerialConnection {
 
     // Add the prefix "send" to a message, which tells the microcontroller to transmit the message
     sendCommand(code: string) {
-        this.sendLine("send" + code);
+        this.sendLine("tamagometer send" + code);
     }
 
     // Returns either null (if timed out or the stream closed) or a string of 1 tamagotchi command.
@@ -81,7 +81,7 @@ class SerialConnection {
         let timeoutComplete = false;
 
         // Tell the microcontroller to listen for a command for 1 second
-        await this.sendLine("listen")
+        await this.sendLine("tamagometer listen")
         postMessage({ kind: "animate", animation: "statusIndicator" })
         while (true) {
             // This part is not in a try/catch because if there's an error with the serial connection, I actually want it to fail
