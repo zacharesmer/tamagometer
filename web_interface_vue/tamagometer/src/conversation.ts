@@ -34,11 +34,18 @@ class Conversation {
     }
 
     oneOrMoreMessagesAreInvalid() {
-        const result =  (this.message1.getBitstring().length !== 160 ||
-        this.message2.getBitstring().length !== 160 ||
-        this.message3.getBitstring().length !== 160 ||
-        this.message4.getBitstring().length !== 160)
+        const result = (this.message1.getBitstring().length !== 160 ||
+            this.message2.getBitstring().length !== 160 ||
+            this.message3.getBitstring().length !== 160 ||
+            this.message4.getBitstring().length !== 160)
         return result
+    }
+
+    clearMessages() {
+        this.message1 = new TamaMessage(null)
+        this.message2 = new TamaMessage(null)
+        this.message3 = new TamaMessage(null)
+        this.message4 = new TamaMessage(null)
     }
 }
 

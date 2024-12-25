@@ -116,6 +116,19 @@ function reloadPage() {
     window.location.reload()
 }
 
+function clearList() {
+    snoopOutput.value = []
+    fromRecordingConversation.value.clearMessages()
+    fromRecordingConversation.value.name = "Recorded Conversation"
+    recordingIndeces.value = {
+        message1: NaN,
+        message2: NaN,
+        message3: NaN,
+        message4: NaN,
+    }
+
+}
+
 </script>
 
 <template>
@@ -167,8 +180,8 @@ function reloadPage() {
                         </tbody>
                     </table>
                 </div>
-                <button v-if="snoopOutput.length > 0" @click="() => { snoopOutput = [] }" class="icon-label-button">Clear
-                    list</button>
+                <button v-if="snoopOutput.length > 0" @click="() => { clearList() }"
+                    class="icon-label-button">Clear</button>
             </div>
             <div class="staged-messages-container">
                 <ConversationNameInput :name="fromRecordingConversation.name"
