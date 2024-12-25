@@ -3,7 +3,8 @@
 
 from machine import Pin, Timer
 import utime 
-import rx, converters
+#import rx
+import converters
 #import tx
 import sys
 from ir_tx import Player
@@ -15,6 +16,13 @@ READ_FROM_SERIAL_INSTEAD_OF_BUTTON = False
 button_a = Pin(28, Pin.IN, Pin.PULL_UP)
 button_b = Pin(29, Pin.IN, Pin.PULL_UP)
 button_c = Pin(6, Pin.IN, Pin.PULL_UP)
+
+
+from ir_rx.acquire import test
+import ujson
+
+
+
 
 #tx.vcc.on()
 #tx.signal.off()
@@ -37,25 +45,18 @@ VISIT_3_MSG_A1 = "00001110000000001101111001011010001100101000100010001000100010
 VISIT_3_MSG_A2 = "0000111000001000110111100101101000110010100010001000100010001000100010001000100000000000000000000000000000000000000000000000000000000000000000000000000000101000"
 
 def wait_for_single_message():
-    start = utime.ticks_ms()
-    while True:
-        utime.sleep(0.001)
-        if utime.ticks_diff(utime.ticks_ms(), start) > listen_timeout_ms:
-            print("[PICO]timed out[END]")
-            break
-        # print(rx.STATE)
-        if rx.STATE == rx.end_of_message:
-            break
-        
-    # rx.disable_interrupts()
-    # rx.pause_listening_without_changing_interrupts()
 
-    if rx.STATE == rx.end_of_message:
-        # print("Received a response!") 
-        rx.STATE = rx.waiting
+    lst = test()  # May report unsupported or unknown protocol
+    print(lst)
+    print(len(lst))
+    (a, b) = converters.to_bits(lst)
+    print(a, b)
+
+    if a > 155 and a < 165:
         return True
-    else:
-        return False
+
+    return False
+
 
 
 
@@ -63,28 +64,24 @@ def send_message_and_wait_for_response(message_to_send, retries=1):
     # Send the message
 
     #tx.send_bits(message_to_send)
-    # utime.sleep(0.05)
-    rx.disable_interrupts()
+    utime.sleep(0.05)
+    #rx.disable_interrupts()
+    #rx.enable_interrupts()
     # rx.pause_listening_without_changing_interrupts()
 
     print("starting play")
-    rx.start_over_listening()
     try:
         lengths = converters.to_lengths(message_to_send)
         ir_out_1 = Player(ir_pin, asize=len(lengths)+1,verbose=True)
         ir_out_1.play(lengths)
-        print(len(lengths))
         #tx.send_bits(message_to_send)
         #ir_out_1.play(converters.to_lengths(message_to_send))
-        utime.sleep_us(sum(lengths))
+        utime.sleep_us(sum(lengths)-1600)
         pass
     except:
         print("Error sending")
         return False
-
-
     #print("finished play")
-    rx.enable_interrupts()
 
     # Wait for a response and ignore it
     # utime.sleep(0.01)
@@ -97,6 +94,7 @@ def send_message_and_wait_for_response(message_to_send, retries=1):
     #    print("didn't get outgoing copy")
     #else:
     #    print("Got outgoing copy")
+    #rx.start_over_listening()
     got_response = wait_for_single_message()
 
     if got_response:
@@ -114,12 +112,12 @@ def send_message_and_wait_for_response(message_to_send, retries=1):
             return False
         
 def perform_exchange(messages_to_send):
-    rx.disable_interrupts()
+    #rx.disable_interrupts()
     for ind, message_to_send in enumerate(messages_to_send):
         if ind == 0:
-            retries = 2
+            retries = 0
         else:
-            retries = 1
+            retries = 0
         success = send_message_and_wait_for_response(message_to_send=message_to_send, retries=retries)
         if not success:
             return False

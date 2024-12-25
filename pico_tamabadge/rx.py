@@ -1,22 +1,32 @@
 from machine import Pin, Timer
 import utime
 
-vcc = Pin(6, Pin.OUT)
-signal = Pin(7, Pin.IN)
+# vcc = Pin(6, Pin.OUT)
+# signal = Pin(7, Pin.IN)
+
+rx_vcc = Pin(2, Pin.OUT)
+signal = Pin(4, Pin.IN)
 
 TIMEOUT_US = 100_000
 LAST_EDGE = utime.ticks_us()
 # to store the rising and falling edges of the IR sensor
 # TODO: look at making this an array
 CHANGE_LIST = []
-
 def enable_interrupts():
-    # print("Turning on IR sensor interrupts")
+    #global signal
+    print("Turning on IR sensor interrupts")
+
+    #signal = Pin(4, Pin.IN)
     signal.irq(ir_sensor_callback_decode, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
+    rx_vcc.on()
 
 def disable_interrupts():
-    # print("Turning off IR sensor interrupts")
-    signal.irq(None)
+    #global signal
+    print("Turning off IR sensor interrupts")
+    #signal = Pin(4, Pin.OUT)
+    signal.irq(handler=None)
+    rx_vcc.off()
+
 
 def ir_sensor_callback(arg):
     # for now this is just to record a conversation
@@ -51,10 +61,10 @@ data_short_space = 5            # Last saw a short space (end of a "1" data bit)
 waiting = 6                       # Something invalid was received, wait for new message to start
 end_of_message = 0              # Waiting for a new message
 
-min_leader_mark = 8000
-max_leader_mark = 10_000
-min_leader_gap = 3500
-max_leader_gap = 7500
+min_leader_mark = 8000 -2000
+max_leader_mark = 10_000 + 2000
+min_leader_gap = 3500 -1000
+max_leader_gap = 7500 
 min_data_mark = 200
 max_data_mark = 800
 min_short_data_gap = 200
@@ -69,18 +79,37 @@ MESSAGE_LENGTH = 0
 
 STATE = waiting 
 
-# I recognize that this is outrageous please don't @ me
-# 
-# Handle the IR signal and print out 1s and 0s over serial if it's a valid tamagotchi code
-def ir_sensor_callback_decode(arg):
+PREV_CHANGE_LIST = []
+
+def start_over_listening():
     global LAST_EDGE
     global STATE
     global MESSAGE_LENGTH
     global CHANGE_LIST
+    STATE = waiting 
+    LAST_EDGE = utime.ticks_us()
+    MESSAGE_LENGTH = 0
+    CHANGE_LIST = []
+
+
+
+
+# I recognize that this is outrageous please don't @ me
+# 
+# Handle the IR signal and print out 1s and 0s over serial if it's a valid tamagotchi code
+def ir_sensor_callback_decode(arg):
+
+    global LAST_EDGE
+    global STATE
+    global MESSAGE_LENGTH
+    global CHANGE_LIST
+
+
     new_edge = utime.ticks_us()
     run_length = utime.ticks_diff(new_edge, LAST_EDGE)
+    # print(run_length)
     LAST_EDGE = new_edge
-    # print(f"\n{STATE}: {run_length}")
+    #print(f"{STATE}: {run_length}", end="")
     if STATE == end_of_message or STATE == waiting:
         if run_length > min_leader_mark and run_length < max_leader_mark and signal.value() == 1:
             # print(f"Start of message: {run_length}")
