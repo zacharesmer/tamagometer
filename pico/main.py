@@ -1,7 +1,7 @@
 # Tamagotchi in the middle
 
 from machine import Pin, Timer
-import utime 
+import utime
 import rx, tx, converters
 import sys
 
@@ -18,13 +18,13 @@ listen_timeout_ms = 1000
 # check for serial input in the form `send10101001010101010[...]10100\n` or `listen\n`
 while True:
     read_in = input()
-    if read_in.lower().startswith("send"):
+    if read_in.lower().startswith("tamagometer send"):
         try:
             tx.send_bits(read_in[4:])
         except:
             print("Error")
             pass
-    elif read_in.lower() == "listen":
+    elif read_in.lower() == "tamagometer listen":
         try:
             rx.enable_interrupts()
             start = utime.ticks_ms()
@@ -35,7 +35,7 @@ while True:
                 # print(rx.STATE)
                 if rx.STATE == rx.end_of_message:
                     rx.STATE = rx.waiting
-                    break    
+                    break
             rx.disable_interrupts()
         except:
             # print("Error")
@@ -43,4 +43,3 @@ while True:
 
 
 # tx.send_bits("0000111000000000110111100101101000001011100010001000100010001000100010001000100000000010000000000010001100000000000000000000000000000000000000000000000000011110")
-
