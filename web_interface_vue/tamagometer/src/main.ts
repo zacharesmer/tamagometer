@@ -10,13 +10,15 @@ import Conversation from './components/Conversation.vue'
 import Settings from './components/Settings.vue'
 import Snoop from './components/Snoop.vue'
 import Saved from './components/Saved.vue'
+import QuickDemo from './components/QuickDemo.vue'
 
 const routes = [
     // { path: '/', component: TBD},
     { path: '/conversation', component: Conversation },
     { path: '/settings', component: Settings },
     { path: '/record', component: Snoop },
-    { path: '/saved', component: Saved }
+    { path: '/saved', component: Saved },
+    { path: '/demo', component: QuickDemo }
 ]
 
 const router = createRouter({
