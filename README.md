@@ -1,5 +1,4 @@
 This is currently a work in progress, but the parts that exist generally work. Check back for updates!
-
 Check out the web app here: https://zacharesmer.github.io/tamagometer/
 
 # Goals/Roadmap
@@ -8,8 +7,6 @@ Check out the web app here: https://zacharesmer.github.io/tamagometer/
 - Internationalization: Tamagotchis are Japanese so I'm guessing it might be useful if I could translate this page into Japanese (and once the architecture is there, there's not a lot of text so it should not be too hard to do other languages too)
 
 # Prior Art and References
-(This list will continue to grow)
-
 - This Tamagotchi reverse engineering project helped a ton: https://github.com/natashenka/Tamagotchi-Hack/tree/master
 - The corresponding CCC talk: https://media.ccc.de/v/29c3-5088-en-many_tamagotchis_were_harmed_in_the_making_of_this_presentation_h264#t=0
 - Tamagotchi fandom wiki https://tamagotchi.fandom.com/wiki/Main_Page
