@@ -19,7 +19,7 @@ const character = computed({
 });
 
 const imageSource = computed(() => {
-    return "character-sprites/" + props.model.getName().toLowerCase() + "_sprite.png"
+    return "/tamagometer/character-sprites/" + props.model.getName().toLowerCase() + "_sprite.png"
 })
 
 </script>
@@ -40,8 +40,7 @@ const imageSource = computed(() => {
 </template>
 
 <style scoped>
-.appearance-container {
-}
+.appearance-container {}
 
 
 .symbol {
