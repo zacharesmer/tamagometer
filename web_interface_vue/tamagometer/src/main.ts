@@ -10,7 +10,7 @@ import Conversation from './components/Conversation.vue'
 import Settings from './components/Settings.vue'
 import Snoop from './components/Snoop.vue'
 import Saved from './components/Saved.vue'
-import QuickDemo from './components/QuickDemo.vue'
+import Help from './components/Help.vue'
 
 const routes = [
     // { path: '/', component: TBD},
@@ -18,7 +18,7 @@ const routes = [
     { path: '/settings', component: Settings },
     { path: '/record', component: Snoop },
     { path: '/saved', component: Saved },
-    { path: '/demo', component: QuickDemo }
+    { path: '/help', component: Help }
 ]
 
 const router = createRouter({
