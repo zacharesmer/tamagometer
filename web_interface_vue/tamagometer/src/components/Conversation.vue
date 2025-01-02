@@ -47,16 +47,13 @@ async function setUpWorker() {
                 // Update the UI with the responses
                 case "conversationResponse": {
                     // console.log(message.response1, message.response2)
-                    console.log(message)
-                    // conversation.message2.update(message.response1)
-                    // conversation.message4.update(message.response2)
-                    // Why is this vvvv never true??
+                    // console.log(message)
                     if (message.responseTo == "initiate") {
                         console.log("Updating messages 2 and 4...")
                         conversation.message2.update(message.response1)
                         conversation.message4.update(message.response2)
                     }
-                    if (message.response2 == "await") {
+                    if (message.responseTo == "await") {
                         console.log("Updating messages 1 and 3...")
                         conversation.message1.update(message.response1)
                         conversation.message3.update(message.response2)
