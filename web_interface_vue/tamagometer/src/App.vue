@@ -22,6 +22,7 @@ let webSerialSupported = ("serial" in navigator)
         <RouterLink class="navlink first-link" to="/conversation/">Edit</RouterLink>
         <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
         <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
+        <RouterLink class="navlink middle-link" to="/help">Help</RouterLink>
       </nav>
       <StatusIndicator class="status-indicator"></StatusIndicator>
       <details>
