@@ -9,22 +9,28 @@ import { getPortOrNeedToRetry } from '@/serial';
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
 
-let snoopOutput = ref(new Array<TamaMessage>);
+// Store recorded messages as strings
+let snoopOutput = ref(new Array<string>);
 
-// // Some test recordings to see the layout
-// snoopOutput.value.push(new TamaMessage("0000111000000000110111100101101000110010100010001000100010001000100010001000100000000010000000000010001100000000000001100000000000000000000000000000101001010101"))
-// snoopOutput.value.push(new TamaMessage("0000111000000001101111110010001000110001000110010000000000000010000001111000000100000000011001000010001000000000000000000000000000000000000000000000101001010100"))
-// snoopOutput.value.push(new TamaMessage("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011"))
-// snoopOutput.value.push(new TamaMessage("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111"))
+// Some test recordings to see the layout
+// snoopOutput.value.push("0000111000000000110111100101101000110010100010001000100010001000100010001000100000000010000000000010001100000000000001100000000000000000000000000000101001010101")
+// snoopOutput.value.push("0000111000000001101111110010001000110001000110010000000000000010000001111000000100000000011001000010001000000000000000000000000000000000000000000000101001010100")
+// snoopOutput.value.push("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011")
+// snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
 
 const needToRetry = ref(false);
 let worker: Worker;
 let workerPromise: Promise<void>
-
-let fromRecordingConversation = ref(new Conversation(null))
-fromRecordingConversation.value.name = "Recorded Conversation"
-
 const statusIndicator = useTemplateRef("statusIndicator")
+
+const conversationName = ref("Recorded Conversation")
+const stagedMessageIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>(
+    {
+        message1: NaN,
+        message2: NaN,
+        message3: NaN,
+        message4: NaN
+    })
 
 // Called when the component is mounted or if it fails and the retry button is clicked
 async function snoop() {
@@ -36,7 +42,7 @@ async function snoop() {
             const message = e.data as FromListeningWorker
             switch (message.kind) {
                 case "receivedBitstring": {
-                    snoopOutput.value.push(new TamaMessage(message.bits))
+                    snoopOutput.value.push(message.bits)
                     break
                 }
                 case "workerDone": {
@@ -61,29 +67,51 @@ async function snoop() {
     })
 }
 
-async function saveConversation() {
-    // Make sure all messages have been selected
-    if (fromRecordingConversation.value.oneOrMoreMessagesAreInvalid()) {
-        toast("Could not save, invalid or missing messages", {
+function saveConversation() {
+    // Check if all 4 messages have been selected, return and display an error if not
+    if (Number.isNaN(stagedMessageIndeces.value.message1) ||
+        Number.isNaN(stagedMessageIndeces.value.message2) ||
+        Number.isNaN(stagedMessageIndeces.value.message3) ||
+        Number.isNaN(stagedMessageIndeces.value.message4)) {
+        toast("Could not save: missing messages", {
             autoClose: true,
             closeOnClick: true,
             closeButton: true,
             type: 'error',
             isLoading: false,
         })
+        return
     }
-    // Name is a required field but just in case an empty string sneaks through don't store it
-    else if (fromRecordingConversation.value.name !== "") {
-        const toastId = toast("Saving...")
-        dbConnection.set(fromRecordingConversation.value.toStored()).then(result => {
-            toast.update(toastId, { render: "Saved", })
-        }
-        )
+
+    // Don't store a conversation with an empty name
+    if (conversationName.value == "") {
+        toast("Could not save: missing name", {
+            autoClose: true,
+            closeOnClick: true,
+            closeButton: true,
+            type: 'error',
+            isLoading: false,
+        })
+        return
     }
+
+    // Create a conversation from the staged messages and store it
+
+    const fromRecordingConversation = new Conversation(null)
+    fromRecordingConversation.message1 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message1]);
+    fromRecordingConversation.message2 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message2]);
+    fromRecordingConversation.message3 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message3]);
+    fromRecordingConversation.message4 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message4]);
+    fromRecordingConversation.name = conversationName.value;
+
+    const toastId = toast("Saving...")
+    dbConnection.set(fromRecordingConversation.toStored()).then(result => {
+        toast.update(toastId, { render: "Saved", })
+    })
 }
 
 function saveName(newName: string) {
-    fromRecordingConversation.value.name = newName;
+    conversationName.value = newName;
 }
 
 onMounted(async () => {
@@ -100,35 +128,20 @@ onBeforeRouteLeave(async (to, from, next) => {
     next()
 })
 
-const recordingIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>({
-    message1: NaN,
-    message2: NaN,
-    message3: NaN,
-    message4: NaN,
-})
-
-function setStagedMessage(whichMessage: "message1" | "message2" | "message3" | "message4", recordedIndex: number) {
-    fromRecordingConversation.value[whichMessage].update(snoopOutput.value[recordedIndex].getBitstring())
-    recordingIndeces.value[whichMessage] = recordedIndex;
-}
-
 function reloadPage() {
     window.location.reload()
 }
 
 function clearList() {
     snoopOutput.value = []
-    fromRecordingConversation.value.clearMessages()
-    fromRecordingConversation.value.name = "Recorded Conversation"
-    recordingIndeces.value = {
+    conversationName.value = "Recorded Conversation"
+    stagedMessageIndeces.value = {
         message1: NaN,
         message2: NaN,
         message3: NaN,
         message4: NaN,
     }
-
 }
-
 </script>
 
 <template>
@@ -159,21 +172,21 @@ function clearList() {
                                     <td>
                                         <div class="set-message-buttons-container">
                                             <button class="round-button"
-                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message1) }"
-                                                @click="() => { setStagedMessage('message1', index) }">1</button>
+                                                :class="{ 'active-message-set-button': (index === stagedMessageIndeces.message1) }"
+                                                @click="() => { stagedMessageIndeces.message1 = index }">1</button>
                                             <button class="round-button"
-                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message2) }"
-                                                @click="() => { setStagedMessage('message2', index) }">2</button>
+                                                :class="{ 'active-message-set-button': (index === stagedMessageIndeces.message2) }"
+                                                @click="() => { stagedMessageIndeces.message2 = index }">2</button>
                                             <button class="round-button"
-                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message3) }"
-                                                @click="() => { setStagedMessage('message3', index) }">3</button>
+                                                :class="{ 'active-message-set-button': (index === stagedMessageIndeces.message3) }"
+                                                @click="() => { stagedMessageIndeces.message3 = index }">3</button>
                                             <button class="round-button"
-                                                :class="{ 'active-message-set-button': (index === recordingIndeces.message4) }"
-                                                @click="() => { setStagedMessage('message4', index) }">4</button>
+                                                :class="{ 'active-message-set-button': (index === stagedMessageIndeces.message4) }"
+                                                @click="() => { stagedMessageIndeces.message4 = index }">4</button>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="bitstring">{{ message.getBitstring() }}</div>
+                                        <div class="bitstring">{{ message }}</div>
                                     </td>
                                 </tr>
                             </template>
@@ -184,45 +197,52 @@ function clearList() {
                     class="icon-label-button">Clear</button>
             </div>
             <div class="staged-messages-container">
-                <ConversationNameInput :name="fromRecordingConversation.name"
-                    @save-name="(newName) => { saveName(newName) }" @save-new-conversation="saveConversation"
-                    class="title">
+                <ConversationNameInput :name="conversationName" @save-name="(newName) => { saveName(newName) }"
+                    @save-new-conversation="saveConversation" class="title">
                 </ConversationNameInput>
                 <div class="message-label-container">
-                    <div class="message-label round-button"
-                        :class="{ 'message-label-set': (fromRecordingConversation.message1.getBitstring().length !== 0) }">
+                    <button class="message-label round-button"
+                        :class="{ 'message-label-set': (!Number.isNaN(stagedMessageIndeces.message1)) }"
+                        @click="stagedMessageIndeces.message1 = NaN">
                         1
-                    </div>
+                    </button>
                     <div class="message from-tama1">
-                        {{ fromRecordingConversation.message1.getBitstring() }}
+                        {{ Number.isNaN(stagedMessageIndeces.message1) ? "" : snoopOutput[stagedMessageIndeces.message1]
+                        }}
                     </div>
                 </div>
                 <div class="message-label-container">
                     <div class="message from-tama2">
-                        {{ fromRecordingConversation.message2.getBitstring() }}
+                        {{ Number.isNaN(stagedMessageIndeces.message2) ? "" : snoopOutput[stagedMessageIndeces.message2]
+                        }}
                     </div>
-                    <div class="message-label round-button"
-                        :class="{ 'message-label-set': (fromRecordingConversation.message2.getBitstring().length !== 0) }">
+                    <button class="message-label round-button"
+                        :class="{ 'message-label-set': (!Number.isNaN(stagedMessageIndeces.message2)) }"
+                        @click="stagedMessageIndeces.message2 = NaN">
                         2
-                    </div>
+                    </button>
                 </div>
                 <div class="message-label-container">
-                    <div class="message-label round-button"
-                        :class="{ 'message-label-set': (fromRecordingConversation.message3.getBitstring().length !== 0) }">
+                    <button class="message-label round-button"
+                        :class="{ 'message-label-set': (!Number.isNaN(stagedMessageIndeces.message3)) }"
+                        @click="stagedMessageIndeces.message3 = NaN">
                         3
-                    </div>
+                    </button>
                     <div class="message from-tama1">
-                        {{ fromRecordingConversation.message3.getBitstring() }}
+                        {{ Number.isNaN(stagedMessageIndeces.message3) ? "" : snoopOutput[stagedMessageIndeces.message3]
+                        }}
                     </div>
                 </div>
                 <div class="message-label-container">
                     <div class="message from-tama2">
-                        {{ fromRecordingConversation.message4.getBitstring() }}
+                        {{ Number.isNaN(stagedMessageIndeces.message4) ? "" : snoopOutput[stagedMessageIndeces.message4]
+                        }}
                     </div>
-                    <div class="message-label round-button"
-                        :class="{ 'message-label-set': (fromRecordingConversation.message4.getBitstring().length !== 0) }">
+                    <button class="message-label round-button"
+                        :class="{ 'message-label-set': (!Number.isNaN(stagedMessageIndeces.message4)) }"
+                        @click="stagedMessageIndeces.message4 = NaN">
                         4
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>

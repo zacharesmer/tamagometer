@@ -40,13 +40,6 @@ class Conversation {
             this.message4.getBitstring().length !== 160)
         return result
     }
-
-    clearMessages() {
-        this.message1 = new TamaMessage(null)
-        this.message2 = new TamaMessage(null)
-        this.message3 = new TamaMessage(null)
-        this.message4 = new TamaMessage(null)
-    }
 }
 
 // Can't store objects with methods so this object holds a serialized conversation
