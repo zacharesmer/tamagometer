@@ -8,10 +8,10 @@ Check out the web app here: https://zacharesmer.github.io/tamagometer/
 - Internationalization: Tamagotchis are Japanese so I'm guessing it might be useful if I could translate this page into Japanese (and once the architecture is there, there's not a lot of text so it should not be too hard to do other languages too)
 
 # Prior Art and References
-- This Tamagotchi reverse engineering project helped a ton: https://github.com/natashenka/Tamagotchi-Hack/tree/master
+- [This Tamagotchi reverse engineering project by Natalie Silvanovich](https://github.com/natashenka/Tamagotchi-Hack/tree/master) helped a ton 
 - The corresponding CCC talks: 
-    - https://media.ccc.de/v/29c3-5088-en-many_tamagotchis_were_harmed_in_the_making_of_this_presentation_h264#t=0
-    - https://media.ccc.de/v/30C3_-_5279_-_en_-_saal_1_-_201312291715_-_even_more_tamagotchis_were_harmed_in_the_making_of_this_presentation_-_natalie_silvanovich
+    - [Many Tamagotchis Were Harmed In the Making of This Presentation](https://media.ccc.de/v/29c3-5088-en-many_tamagotchis_were_harmed_in_the_making_of_this_presentation_h264#t=0) 
+    - [Even More Tamagotchis Were Harmed In the Making of This Presentation](https://media.ccc.de/v/30C3_-_5279_-_en_-_saal_1_-_201312291715_-_even_more_tamagotchis_were_harmed_in_the_making_of_this_presentation_-_natalie_silvanovich)
 - Tamagotchi fandom wiki https://tamagotchi.fandom.com/wiki/Main_Page
 
 # Hardware
