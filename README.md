@@ -9,16 +9,18 @@ Check out the web app here: https://zacharesmer.github.io/tamagometer/
 
 # Prior Art and References
 - This Tamagotchi reverse engineering project helped a ton: https://github.com/natashenka/Tamagotchi-Hack/tree/master
-- The corresponding CCC talk: https://media.ccc.de/v/29c3-5088-en-many_tamagotchis_were_harmed_in_the_making_of_this_presentation_h264#t=0
+- The corresponding CCC talks: 
+    - https://media.ccc.de/v/29c3-5088-en-many_tamagotchis_were_harmed_in_the_making_of_this_presentation_h264#t=0
+    - https://media.ccc.de/v/30C3_-_5279_-_en_-_saal_1_-_201312291715_-_even_more_tamagotchis_were_harmed_in_the_making_of_this_presentation_-_natalie_silvanovich
 - Tamagotchi fandom wiki https://tamagotchi.fandom.com/wiki/Main_Page
 
 # Hardware
 ## Flipper Zero
-I made a flipper app for this, so if you have a Flipper Zero, you don't need to build any hardware. 
+There's a flipper app, so if you have a Flipper Zero, you don't need to build any hardware. 
 
 It is currently in ultra-pre-alpha/sympathetic-developer-eyes-only stage, but hopefully it will exit that soon. 
 
-It is not yet in the app catalog, since it is hot off the presses and I haven't figured out how to do that yet. I think it might need to be in a separate repo for that, so that's where it lives. [Here's the repository](https://github.com/zacharesmer/tamagometer-companion-flipper); as soon as I figure out how git submodules interact with Github I'll try and get it in here too. 
+It is also not yet in the app catalog, since it is hot off the presses and I haven't figured out how to do that yet. [Here's the repository](https://github.com/zacharesmer/tamagometer-companion-flipper); it's also in here as a submodule, so to clone it all at once use `git clone --recursive https://github.com/zacharesmer/tamagometer.git`
 
 ## Bring Your Own Board
 If you don't have a Flipper, you can make your own transmitter/receiver from a Raspberry Pi Pico. The firmware is written in MicroPython, so you'll need to prepare the Pico to run micropython programs. It might work on other boards that can run micropython, but I haven't tested any. 
