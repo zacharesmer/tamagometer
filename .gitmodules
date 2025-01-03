@@ -1,0 +1,3 @@
+[submodule "flipper"]
+	path = flipper
+	url = https://github.com/zacharesmer/tamagometer-companion-flipper/
