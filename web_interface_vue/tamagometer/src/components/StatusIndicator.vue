@@ -9,12 +9,8 @@ defineExpose(
     { animateStatusIndicator }
 )
 
-// If a second status indicator is added it will stop the first one from working
-onMounted(() => {
-    // connection.listenCallback = animateStatusIndicator
-})
-
-// Animate showing the status indicator for about a second, then hide it again
+// Animate showing the status indicator, then hide it again
+// This animation is meant to have a period of about 1 second
 function animateStatusIndicator() {
     statusCenterHidden.value = false
     setTimeout(() => { statusInnerWaveHidden.value = false }, 100)

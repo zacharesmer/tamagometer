@@ -1,3 +1,6 @@
+# Git
+If you would like to make a pull request, please rebase it onto the latest version of the main branch before submitting the changes so that you can resolve any conflicts.
+
 # Web interface
 ## Building
 The web interface uses Typescript and Vue 3, and it's built using Vite. This means you'll need Node installed to build it (sorry). I used version 22 because it's the newest long-term support version, but it'll probably work with any version that can handle Vue 3.

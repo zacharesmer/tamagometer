@@ -30,7 +30,6 @@ const imageSource = computed(() => {
     <div :class="['chunk-container', 'appearance-container', model.differs() ? 'changed' : '']">
         <label>Character</label>
         <BitChunk :known="true" :model="model"></BitChunk>
-        <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
         <img :src="imageSource">
         <select v-model="character" class="symbol" aria-label="Character selector">
             <option v-for="[key, value] in model.characterNames" :value="key">{{ value }}

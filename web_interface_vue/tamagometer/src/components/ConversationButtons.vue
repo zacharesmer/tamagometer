@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+
+// The buttons emit signals instead of calling the conversation functions directly 
+// to decouple this component from the actual serial connection
 const emit = defineEmits(["startConversation", "awaitConversation", "stopWaiting"])</script>
 
 <template>
