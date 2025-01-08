@@ -7,6 +7,9 @@ import utime
 rx_vcc = Pin(2, Pin.OUT)
 signal = Pin(4, Pin.IN)
 
+#rx_vcc = Pin(3, Pin.OUT)
+#signal = Pin(27, Pin.IN)
+
 TIMEOUT_US = 100_000
 LAST_EDGE = utime.ticks_us()
 # to store the rising and falling edges of the IR sensor
