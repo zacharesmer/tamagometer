@@ -5,9 +5,9 @@ import { TamaMessage } from '@/model';
 import { onMounted, ref, useTemplateRef } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
-import { getPortOrNeedToRetry } from '@/serial';
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
+import { serialWorker, postMessagePromise } from '@/serial';
 
 // Store recorded messages as strings
 let snoopOutput = ref(new Array<string>);
@@ -19,8 +19,8 @@ let snoopOutput = ref(new Array<string>);
 // snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
 
 const needToRetry = ref(false);
-let worker: Worker;
-let workerPromise: Promise<void>
+let worker = serialWorker;
+
 const statusIndicator = useTemplateRef("statusIndicator")
 
 const conversationName = ref("Recorded Conversation")
@@ -32,39 +32,41 @@ const stagedMessageIndeces = ref<{ message1: number, message2: number, message3:
         message4: NaN
     })
 
-// Called when the component is mounted or if it fails and the retry button is clicked
-async function snoop() {
-    needToRetry.value = await getPortOrNeedToRetry()
-    // console.log("Snooping...");
-    workerPromise = new Promise((resolve, reject) => {
-        worker = new Worker(new URL("@/listeningWorker.ts", import.meta.url), { type: "module" })
-        worker.onmessage = (e: MessageEvent) => {
-            const message = e.data as FromListeningWorker
-            switch (message.kind) {
-                case "receivedBitstring": {
-                    snoopOutput.value.push(message.bits)
-                    break
+onMounted(async () => {
+    await setUpWorker()
+    snoop()
+})
+
+onBeforeRouteLeave(async (to, from) => {
+    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { })
+})
+
+async function setUpWorker() {
+    worker.addEventListener("message", (e: MessageEvent) => {
+        const message = e.data as FromWorker
+        switch (message.kind) {
+            case "receivedBitstring": {
+                snoopOutput.value.push(message.bits)
+                break
+            }
+            case "workerDone": {
+                break
+            }
+            case "animate": {
+                if (message.animation === "statusIndicator") {
+                    statusIndicator.value?.animateStatusIndicator()
                 }
-                case "workerDone": {
-                    resolve()
-                    break
-                }
-                case "workerError": {
-                    needToRetry.value = true
-                    reject(message.error)
-                    break
-                }
-                case "animate": {
-                    if (message.animation === "statusIndicator") {
-                        statusIndicator.value?.animateStatusIndicator()
-                    }
-                    break
-                }
+                break
             }
         }
-        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-        worker.postMessage({ kind: "connectSerial" })
     })
+    worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+}
+
+function snoop() {
+    needToRetry.value = false
+    postMessagePromise({ kind: "listenContinuously", promiseID: NaN })
+        .catch(r => { console.log("Snoop stopped :("); needToRetry.value = true })
 }
 
 function saveConversation() {
@@ -114,19 +116,6 @@ function saveName(newName: string) {
     conversationName.value = newName;
 }
 
-onMounted(async () => {
-    snoop()
-})
-
-onBeforeRouteLeave(async (to, from, next) => {
-    worker.postMessage({ kind: "stopWork" })
-    await workerPromise.catch(r => {
-        // This is usually a TypeError because the serial reader was cancelled and closed while it was reading
-        // That's fine because it needs to stop no matter what when we leave the page.
-        // console.log(r)
-    })
-    next()
-})
 
 function reloadPage() {
     window.location.reload()

@@ -1,4 +1,5 @@
 export { getSerialConnection, getPortOrNeedToRetry }
+export { postMessagePromise, serialWorker, makeSerialWorker }
 export type { SerialConnection }
 
 import { matchCommandString, matchTimedOutString } from "./matchers"
@@ -86,8 +87,17 @@ class SerialConnection {
         await this.sendLine("tamagometer listen")
         postMessage({ kind: "animate", animation: "statusIndicator" })
         while (true) {
-            // This part is not in a try/catch because if there's an error with the serial connection, I actually want it to fail
-            const readSerialResult = await this.readSerial();
+            // The inside of this loop is not in a try/catch because if there's an error 
+            // with the serial connection, I actually want it to fail.
+            // There's a time out on the micro controller, but there needs to be a backup one here as
+            // well so the page won't freeze if the microcontroller doesn't send its time out message
+            const frontEndTimeout = new Promise<void>((resolve, reject) => {
+                setTimeout(reject, 2000);
+            });
+            const readSerialResult = await Promise.race([this.readSerial(), frontEndTimeout])
+            if (readSerialResult == null) {
+                break
+            }
             // console.log("Result: " + readSerialResult.value ? readSerialResult.value : "")
             const { value, done: stream_done } = readSerialResult
             if (typeof (value) === "string") {
@@ -110,10 +120,11 @@ class SerialConnection {
                 return null;
             }
         }
+        return null
     }
 
     // listen for a command until it's received, cancelled, or times out
-    async readOneCommandCancellable(timeout: number | null = null) {
+    async readOneCommandCancellable(timeout: number | null = null): Promise<string | null> {
         // cancelListen can be set by a callback for a button, so reset it in case that's happened
         this.cancelListen = false;
         let command = null;
@@ -189,11 +200,15 @@ class SerialConnection {
     }
 }
 
+// This has to be a factory because a constructor can't be async, but 
+// opening the serial port is async and must be awaited.
 async function getSerialConnection(port: SerialPort) {
     // console.log("Making a new serial connection")
     return await new SerialConnection().init(port)
 }
 
+// If a port has not been requested, request one.
+// If the request doesn't work, return false.
 async function getPortOrNeedToRetry(): Promise<boolean> {
     let needToRetry = false
     let port: SerialPort
@@ -216,4 +231,55 @@ async function getPortOrNeedToRetry(): Promise<boolean> {
         console.error("Web Serial is not available in this browser")
     }
     return needToRetry
+}
+
+let serialWorker: Worker
+let promiseRegistry: PromiseRegistry
+
+
+class PromiseRegistry {
+    promises = new Map<number, { resolve: Function, reject: Function }>()
+    nextID = 0
+    registerPromise(resolve: Function, reject: Function): number {
+        const id = this.nextID
+        this.nextID += 1
+        this.promises.set(id, { resolve, reject })
+        return id
+    }
+}
+
+
+function makeSerialWorker() {
+    promiseRegistry = new PromiseRegistry()
+    serialWorker = new Worker(new URL("@/serialworker.ts", import.meta.url), { type: "module" })
+    serialWorker.addEventListener("message", (e: MessageEvent) => {
+        const message = e.data as FromWorker
+        console.log("Message from worker:", message)
+        switch (message.kind) {
+            case "result": {
+                if (message.result == "resolve") {
+                    // resolve the relevant promise
+                    console.log("Resolving promise", message.promiseID)
+                    promiseRegistry.promises.get(message.promiseID)?.resolve()
+                } else if (message.result == "reject") {
+                    // reject the relevant promise
+                    console.log("Rejecting promise", message.promiseID)
+                    promiseRegistry.promises.get(message.promiseID)?.reject()
+                }
+                promiseRegistry.promises.delete(message.promiseID)
+                break
+            }
+        }
+    })
+}
+
+// Sends a message to the web worker to call a function.
+// Adds an ID to the message to identify it. Stores the ID and promise resolver/rejector functions 
+// in a registry so it can be resolved or rejected based on a message from the worker
+
+function postMessagePromise(message: ToWorker): Promise<void> {
+    return new Promise((resolve, reject) => {
+        message.promiseID = promiseRegistry.registerPromise(resolve, reject)
+        serialWorker.postMessage(message)
+    })
 }

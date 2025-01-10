@@ -1,10 +1,17 @@
 <script setup lang="ts">
 // import BitstringInput from './components/BitstringInput.vue';
-import { ref } from 'vue'
+import { onMounted } from 'vue';
 import Settings from './components/Settings.vue';
-import StatusIndicator from './components/StatusIndicator.vue';
+import { getPortOrNeedToRetry, makeSerialWorker, postMessagePromise } from './serial';
 
 let webSerialSupported = ("serial" in navigator)
+
+onMounted(async () => {
+  // TODO: Add something sensible for requesting access to a serial device on first usage
+  // Also need to add the retry or refresh buttons back in
+  makeSerialWorker()
+  await postMessagePromise({ kind: "connectSerial", promiseID: NaN })
+})
 
 </script>
 
@@ -18,13 +25,21 @@ let webSerialSupported = ("serial" in navigator)
           Find a compatible browser in the Mozilla developer docs</a></p>
     </div>
     <div class="top-bar">
+      <button class="icon-label-button" @click="getPortOrNeedToRetry">
+        <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <path d="M26 48L26 58C26 65.732 32.268 72 40 72C47.732 72 54 65.732 54 58V48" />
+          <path d="M26 32L26 22C26 14.268 32.268 8 40 8C47.732 8 54 14.268 54 22V32" />
+          <path d="M40 53L40 27" />
+        </svg>
+        <span>Connect</span>
+      </button>
       <nav>
         <RouterLink class="navlink first-link" to="/conversation/">Edit</RouterLink>
         <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
         <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
         <RouterLink class="navlink middle-link" to="/help">Help</RouterLink>
       </nav>
-      <StatusIndicator class="status-indicator"></StatusIndicator>
       <details>
         <summary>
           <span>Settings</span>

@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { ref, useTemplateRef } from 'vue';
-import { activeConversation as conversation } from '@/state';
-import { getPortOrNeedToRetry } from '@/serial';
+import { getPortOrNeedToRetry, serialWorker, postMessagePromise } from '@/serial';
 
 import StatusIndicator from './StatusIndicator.vue';
+import { onBeforeRouteLeave } from 'vue-router';
 
 let workerPromise: Promise<void>
 let worker: Worker
@@ -13,54 +12,15 @@ const workerHasBeenSetup = ref(false);
 const needToRetry = ref(false)
 const statusIndicator = useTemplateRef("statusIndicator")
 
-onBeforeRouteLeave(async (to, from, next) => {
-    if (workerHasBeenSetup.value) {
-        worker.postMessage({ kind: "stopWork" })
-        await workerPromise.catch(r => {
-            console.log(r)
-        })
-    }
-    next()
-})
-
 async function setUpWorker() {
     // console.log("Setting up conversation worker...")
     needToRetry.value = await getPortOrNeedToRetry()
     workerPromise = new Promise((resolve, reject) => {
-        worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
+        worker = serialWorker
         workerHasBeenSetup.value = true;
-        worker.onmessage = (e: MessageEvent) => {
-            const message = e.data as FromConversationWorker
+        worker.addEventListener("message", (e: MessageEvent) => {
+            const message = e.data as FromWorker
             switch (message.kind) {
-                // Update the UI with the responses
-                case "conversationResponse": {
-                    // console.log(message.response1, message.response2)
-                    console.log(message)
-                    // conversation.message2.update(message.response1)
-                    // conversation.message4.update(message.response2)
-                    // Why is this vvvv never true??
-                    if (message.responseTo == "initiate") {
-                        console.log("Updating messages 2 and 4...")
-                        conversation.message2.update(message.response1)
-                        conversation.message4.update(message.response2)
-                    }
-                    if (message.response2 == "await") {
-                        console.log("Updating messages 1 and 3...")
-                        conversation.message1.update(message.response1)
-                        conversation.message3.update(message.response2)
-                    }
-                    break
-                }
-                case "workerDone": {
-                    // console.log("Worker is done")
-                    resolve()
-                    break
-                }
-                case "workerError": {
-                    needToRetry.value = true
-                    reject(message.error)
-                    break
-                }
                 case "animate": {
                     if (message.animation === "statusIndicator") {
                         statusIndicator.value?.animateStatusIndicator()
@@ -68,22 +28,24 @@ async function setUpWorker() {
                     break
                 }
             }
-        }
+        })
         worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-        worker.postMessage({ kind: "connectSerial" })
     })
 }
 
 function startConversation(message1Bitstring: string, message2Bitstring: string) {
-    // TODO: I need something to prevent spamming the button. Maybe a promise in the 
-    // webworker so it will just ignore any messages until the conversation is complete or cancelled?
-    worker.postMessage({
+    postMessagePromise({
         kind: "conversation",
         message1: message1Bitstring,
         message2: message2Bitstring,
-        conversationType: "start"
+        conversationType: "initiate",
+        promiseID: NaN
     })
 }
+
+onBeforeRouteLeave(async (to, from) => {
+    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { })
+})
 
 function reloadPage() {
     window.location.reload()

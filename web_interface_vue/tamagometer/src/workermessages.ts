@@ -3,11 +3,48 @@
 
 // (I don't know if this is a good way to do this. It was slightly better than no type checking, maybe)
 
+// To worker:
+
+interface connectSerial {
+    kind: "connectSerial"
+    promiseID: number
+}
+
 interface conversation {
     kind: "conversation"
     message1: string
     message2: string
-    conversationType: "start" | "wait"
+    conversationType: "initiate" | "await"
+    promiseID: number
+}
+
+interface listenContinuously {
+    kind: "listenContinuously"
+    promiseID: number
+}
+
+interface stopTask {
+    kind: "stopTask"
+    promiseID: number
+}
+
+interface stopWorker {
+    kind: "stopWorker"
+    promiseID: number
+}
+
+interface startBootstrap {
+    kind: "startBootstrap"
+    promiseID: number
+}
+
+// From Worker:
+
+interface result {
+    kind: "result"
+    result: "resolve" | "reject"
+    promiseID: number
+    // task: "connectSerial" | "conversation" | "startBootstrap" | "listenContinuously" | "stopTask" | "stopWorker"
 }
 
 interface conversationResponse {
@@ -17,16 +54,18 @@ interface conversationResponse {
     response2: string
 }
 
-interface stopWaitingForConversation {
-    kind: "stopWaitingForConversation"
+interface receivedBitstring {
+    kind: "receivedBitstring"
+    bits: string
 }
 
-interface stopWork {
-    kind: "stopWork"
-}
-
-interface workerDone {
-    kind: "workerDone"
+interface bootstrapStatus {
+    kind: "bootstrapStatus"
+    status: ""
+    message1: string
+    message2: string
+    message3: string
+    message4: string
 }
 
 interface workerError {
@@ -34,24 +73,15 @@ interface workerError {
     error: Error
 }
 
-interface connectSerial {
-    kind: "connectSerial"
-}
-
-interface receivedBitstring {
-    kind: "receivedBitstring"
-    bits: string
+interface workerDone {
+    kind: "workerDone"
 }
 
 interface animate {
     kind: "animate"
-    animation: "statusIndicator" // | add more options as they get made
+    animation: "statusIndicator" // | add options if there are more animations one day
 }
 
-type ToConversationWorker = connectSerial | conversation | stopWork | stopWaitingForConversation
+type ToWorker = connectSerial | conversation | listenContinuously | startBootstrap | stopWorker | stopTask
 
-type FromConversationWorker = conversationResponse | workerDone | workerError | animate
-
-type ToListeningWorker = connectSerial | stopWork
-
-type FromListeningWorker = receivedBitstring | workerDone | workerError | animate
+type FromWorker = result | conversationResponse | receivedBitstring | workerError | workerDone | animate

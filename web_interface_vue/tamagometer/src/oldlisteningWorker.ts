@@ -5,7 +5,7 @@ let serialConnection: SerialConnection
 let continueListening = true
 
 onmessage = (async (e: MessageEvent) => {
-    const message = e.data as ToListeningWorker
+    const message = e.data as ToWorker
     // we have matching at home
     // matching at home:
     switch (message.kind) {
@@ -23,7 +23,7 @@ onmessage = (async (e: MessageEvent) => {
             })
             break
         }
-        case "stopWork": {
+        case "stopWorker": {
             // break out of the listening loop
             continueListening = false
             // free the serial port, and then notify the main thread that the worker is done

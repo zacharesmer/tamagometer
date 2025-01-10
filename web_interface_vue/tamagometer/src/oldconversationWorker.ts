@@ -4,7 +4,7 @@ let serialPort: SerialPort
 let serialConnection: SerialConnection
 
 onmessage = (async (e: MessageEvent) => {
-    const message = e.data as ToConversationWorker
+    const message = e.data as ToWorker
     // we have matching at home
     // matching at home:
     switch (message.kind) {
@@ -20,7 +20,7 @@ onmessage = (async (e: MessageEvent) => {
             })
             break
         }
-        case "stopWork": {
+        case "stopWorker": {
             // console.log("Conversation worker was told to shut down")
             // free the serial port, and then notify the main thread that the worker is done
             try {
@@ -39,10 +39,10 @@ onmessage = (async (e: MessageEvent) => {
             break
         }
         case "conversation": {
-            if (message.conversationType === "start") {
+            if (message.conversationType === "initiate") {
                 startConversation(message.message1, message.message2).catch(r => postMessage({ kind: "workerError", error: r }))
             }
-            else if (message.conversationType === "wait") {
+            else if (message.conversationType === "await") {
                 awaitConversation(message.message1, message.message2).catch(r => postMessage({ kind: "workerError", error: r }))
             }
             else {
@@ -50,7 +50,7 @@ onmessage = (async (e: MessageEvent) => {
             }
             break
         }
-        case "stopWaitingForConversation": {
+        case "stopTask": {
             serialConnection.stopListening()
             break
         }

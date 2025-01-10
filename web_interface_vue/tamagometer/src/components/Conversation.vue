@@ -7,7 +7,7 @@ import ConversationNameInput from './ConversationNameInput.vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { activeConversation as conversation } from '@/state';
-import { getPortOrNeedToRetry } from '@/serial';
+import { serialWorker, postMessagePromise } from '@/serial';
 
 import { toast } from 'vue3-toastify'
 import StatusIndicator from './StatusIndicator.vue';
@@ -28,84 +28,70 @@ onMounted(async () => {
     setUpWorker()
 })
 
-onBeforeRouteLeave(async (to, from, next) => {
-    worker.postMessage({ kind: "stopWork" })
-    await workerPromise.catch(r => {
-        console.log(r)
-    })
-    next()
+onBeforeRouteLeave(async (to, from) => {
+    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { })
 })
 
 async function setUpWorker() {
-    // console.log("Setting up conversation worker...")
-    needToRetry.value = await getPortOrNeedToRetry()
-    workerPromise = new Promise((resolve, reject) => {
-        worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
-        worker.onmessage = (e: MessageEvent) => {
-            const message = e.data as FromConversationWorker
-            switch (message.kind) {
-                // Update the UI with the responses
-                case "conversationResponse": {
-                    // console.log(message.response1, message.response2)
-                    // console.log(message)
-                    if (message.responseTo == "initiate") {
-                        console.log("Updating messages 2 and 4...")
-                        conversation.message2.update(message.response1)
-                        conversation.message4.update(message.response2)
-                    }
-                    if (message.responseTo == "await") {
-                        console.log("Updating messages 1 and 3...")
-                        conversation.message1.update(message.response1)
-                        conversation.message3.update(message.response2)
-                    }
-                    break
+    console.log("Setting up conversation worker...")
+    // needToRetry.value = await getPortOrNeedToRetry()
+    worker = serialWorker
+    worker.addEventListener("message", (e: MessageEvent) => {
+        const message = e.data as FromWorker
+        switch (message.kind) {
+            // Update the UI with the responses
+            case "conversationResponse": {
+                // console.log(message.response1, message.response2)
+                // console.log(message)
+                if (message.responseTo == "initiate") {
+                    console.log("Updating messages 2 and 4...")
+                    conversation.message2.update(message.response1)
+                    conversation.message4.update(message.response2)
                 }
-                case "workerDone": {
-                    // console.log("Worker is done")
-                    resolve()
-                    break
+                if (message.responseTo == "await") {
+                    console.log("Updating messages 1 and 3...")
+                    conversation.message1.update(message.response1)
+                    conversation.message3.update(message.response2)
                 }
-                case "workerError": {
-                    needToRetry.value = true
-                    reject(message.error)
-                    break
+                break
+            }
+            case "animate": {
+                if (message.animation === "statusIndicator") {
+                    statusIndicator.value?.animateStatusIndicator()
                 }
-                case "animate": {
-                    if (message.animation === "statusIndicator") {
-                        statusIndicator.value?.animateStatusIndicator()
-                    }
-                    break
-                }
+                break
             }
         }
-        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-        worker.postMessage({ kind: "connectSerial" })
     })
+    worker.onerror = (e) => { console.error("Error in listening worker:", e); needToRetry.value = true }
 }
 
-function startConversation() {
+async function startConversation() {
     // TODO: I need something to prevent spamming the button. Maybe a promise in the 
     // webworker so it will just ignore any messages until the conversation is complete or cancelled?
     // console.log("Starting conversation...")
-    worker.postMessage({
+    // worker.postMessage()
+    await postMessagePromise({
         kind: "conversation",
         message1: conversation.message1.getBitstring(),
         message2: conversation.message3.getBitstring(),
-        conversationType: "start"
-    })
+        conversationType: "initiate",
+        promiseID: NaN
+    }).catch(r => { })
 }
 
-function awaitConversation() {
-    worker.postMessage({
+async function awaitConversation() {
+    await postMessagePromise({
         kind: "conversation",
         message1: conversation.message2.getBitstring(),
         message2: conversation.message4.getBitstring(),
-        conversationType: "wait"
-    })
+        conversationType: "await",
+        promiseID: NaN
+    }).catch(r => { })
 }
 
-function stopWaiting() {
-    worker.postMessage({ kind: "stopWaitingForConversation" })
+async function stopWaiting() {
+    await postMessagePromise({ kind: "stopTask", promiseID: NaN })
 }
 
 // Write the current conversation to the database. 
