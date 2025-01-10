@@ -43,6 +43,7 @@ interface startBootstrap {
 interface result {
     kind: "result"
     result: "resolve" | "reject"
+    error?: Error
     promiseID: number
     // task: "connectSerial" | "conversation" | "startBootstrap" | "listenContinuously" | "stopTask" | "stopWorker"
 }

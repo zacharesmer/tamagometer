@@ -10,7 +10,7 @@ onMounted(async () => {
   // TODO: Add something sensible for requesting access to a serial device on first usage
   // Also need to add the retry or refresh buttons back in
   makeSerialWorker()
-  await postMessagePromise({ kind: "connectSerial", promiseID: NaN })
+  await postMessagePromise({ kind: "connectSerial", promiseID: NaN }).catch(r => { console.error("Could not connect to serial") })
 })
 
 </script>

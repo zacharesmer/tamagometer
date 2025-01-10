@@ -38,7 +38,7 @@ onMounted(async () => {
 })
 
 onBeforeRouteLeave(async (to, from) => {
-    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { })
+    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { console.log(r) })
 })
 
 async function setUpWorker() {

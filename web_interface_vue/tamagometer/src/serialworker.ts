@@ -62,15 +62,28 @@ onmessage = (async (e: MessageEvent) => {
             break
         case "connectSerial":
             {
-                // Initial release of the lock to let everything else do its thing
-                unlockWhenDone = true
-                f = connectSerial
+                // Initial release of the lock when the serial connection is set up
+                // This has to be handled differently from the rest of the functions because it should only 
+                // release the lock if it is successful. So, the worker is marked as ready in the then(), not the finally()
+                connectSerial().then(() => {
+                    console.log("Sending resolve message:", message.promiseID)
+                    postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
+                    resolveWorkerReady()
+                    workerReady.ready = true
+                    console.log(workerReady)
+                }).catch((r) => {
+                    console.log(r)
+                    console.log("Sending reject message:", message.promiseID)
+                    postMessage({
+                        kind: "result", result: "reject", promiseID: message.promiseID
+                    })
+                })
             }
             break
 
         case "stopTask":
-            // only stop a task if the worker is busy (not ready)
-            if (!workerReady.ready) {
+            // only stop a task if the worker is busy (not ready), and the serial connection exists
+            if (!workerReady.ready && serialConnection != undefined) {
                 // Don't need to unlock when done, because the task itself will do that
                 f = stopTask
             }
@@ -102,11 +115,11 @@ onmessage = (async (e: MessageEvent) => {
     f().then(() => {
         console.log("Sending resolve message:", message.promiseID)
         postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
-    }).catch((r) => {
-        console.error(r)
+    }).catch((r: Error) => {
+        console.log(r)
         console.log("Sending reject message:", message.promiseID)
         postMessage({
-            kind: "result", result: "reject", promiseID: message.promiseID
+            kind: "result", result: "reject", error: r, promiseID: message.promiseID
         })
     }).finally(() => {
         // The worker needs to get unlocked when a task completes. 

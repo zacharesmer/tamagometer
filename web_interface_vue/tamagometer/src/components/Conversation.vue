@@ -91,7 +91,7 @@ async function awaitConversation() {
 }
 
 async function stopWaiting() {
-    await postMessagePromise({ kind: "stopTask", promiseID: NaN })
+    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => {})
 }
 
 // Write the current conversation to the database. 

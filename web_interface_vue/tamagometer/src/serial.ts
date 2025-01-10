@@ -264,7 +264,7 @@ function makeSerialWorker() {
                 } else if (message.result == "reject") {
                     // reject the relevant promise
                     console.log("Rejecting promise", message.promiseID)
-                    promiseRegistry.promises.get(message.promiseID)?.reject()
+                    promiseRegistry.promises.get(message.promiseID)?.reject(message.error ? message.error : "")
                 }
                 promiseRegistry.promises.delete(message.promiseID)
                 break
