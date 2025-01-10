@@ -5,9 +5,23 @@ import { type SerialConnection, getSerialConnection } from "./serial"
 // It's set to true for the first time after the SerialConnection object is created successfully.
 let resolveWorkerReady: Function
 let workerReady = { ready: false, promise: new Promise((resolve, reject) => { resolveWorkerReady = resolve }) }
-// this is set to true to stop any tasks that would otherwise be stuck waiting for user/tamagotchi input
+// cancelTask can be set to `true` to cancel any tasks that would otherwise be stuck waiting for user/tamagotchi input
+// it is set when the message stopTask is recieved
 let cancelTask = false
 let serialConnection: SerialConnection
+
+function acquireWorkerLock() {
+    workerReady = {
+        ready: false, promise: new Promise((resolve, reject) => {
+            resolveWorkerReady = resolve
+        })
+    }
+}
+
+function releaseWorkerLock() {
+    resolveWorkerReady()
+    workerReady.ready = true
+}
 
 onmessage = (async (e: MessageEvent) => {
     const message = e.data as ToWorker
@@ -22,11 +36,7 @@ onmessage = (async (e: MessageEvent) => {
         case "conversation":
             if (workerReady.ready) {
                 unlockWhenDone = true
-                workerReady = {
-                    ready: false, promise: new Promise((resolve, reject) => {
-                        resolveWorkerReady = resolve
-                    })
-                }
+                acquireWorkerLock()
                 if (message.conversationType === "initiate") {
                     f = async () => { await initiateConversation(message.message1, message.message2) }
                 }
@@ -41,36 +51,26 @@ onmessage = (async (e: MessageEvent) => {
         case "listenContinuously":
             if (workerReady.ready) {
                 unlockWhenDone = true
-                workerReady = {
-                    ready: false, promise: new Promise((resolve, reject) => {
-                        resolveWorkerReady = resolve
-                    })
-                }
+                acquireWorkerLock()
                 f = listenContinuously
             }
             break
         case "startBootstrap":
             if (workerReady.ready) {
                 unlockWhenDone = true
-                workerReady = {
-                    ready: false, promise: new Promise((resolve, reject) => {
-                        resolveWorkerReady = resolve
-                    })
-                }
+                acquireWorkerLock()
                 f = startBootstrap
             }
             break
         case "connectSerial":
             {
-                // Initial release of the lock when the serial connection is set up
+                // Initial release of the lock when the serial connection is successfully set up
                 // This has to be handled differently from the rest of the functions because it should only 
-                // release the lock if it is successful. So, the worker is marked as ready in the then(), not the finally()
+                // release the lock if it is successful. The lock is released in the then(), not the finally()
                 connectSerial().then(() => {
+                    releaseWorkerLock()
                     console.log("Sending resolve message:", message.promiseID)
                     postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
-                    resolveWorkerReady()
-                    workerReady.ready = true
-                    console.log(workerReady)
                 }).catch((r) => {
                     console.log(r)
                     console.log("Sending reject message:", message.promiseID)
@@ -126,9 +126,7 @@ onmessage = (async (e: MessageEvent) => {
         // This is also the callback for the fake non-task promise that gets rejected when the worker is busy, 
         // so unlockWhenDone is only set when a real task is started.
         if (unlockWhenDone) {
-            resolveWorkerReady()
-            workerReady.ready = true
-            console.log(workerReady)
+            releaseWorkerLock()
         }
     })
 })

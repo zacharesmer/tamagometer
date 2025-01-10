@@ -42,14 +42,12 @@ onBeforeRouteLeave(async (to, from) => {
 })
 
 async function setUpWorker() {
+    // Snoop-specific message handling code. More general message handling is in serial.ts
     worker.addEventListener("message", (e: MessageEvent) => {
         const message = e.data as FromWorker
         switch (message.kind) {
             case "receivedBitstring": {
                 snoopOutput.value.push(message.bits)
-                break
-            }
-            case "workerDone": {
                 break
             }
             case "animate": {

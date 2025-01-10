@@ -38,6 +38,7 @@ async function setUpWorker() {
     worker = serialWorker
     worker.addEventListener("message", (e: MessageEvent) => {
         const message = e.data as FromWorker
+        // Add conversation-specific message handling. More general message handling is in serial.ts
         switch (message.kind) {
             // Update the UI with the responses
             case "conversationResponse": {
@@ -67,8 +68,6 @@ async function setUpWorker() {
 }
 
 async function startConversation() {
-    // TODO: I need something to prevent spamming the button. Maybe a promise in the 
-    // webworker so it will just ignore any messages until the conversation is complete or cancelled?
     // console.log("Starting conversation...")
     // worker.postMessage()
     await postMessagePromise({

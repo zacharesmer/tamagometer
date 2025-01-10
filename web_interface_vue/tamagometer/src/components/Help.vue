@@ -15,22 +15,20 @@ const statusIndicator = useTemplateRef("statusIndicator")
 async function setUpWorker() {
     // console.log("Setting up conversation worker...")
     needToRetry.value = await getPortOrNeedToRetry()
-    workerPromise = new Promise((resolve, reject) => {
-        worker = serialWorker
-        workerHasBeenSetup.value = true;
-        worker.addEventListener("message", (e: MessageEvent) => {
-            const message = e.data as FromWorker
-            switch (message.kind) {
-                case "animate": {
-                    if (message.animation === "statusIndicator") {
-                        statusIndicator.value?.animateStatusIndicator()
-                    }
-                    break
+    worker = serialWorker
+    workerHasBeenSetup.value = true;
+    worker.addEventListener("message", (e: MessageEvent) => {
+        const message = e.data as FromWorker
+        switch (message.kind) {
+            case "animate": {
+                if (message.animation === "statusIndicator") {
+                    statusIndicator.value?.animateStatusIndicator()
                 }
+                break
             }
-        })
-        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+        }
     })
+    worker.onerror = (e) => { console.error("Error in listening worker:", e) }
 }
 
 function startConversation(message1Bitstring: string, message2Bitstring: string) {
