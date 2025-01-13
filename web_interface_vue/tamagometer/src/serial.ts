@@ -1,5 +1,5 @@
 export { getSerialConnection, getPortOrNeedToRetry }
-export { postMessagePromise, serialWorker, makeSerialWorker }
+export { serialWorker, makeSerialWorker, connectSerial, listenContinuously, haveConversation, stopTask }
 export type { SerialConnection }
 
 import { matchCommandString, matchTimedOutString } from "./matchers"
@@ -201,7 +201,7 @@ class SerialConnection {
 }
 
 // This has to be a factory because a constructor can't be async, but 
-// opening the serial port is async and must be awaited.
+// opening the serial port is async and must be awaited for the SerialConnection to be created.
 async function getSerialConnection(port: SerialPort) {
     // console.log("Making a new serial connection")
     return await new SerialConnection().init(port)
@@ -236,7 +236,7 @@ async function getPortOrNeedToRetry(): Promise<boolean> {
 let serialWorker: Worker
 let promiseRegistry: PromiseRegistry
 
-
+// Used to store promises so that when the worker sends a response message, they can be resolved or rejected
 class PromiseRegistry {
     promises = new Map<number, { resolve: Function, reject: Function }>()
     nextID = 0
@@ -255,31 +255,47 @@ function makeSerialWorker() {
     serialWorker.addEventListener("message", (e: MessageEvent) => {
         const message = e.data as FromWorker
         console.log("Message from worker:", message)
-        switch (message.kind) {
-            case "result": {
-                if (message.result == "resolve") {
-                    // resolve the relevant promise
-                    console.log("Resolving promise", message.promiseID)
-                    promiseRegistry.promises.get(message.promiseID)?.resolve()
-                } else if (message.result == "reject") {
-                    // reject the relevant promise
-                    console.log("Rejecting promise", message.promiseID)
-                    promiseRegistry.promises.get(message.promiseID)?.reject(message.error ? message.error : "")
-                }
-                promiseRegistry.promises.delete(message.promiseID)
-                break
+        if (message.kind == "result") {
+            if (message.result == "resolve") {
+                console.log("Resolving promise", message.promiseID)
+                promiseRegistry.promises.get(message.promiseID)?.resolve()
+            } else if (message.result == "reject") {
+                console.log("Rejecting promise", message.promiseID)
+                promiseRegistry.promises.get(message.promiseID)?.reject(message.error ? message.error : "")
             }
+            promiseRegistry.promises.delete(message.promiseID)
         }
+
     })
 }
 
 // Sends a message to the web worker to call a function.
 // Adds an ID to the message to identify it. Stores the ID and promise resolver/rejector functions 
-// in a registry so it can be resolved or rejected based on a message from the worker
-
+// in a registry so it can be resolved or rejected based on a message from the worker.
 function postMessagePromise(message: ToWorker): Promise<void> {
     return new Promise((resolve, reject) => {
         message.promiseID = promiseRegistry.registerPromise(resolve, reject)
         serialWorker.postMessage(message)
     })
+}
+
+// These functions are an abstraction layer so nothing else has to care they're running in a web worker
+// If the worker is busy and a function is unable to run (eg, it's already listening and a "listen" message is sent)
+// then the promise will be rejected immediately, and the worker won't do anything
+
+function connectSerial(): Promise<void> {
+    return postMessagePromise({ kind: "connectSerial", promiseID: NaN })
+}
+
+function haveConversation(message1: string, message2: string, conversationType: "initiate" | "await"): Promise<void> {
+    return postMessagePromise({ kind: "conversation", message1, message2, conversationType, promiseID: NaN })
+}
+
+function listenContinuously(): Promise<void> {
+    return postMessagePromise({ kind: "listenContinuously", promiseID: NaN })
+}
+
+
+function stopTask(): Promise<void> {
+    return postMessagePromise({ kind: "stopTask", promiseID: NaN })
 }

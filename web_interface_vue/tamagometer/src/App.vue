@@ -2,7 +2,7 @@
 // import BitstringInput from './components/BitstringInput.vue';
 import { onMounted } from 'vue';
 import Settings from './components/Settings.vue';
-import { getPortOrNeedToRetry, makeSerialWorker, postMessagePromise } from './serial';
+import { connectSerial, getPortOrNeedToRetry, makeSerialWorker } from './serial';
 
 let webSerialSupported = ("serial" in navigator)
 
@@ -10,7 +10,7 @@ onMounted(async () => {
   // TODO: Add something sensible for requesting access to a serial device on first usage
   // Also need to add the retry or refresh buttons back in
   makeSerialWorker()
-  await postMessagePromise({ kind: "connectSerial", promiseID: NaN }).catch(r => { console.error("Could not connect to serial") })
+  await connectSerial().catch(r => { console.error("Could not connect to serial") })
 })
 
 </script>

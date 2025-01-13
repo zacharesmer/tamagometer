@@ -5,12 +5,16 @@ import { type SerialConnection, getSerialConnection } from "./serial"
 // It's set to true for the first time after the SerialConnection object is created successfully.
 let resolveWorkerReady: Function
 let workerReady = { ready: false, promise: new Promise((resolve, reject) => { resolveWorkerReady = resolve }) }
+
 // cancelTask can be set to `true` to cancel any tasks that would otherwise be stuck waiting for user/tamagotchi input
-// it is set when the message stopTask is recieved
+// it is set when the message stopTask is received
 let cancelTask = false
 let serialConnection: SerialConnection
 
 function acquireWorkerLock() {
+    if (!workerReady.ready) {
+        throw Error("Worker is not ready; can't acquire the lock")
+    }
     workerReady = {
         ready: false, promise: new Promise((resolve, reject) => {
             resolveWorkerReady = resolve
@@ -27,10 +31,11 @@ onmessage = (async (e: MessageEvent) => {
     const message = e.data as ToWorker
     let unlockWhenDone = false
     console.log(message)
-    // Set f to be the function the message is requesting. This allows us to write the promise message sending
-    // part of it one time instead of every single time a kind of message is defined.
+    // Set f to be the function the message is requesting. 
     // The default function rejects the promise immediately, which is what should happen if you try to tell 
     // the worker to do something while it's busy with something else.
+    // Every function that this dispatches to must return a promise that resolves or rejects. If
+    // a promise is left open the worker will be unable to do anything 
     let f = () => { return new Promise<void>((resolve, reject) => { reject(Error("Command from message could not be run")) }) }
     switch (message.kind) {
         case "conversation":
@@ -75,7 +80,7 @@ onmessage = (async (e: MessageEvent) => {
                     console.log(r)
                     console.log("Sending reject message:", message.promiseID)
                     postMessage({
-                        kind: "result", result: "reject", promiseID: message.promiseID
+                        kind: "result", result: "reject", error: r, promiseID: message.promiseID
                     })
                 })
             }
@@ -140,7 +145,6 @@ function connectSerial(): Promise<void> {
             serialConnection = r
             resolve()
         }).catch((r) => {
-            postMessage({ kind: "workerError", error: r })
             reject(Error(r))
         })
     })
@@ -198,7 +202,7 @@ async function awaitConversation(message1: string, message2: string) {
 }
 
 // The dispatching code checks that this will only be called if a task is actually running
-function stopTask(): Promise<void> {
+async function stopTask(): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
         // console.log("1")
         cancelTask = true
@@ -211,7 +215,6 @@ function stopTask(): Promise<void> {
         // console.log("4")
         resolve()
     })
-
 }
 
 async function listenContinuously() {

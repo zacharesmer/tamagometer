@@ -7,13 +7,12 @@ import ConversationNameInput from './ConversationNameInput.vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { activeConversation as conversation } from '@/state';
-import { serialWorker, postMessagePromise } from '@/serial';
+import { serialWorker, haveConversation, stopTask } from '@/serial';
 
 import { toast } from 'vue3-toastify'
 import StatusIndicator from './StatusIndicator.vue';
 
 const route = useRoute()
-let workerPromise: Promise<void>
 let worker: Worker
 
 const needToRetry = ref(false)
@@ -29,7 +28,7 @@ onMounted(async () => {
 })
 
 onBeforeRouteLeave(async (to, from) => {
-    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { })
+    await stopTask().catch(r => { })
 })
 
 async function setUpWorker() {
@@ -69,28 +68,23 @@ async function setUpWorker() {
 
 async function startConversation() {
     // console.log("Starting conversation...")
-    // worker.postMessage()
-    await postMessagePromise({
-        kind: "conversation",
-        message1: conversation.message1.getBitstring(),
-        message2: conversation.message3.getBitstring(),
-        conversationType: "initiate",
-        promiseID: NaN
-    }).catch(r => { })
+    await haveConversation(
+        conversation.message1.getBitstring(),
+        conversation.message3.getBitstring(),
+        'initiate'
+    ).catch(r => { })
 }
 
 async function awaitConversation() {
-    await postMessagePromise({
-        kind: "conversation",
-        message1: conversation.message2.getBitstring(),
-        message2: conversation.message4.getBitstring(),
-        conversationType: "await",
-        promiseID: NaN
-    }).catch(r => { })
+    await haveConversation(
+        conversation.message2.getBitstring(),
+        conversation.message4.getBitstring(),
+        "await",
+    ).catch(r => { })
 }
 
 async function stopWaiting() {
-    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => {})
+    await stopTask().catch(r => { })
 }
 
 // Write the current conversation to the database. 

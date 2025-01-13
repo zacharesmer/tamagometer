@@ -1,11 +1,10 @@
 <script lang="ts" setup>
 import { ref, useTemplateRef } from 'vue';
-import { getPortOrNeedToRetry, serialWorker, postMessagePromise } from '@/serial';
+import { getPortOrNeedToRetry, haveConversation, serialWorker, stopTask } from '@/serial';
 
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
 
-let workerPromise: Promise<void>
 let worker: Worker
 const workerHasBeenSetup = ref(false);
 
@@ -32,17 +31,11 @@ async function setUpWorker() {
 }
 
 function startConversation(message1Bitstring: string, message2Bitstring: string) {
-    postMessagePromise({
-        kind: "conversation",
-        message1: message1Bitstring,
-        message2: message2Bitstring,
-        conversationType: "initiate",
-        promiseID: NaN
-    })
+    haveConversation(message1Bitstring, message2Bitstring, "initiate")
 }
 
 onBeforeRouteLeave(async (to, from) => {
-    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { })
+    await stopTask().catch(r => { })
 })
 
 function reloadPage() {

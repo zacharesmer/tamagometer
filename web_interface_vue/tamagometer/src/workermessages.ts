@@ -1,16 +1,14 @@
 // We have rust enums at home
 // Rust enums at home:
 
-// (I don't know if this is a good way to do this. It was slightly better than no type checking, maybe)
-
 // To worker:
 
-interface connectSerial {
+interface connectSerialMessage {
     kind: "connectSerial"
     promiseID: number
 }
 
-interface conversation {
+interface conversationMessage {
     kind: "conversation"
     message1: string
     message2: string
@@ -18,22 +16,22 @@ interface conversation {
     promiseID: number
 }
 
-interface listenContinuously {
+interface listenContinuouslyMessage {
     kind: "listenContinuously"
     promiseID: number
 }
 
-interface stopTask {
+interface stopTaskMessage {
     kind: "stopTask"
     promiseID: number
 }
 
-interface stopWorker {
+interface stopWorkerMessage {
     kind: "stopWorker"
     promiseID: number
 }
 
-interface startBootstrap {
+interface startBootstrapMessage {
     kind: "startBootstrap"
     promiseID: number
 }
@@ -43,9 +41,9 @@ interface startBootstrap {
 interface result {
     kind: "result"
     result: "resolve" | "reject"
+    // only used in the case where it's a rejection
     error?: Error
     promiseID: number
-    // task: "connectSerial" | "conversation" | "startBootstrap" | "listenContinuously" | "stopTask" | "stopWorker"
 }
 
 interface conversationResponse {
@@ -69,11 +67,6 @@ interface bootstrapStatus {
     message4: string
 }
 
-interface workerError {
-    kind: "workerError"
-    error: Error
-}
-
 interface workerDone {
     kind: "workerDone"
 }
@@ -83,6 +76,6 @@ interface animate {
     animation: "statusIndicator" // | add options if there are more animations one day
 }
 
-type ToWorker = connectSerial | conversation | listenContinuously | startBootstrap | stopWorker | stopTask
+type ToWorker = connectSerialMessage | conversationMessage | listenContinuouslyMessage | startBootstrapMessage | stopWorkerMessage | stopTaskMessage
 
-type FromWorker = result | conversationResponse | receivedBitstring | workerError | workerDone | animate
+type FromWorker = result | conversationResponse | receivedBitstring | bootstrapStatus | workerDone | animate

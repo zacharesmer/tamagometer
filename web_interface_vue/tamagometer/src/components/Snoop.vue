@@ -7,7 +7,7 @@ import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { serialWorker, postMessagePromise } from '@/serial';
+import { serialWorker, listenContinuously, stopTask } from '@/serial';
 
 // Store recorded messages as strings
 let snoopOutput = ref(new Array<string>);
@@ -38,7 +38,7 @@ onMounted(async () => {
 })
 
 onBeforeRouteLeave(async (to, from) => {
-    await postMessagePromise({ kind: "stopTask", promiseID: NaN }).catch(r => { console.log(r) })
+    await stopTask().catch(r => { console.log(r) })
 })
 
 async function setUpWorker() {
@@ -63,7 +63,7 @@ async function setUpWorker() {
 
 function snoop() {
     needToRetry.value = false
-    postMessagePromise({ kind: "listenContinuously", promiseID: NaN })
+    listenContinuously()
         .catch(r => { console.log("Snoop stopped :("); needToRetry.value = true })
 }
 
