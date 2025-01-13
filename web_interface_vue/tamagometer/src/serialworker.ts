@@ -29,7 +29,6 @@ function releaseWorkerLock() {
 
 onmessage = (async (e: MessageEvent) => {
     const message = e.data as ToWorker
-    let unlockWhenDone = false
     console.log(message)
     // Set f to be the function the message is requesting. 
     // The default function rejects the promise immediately, which is what should happen if you try to tell 
@@ -39,58 +38,64 @@ onmessage = (async (e: MessageEvent) => {
     let f = () => { return new Promise<void>((resolve, reject) => { reject(Error("Command from message could not be run")) }) }
     switch (message.kind) {
         case "conversation":
-            if (workerReady.ready) {
-                unlockWhenDone = true
-                acquireWorkerLock()
-                if (message.conversationType === "initiate") {
-                    f = async () => { await initiateConversation(message.message1, message.message2) }
-                }
-                else if (message.conversationType === "await") {
-                    f = async () => { await awaitConversation(message.message1, message.message2) }
-                }
-                else {
-                    throw Error("Invalid conversation type:" + message.conversationType)
-                }
+            if (message.conversationType === "initiate") {
+                makePromiseWithLock(async () => { await initiateConversation(message.message1, message.message2) }, message.promiseID)
             }
-            break
-        case "listenContinuously":
-            if (workerReady.ready) {
-                unlockWhenDone = true
-                acquireWorkerLock()
-                f = listenContinuously
+            else if (message.conversationType === "await") {
+                makePromiseWithLock(async () => { await awaitConversation(message.message1, message.message2) }, message.promiseID)
             }
-            break
-        case "startBootstrap":
-            if (workerReady.ready) {
-                unlockWhenDone = true
-                acquireWorkerLock()
-                f = startBootstrap
-            }
-            break
-        case "connectSerial":
-            {
-                // Initial release of the lock when the serial connection is successfully set up
-                // This has to be handled differently from the rest of the functions because it should only 
-                // release the lock if it is successful. The lock is released in the then(), not the finally()
-                connectSerial().then(() => {
-                    releaseWorkerLock()
-                    console.log("Sending resolve message:", message.promiseID)
-                    postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
-                }).catch((r) => {
-                    console.log(r)
-                    console.log("Sending reject message:", message.promiseID)
-                    postMessage({
-                        kind: "result", result: "reject", error: r, promiseID: message.promiseID
-                    })
-                })
+            else {
+                throw Error("Invalid conversation type:" + message.conversationType)
             }
             break
 
+        case "listenContinuously":
+            makePromiseWithLock(listenContinuously, message.promiseID)
+            break
+
+        case "startBootstrap":
+            makePromiseWithLock(startBootstrap, message.promiseID)
+            break
+
+        case "connectSerial":
+            // This has to be handled differently from the rest of the functions because it should only 
+            // release the lock if it is successful. The other functions also need to release it if they fail.
+            // Here the lock is released in the then(), not the finally()
+            connectSerial().then(() => {
+                // Initial release of the lock when the serial connection is successfully set up
+                releaseWorkerLock()
+                console.log("Sending resolve message:", message.promiseID)
+                postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
+            }).catch((r) => {
+                console.log(r)
+                console.log("Sending reject message:", message.promiseID)
+                postMessage({
+                    kind: "result", result: "reject", error: r, promiseID: message.promiseID
+                })
+            })
+            break
+
         case "stopTask":
-            // only stop a task if the worker is busy (not ready), and the serial connection exists
+            // This needs to be handled differently from the other functions because it will only run when the lock is
+            // already held by something else (either the worker is doing something else, or the serial connection has
+            // not been set up yet)
             if (!workerReady.ready && serialConnection != undefined) {
                 // Don't need to unlock when done, because the task itself will do that
-                f = stopTask
+                stopTask()
+                    .then(() => {
+                        console.log("Sending resolve message:", message.promiseID)
+                        postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
+                    }).catch((r: Error) => {
+                        console.log(r)
+                        console.log("Sending reject message:", message.promiseID)
+                        postMessage({
+                            kind: "result", result: "reject", error: r, promiseID: message.promiseID
+                        })
+                    })
+            } else {
+                postMessage({
+                    kind: "result", result: "reject", error: "Could not run command", promiseID: message.promiseID
+                })
             }
             break
 
@@ -115,26 +120,32 @@ onmessage = (async (e: MessageEvent) => {
                 throw (Error("Invalid message kind: " + message.kind))
             }
     }
+})
 
-    // Send a message to the promise wrapper so that it can resolve or reject
+function makePromiseWithLock(f: Function, promiseID: number) {
+    // if the lock is not available, reject and give up. Otherwise acquire the lock and call the function.
+    if (!workerReady.ready) {
+        postMessage({
+            kind: "result", result: "reject", error: "Could not run command", promiseID: promiseID
+        })
+        return
+    }
+    acquireWorkerLock()
+
     f().then(() => {
-        console.log("Sending resolve message:", message.promiseID)
-        postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
+        console.log("Sending resolve message:", promiseID)
+        postMessage({ kind: "result", result: "resolve", promiseID })
     }).catch((r: Error) => {
         console.log(r)
-        console.log("Sending reject message:", message.promiseID)
+        console.log("Sending reject message:", promiseID)
         postMessage({
-            kind: "result", result: "reject", error: r, promiseID: message.promiseID
+            kind: "result", result: "reject", error: r, promiseID
         })
     }).finally(() => {
-        // The worker needs to get unlocked when a task completes. 
-        // This is also the callback for the fake non-task promise that gets rejected when the worker is busy, 
-        // so unlockWhenDone is only set when a real task is started.
-        if (unlockWhenDone) {
-            releaseWorkerLock()
-        }
+        // The worker needs to get unlocked when a task is done, even if it was because of an error.
+        releaseWorkerLock()
     })
-})
+}
 
 function connectSerial(): Promise<void> {
     // console.log("Connecting to serial...")
