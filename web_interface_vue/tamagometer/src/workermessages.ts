@@ -36,6 +36,11 @@ interface startBootstrapMessage {
     promiseID: number
 }
 
+interface waitForReady {
+    kind: "waitForReady"
+    promiseID: number
+}
+
 // From Worker:
 
 interface result {
@@ -76,6 +81,6 @@ interface animate {
     animation: "statusIndicator" // | add options if there are more animations one day
 }
 
-type ToWorker = connectSerialMessage | conversationMessage | listenContinuouslyMessage | startBootstrapMessage | stopWorkerMessage | stopTaskMessage
+type ToWorker = connectSerialMessage | conversationMessage | listenContinuouslyMessage | startBootstrapMessage | stopWorkerMessage | stopTaskMessage | waitForReady
 
-type FromWorker = result | conversationResponse | receivedBitstring | bootstrapStatus | workerDone | animate
+type FromWorker = result | conversationResponse | receivedBitstring | bootstrapStatus | workerDone | animate 

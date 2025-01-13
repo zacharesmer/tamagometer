@@ -2,12 +2,12 @@
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { onMounted, ref, useTemplateRef } from 'vue'
+import { onBeforeMount, onMounted, ref, useTemplateRef } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { serialWorker, listenContinuously, stopTask } from '@/serial';
+import { serialWorker, listenContinuously, stopTask, waitForReady } from '@/serial';
 
 // Store recorded messages as strings
 let snoopOutput = ref(new Array<string>);
@@ -33,15 +33,16 @@ const stagedMessageIndeces = ref<{ message1: number, message2: number, message3:
     })
 
 onMounted(async () => {
-    await setUpWorker()
+    setUpWorker()
+    await waitForReady()
     snoop()
 })
 
 onBeforeRouteLeave(async (to, from) => {
-    await stopTask().catch(r => { console.log(r) })
+    stopTask().catch(r => { console.log(r) })
 })
 
-async function setUpWorker() {
+function setUpWorker() {
     // Snoop-specific message handling code. More general message handling is in serial.ts
     worker.addEventListener("message", (e: MessageEvent) => {
         const message = e.data as FromWorker

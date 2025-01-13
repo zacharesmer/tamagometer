@@ -1,5 +1,5 @@
 export { getSerialConnection, getPortOrNeedToRetry }
-export { serialWorker, makeSerialWorker, connectSerial, listenContinuously, haveConversation, stopTask }
+export { serialWorker, makeSerialWorker, connectSerial, listenContinuously, haveConversation, stopTask, waitForReady }
 export type { SerialConnection }
 
 import { matchCommandString, matchTimedOutString } from "./matchers"
@@ -180,23 +180,33 @@ class SerialConnection {
 
     // Return the response, or null if one is not received after maxAttempts attempts
     async sendCommandUntilResponse(message: string, maxAttempts = 3): Promise<string | null> {
+        this.cancelListen = false
+        let response = null
         for (let i = 0; i < maxAttempts; i++) {
+            if (this.cancelListen) {
+                break
+            }
             // this times out after however long is set on the microcontroller (currently 1 second)
             this.sendCommand(message);
             // listen for a response
             let response = await this.readOneCommand();
             if (response != null) {
-                return response;
+                break
             }
         }
-        return null;
+        this.cancelListen = false;
+        return response;
     }
 
-    // could make it cancelleable someday if I ever use it for N > 3 
     async sendCommandNTimes(message: string, maxAttempts = 3) {
+        this.cancelListen = false
         for (let i = 0; i < maxAttempts; i++) {
+            if (this.cancelListen) {
+                break
+            }
             this.sendCommand(message);
         }
+        this.cancelListen = false
     }
 }
 
@@ -283,6 +293,8 @@ function postMessagePromise(message: ToWorker): Promise<void> {
 // If the worker is busy and a function is unable to run (eg, it's already listening and a "listen" message is sent)
 // then the promise will be rejected immediately, and the worker won't do anything
 
+// The NaN promiseIDs get filled in by postMessagePromise before they're sent
+
 function connectSerial(): Promise<void> {
     return postMessagePromise({ kind: "connectSerial", promiseID: NaN })
 }
@@ -298,4 +310,8 @@ function listenContinuously(): Promise<void> {
 
 function stopTask(): Promise<void> {
     return postMessagePromise({ kind: "stopTask", promiseID: NaN })
+}
+
+function waitForReady(): Promise<void> {
+    return postMessagePromise({ kind: "waitForReady", promiseID: NaN })
 }

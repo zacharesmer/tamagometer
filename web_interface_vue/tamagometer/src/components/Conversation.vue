@@ -28,7 +28,7 @@ onMounted(async () => {
 })
 
 onBeforeRouteLeave(async (to, from) => {
-    await stopTask().catch(r => { })
+    stopTask().catch(r => { })
 })
 
 async function setUpWorker() {
@@ -83,8 +83,8 @@ async function awaitConversation() {
     ).catch(r => { })
 }
 
-async function stopWaiting() {
-    await stopTask().catch(r => { })
+function stopWaiting() {
+    stopTask().catch(r => { })
 }
 
 // Write the current conversation to the database. 

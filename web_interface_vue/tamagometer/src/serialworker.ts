@@ -99,6 +99,12 @@ onmessage = (async (e: MessageEvent) => {
             }
             break
 
+        case "waitForReady":
+            await workerReady.promise.catch(r => { console.error("This promise can't be rejected; something has gone terribly wrong") })
+            console.log("Ready!!!")
+            postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
+            break
+
         // This actually isn't that important because the worker should remain active until the whole page closes
         case "stopWorker":
             {
@@ -225,6 +231,7 @@ async function stopTask(): Promise<void> {
         await workerReady.promise
         // console.log("4")
         resolve()
+        cancelTask = false
     })
 }
 
@@ -244,8 +251,6 @@ async function listenContinuously() {
                 postMessage({ kind: "receivedBitstring", bits: command })
             }
         }
-        // Reset cancelTask so that this will run next time it's called
-        cancelTask = false
         resolve()
     })
 }
