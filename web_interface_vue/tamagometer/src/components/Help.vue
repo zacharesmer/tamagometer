@@ -12,8 +12,7 @@ const showRetryButton = ref(false)
 const statusIndicator = useTemplateRef("statusIndicator")
 
 onMounted(() => {
-    let worker = serialWorker
-    worker.addEventListener("message", helpEventListener)
+    serialWorker.addEventListener("message", helpEventListener)
 })
 
 function helpEventListener(e: MessageEvent) {
@@ -35,7 +34,7 @@ function startConversation(message1Bitstring: string, message2Bitstring: string)
 
 onBeforeRouteLeave(async (to, from) => {
     stopTask().catch(r => { })
-
+    serialWorker.removeEventListener("message", helpEventListener)
 })
 
 function reloadPage() {
@@ -74,67 +73,65 @@ function reloadPage() {
                 <li>Watch your Tamagotchi screen!</li>
             </ol>
         </div>
-        <div class="interactive-container">
-            <div v-if="portNeedsToBeRequested">
-                <RequestSerialButton></RequestSerialButton>
+        <div v-if="portNeedsToBeRequested">
+            <RequestSerialButton></RequestSerialButton>
+        </div>
+        <div v-else class="interactive-container">
+            <StatusIndicator ref="statusIndicator"></StatusIndicator>
+            <div v-if="showRetryButton" class="retry">
+                <p>Could not connect to serial.</p>
+                <button @click="showRetryButton = false; connectSerial()">Retry</button>
+                <p>Or if that doesn't work</p>
+                <button @click="reloadPage">Refresh the page</button>
             </div>
-            <div v-else>
-                <StatusIndicator ref="statusIndicator"></StatusIndicator>
-                <div v-if="showRetryButton" class="retry">
-                    <p>Could not connect to serial.</p>
-                    <button @click="showRetryButton = false; connectSerial()">Retry</button>
-                    <p>Or if that doesn't work</p>
-                    <button @click="reloadPage">Refresh the page</button>
+            <div v-else class="visits-container">
+                <div class="demo-visit-button-and-desc-row">
+                    <!-- <div class="demo-visit-desc">Visit 1: Jump around and spin!</div> -->
+                    <button class="icon-label-button" @click="() => {
+                        startConversation(
+                            '0000111000000000001100011011111000011110000001110000100010000000011111111000000100000010000000000010001000000000000000000000000000000000000000000001010011100010',
+                            '0000111000001000001100011011111000011110000001110000100010000000011111111000000100000001000000000000000000000000000000000000000000000000000000000000000010110011'
+                        )
+                    }">
+                        <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M41.789 14.3419C41.052 12.8678 38.9483 12.8678 38.2113 14.3419L13.4474 63.8698C12.7825 65.1996 13.7495 66.7642 15.2362 66.7642L33.9993 66.7642L39.9993 42.7642L45.9993 66.7642H64.7641C66.2508 66.7642 67.2178 65.1996 66.5529 63.8698L41.789 14.3419Z" />
+                        </svg>
+                        <span>Jump around!</span>
+                    </button>
                 </div>
-                <div class="visits-container" v-else>
-                    <div class="demo-visit-button-and-desc-row">
-                        <!-- <div class="demo-visit-desc">Visit 1: Jump around and spin!</div> -->
-                        <button class="icon-label-button" @click="() => {
-                            startConversation(
-                                '0000111000000000001100011011111000011110000001110000100010000000011111111000000100000010000000000010001000000000000000000000000000000000000000000001010011100010',
-                                '0000111000001000001100011011111000011110000001110000100010000000011111111000000100000001000000000000000000000000000000000000000000000000000000000000000010110011'
-                            )
-                        }">
-                            <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M41.789 14.3419C41.052 12.8678 38.9483 12.8678 38.2113 14.3419L13.4474 63.8698C12.7825 65.1996 13.7495 66.7642 15.2362 66.7642L33.9993 66.7642L39.9993 42.7642L45.9993 66.7642H64.7641C66.2508 66.7642 67.2178 65.1996 66.5529 63.8698L41.789 14.3419Z" />
-                            </svg>
-                            <span>Jump around!</span>
-                        </button>
-                    </div>
-                    <div class="demo-visit-button-and-desc-row">
-                        <!-- <div class="demo-visit-desc">Visit 2: Jump on scale!</div> -->
-                        <button class="icon-label-button" @click="() => {
-                            startConversation(
-                                '0000111000000000110111100101101000101011000001110000100010000000011111111000000100000010000000000010001100000000000001100000000000000000000000000001111001001001',
-                                '0000111000001000110111100101101000101011000001110000100010000000011111111000000100000000000000000000000000000000000000000000000000000000000000000000000000001000'
-                            )
-                        }">
-                            <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M41.789 14.3419C41.052 12.8678 38.9483 12.8678 38.2113 14.3419L13.4474 63.8698C12.7825 65.1996 13.7495 66.7642 15.2362 66.7642L33.9993 66.7642L39.9993 42.7642L45.9993 66.7642H64.7641C66.2508 66.7642 67.2178 65.1996 66.5529 63.8698L41.789 14.3419Z" />
-                            </svg>
-                            <span>Jump on scale!</span>
-                        </button>
-                    </div>
-                    <div class="demo-visit-button-and-desc-row">
-                        <!-- <div class="demo-visit-desc">Visit 3: Music notes!</div> -->
-                        <button class="icon-label-button" @click="() => {
-                            startConversation(
-                                '0000111000000000110111100101101000101001000001110000100010000000011111111000000100000010000000000010001100000000000001100000000000000000000000000000101000110011',
-                                '0000111000001000110111100101101000101001000001110000100010000000011111111000000100000011000000000000000000000000000000000000000000000000000000000000000000001001'
-                            )
-                        }">
-                            <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M41.789 14.3419C41.052 12.8678 38.9483 12.8678 38.2113 14.3419L13.4474 63.8698C12.7825 65.1996 13.7495 66.7642 15.2362 66.7642L33.9993 66.7642L39.9993 42.7642L45.9993 66.7642H64.7641C66.2508 66.7642 67.2178 65.1996 66.5529 63.8698L41.789 14.3419Z" />
-                            </svg>
-                            <span>Music Notes!</span>
-                        </button>
-                    </div>
+                <div class="demo-visit-button-and-desc-row">
+                    <!-- <div class="demo-visit-desc">Visit 2: Jump on scale!</div> -->
+                    <button class="icon-label-button" @click="() => {
+                        startConversation(
+                            '0000111000000000110111100101101000101011000001110000100010000000011111111000000100000010000000000010001100000000000001100000000000000000000000000001111001001001',
+                            '0000111000001000110111100101101000101011000001110000100010000000011111111000000100000000000000000000000000000000000000000000000000000000000000000000000000001000'
+                        )
+                    }">
+                        <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M41.789 14.3419C41.052 12.8678 38.9483 12.8678 38.2113 14.3419L13.4474 63.8698C12.7825 65.1996 13.7495 66.7642 15.2362 66.7642L33.9993 66.7642L39.9993 42.7642L45.9993 66.7642H64.7641C66.2508 66.7642 67.2178 65.1996 66.5529 63.8698L41.789 14.3419Z" />
+                        </svg>
+                        <span>Jump on scale!</span>
+                    </button>
+                </div>
+                <div class="demo-visit-button-and-desc-row">
+                    <!-- <div class="demo-visit-desc">Visit 3: Music notes!</div> -->
+                    <button class="icon-label-button" @click="() => {
+                        startConversation(
+                            '0000111000000000110111100101101000101001000001110000100010000000011111111000000100000010000000000010001100000000000001100000000000000000000000000000101000110011',
+                            '0000111000001000110111100101101000101001000001110000100010000000011111111000000100000011000000000000000000000000000000000000000000000000000000000000000000001001'
+                        )
+                    }">
+                        <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M41.789 14.3419C41.052 12.8678 38.9483 12.8678 38.2113 14.3419L13.4474 63.8698C12.7825 65.1996 13.7495 66.7642 15.2362 66.7642L33.9993 66.7642L39.9993 42.7642L45.9993 66.7642H64.7641C66.2508 66.7642 67.2178 65.1996 66.5529 63.8698L41.789 14.3419Z" />
+                        </svg>
+                        <span>Music Notes!</span>
+                    </button>
                 </div>
             </div>
         </div>

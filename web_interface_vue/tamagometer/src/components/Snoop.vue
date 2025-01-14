@@ -19,8 +19,6 @@ let snoopOutput = ref(new Array<string>);
 // snoopOutput.value.push("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011")
 // snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
 
-let worker = serialWorker;
-
 // The retry button is shown when this is true or if a port needs to be requested
 const showRetryButton = ref(false)
 
@@ -37,7 +35,7 @@ const stagedMessageIndeces = ref<{ message1: number, message2: number, message3:
 
 onMounted(async () => {
     // Snoop-specific message handling code. More general message handling is in serial.ts
-    worker.addEventListener("message", snoopEventListener)
+    serialWorker.addEventListener("message", snoopEventListener)
     snoop()
 })
 
@@ -50,6 +48,7 @@ async function snoop() {
 
 onBeforeRouteLeave(async (to, from) => {
     stopTask().catch(r => { console.log(r) })
+    serialWorker.removeEventListener("message", snoopEventListener)
 })
 
 

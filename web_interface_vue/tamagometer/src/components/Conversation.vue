@@ -13,7 +13,6 @@ import { toast } from 'vue3-toastify'
 import StatusIndicator from './StatusIndicator.vue';
 
 const route = useRoute()
-let worker: Worker
 
 const showRetryButton = ref(false)
 
@@ -25,8 +24,7 @@ onMounted(async () => {
         const stored = await dbConnection.get(dbId)
         conversation.initFromStored(stored)
     }
-    worker = serialWorker
-    worker.addEventListener("message", conversationEventListener)
+    serialWorker.addEventListener("message", conversationEventListener)
 })
 
 onBeforeRouteLeave(async (to, from) => {
@@ -79,7 +77,7 @@ async function awaitConversation() {
         conversation.message2.getBitstring(),
         conversation.message4.getBitstring(),
         "await",
-    ).catch(r => { showRetryButton.value = true  })
+    ).catch(r => { showRetryButton.value = true })
 }
 
 function stopWaiting() {
