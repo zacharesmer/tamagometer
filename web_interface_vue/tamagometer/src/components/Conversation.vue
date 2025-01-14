@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import BitstringInput from './BitstringInput.vue';
-// import { editingConversation, selectedConversation } from '@/conversation'
-import { dbConnection } from '@/database';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { onMounted, ref, useTemplateRef } from 'vue';
-import { activeConversation as conversation } from '@/state';
-import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serial';
-
-import { toast } from 'vue3-toastify'
 import StatusIndicator from './StatusIndicator.vue';
+
+import { onMounted, ref, useTemplateRef } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { toast } from 'vue3-toastify'
+
+import { dbConnection } from '@/database';
+import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serial';
+import { activeConversation as conversation } from '@/state';
 
 const route = useRoute()
 

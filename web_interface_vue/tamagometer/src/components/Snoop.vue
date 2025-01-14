@@ -1,12 +1,14 @@
 <script lang="ts" setup>
+import ConversationNameInput from './ConversationNameInput.vue';
+import StatusIndicator from './StatusIndicator.vue';
+
+import { onMounted, ref, useTemplateRef } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router';
+import { toast } from 'vue3-toastify';
+
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { onMounted, ref, useTemplateRef } from 'vue'
-import ConversationNameInput from './ConversationNameInput.vue';
-import { toast } from 'vue3-toastify';
-import StatusIndicator from './StatusIndicator.vue';
-import { onBeforeRouteLeave } from 'vue-router';
 import { serialWorker, listenContinuously, stopTask, waitForReady, connectSerial } from '@/serial';
 import { portNeedsToBeRequested } from '@/state';
 
@@ -21,10 +23,10 @@ let snoopOutput = ref(new Array<string>);
 
 // The retry button is shown when this is true or if a port needs to be requested
 const showRetryButton = ref(false)
+const conversationName = ref("Recorded Conversation")
 
 const statusIndicator = useTemplateRef("statusIndicator")
 
-const conversationName = ref("Recorded Conversation")
 const stagedMessageIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>(
     {
         message1: NaN,
@@ -39,18 +41,17 @@ onMounted(async () => {
     snoop()
 })
 
+onBeforeRouteLeave(async (to, from) => {
+    stopTask().catch(r => { console.log(r) })
+    serialWorker.removeEventListener("message", snoopEventListener)
+})
+
 async function snoop() {
     showRetryButton.value = false
     await waitForReady()
     listenContinuously()
         .catch(r => { console.log("Snoop stopped :("); showRetryButton.value = true })
 }
-
-onBeforeRouteLeave(async (to, from) => {
-    stopTask().catch(r => { console.log(r) })
-    serialWorker.removeEventListener("message", snoopEventListener)
-})
-
 
 function snoopEventListener(e: MessageEvent) {
     const message = e.data as FromWorker
@@ -68,6 +69,7 @@ function snoopEventListener(e: MessageEvent) {
     }
 }
 
+// Create a conversation from the staged messages and store it.
 function saveConversation() {
     // Check if all 4 messages have been selected, return and display an error if not
     if (Number.isNaN(stagedMessageIndeces.value.message1) ||
@@ -96,8 +98,6 @@ function saveConversation() {
         return
     }
 
-    // Create a conversation from the staged messages and store it
-
     const fromRecordingConversation = new Conversation(null)
     fromRecordingConversation.message1 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message1]);
     fromRecordingConversation.message2 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message2]);
@@ -106,18 +106,15 @@ function saveConversation() {
     fromRecordingConversation.name = conversationName.value;
 
     const toastId = toast("Saving...")
-    dbConnection.set(fromRecordingConversation.toStored()).then(result => {
-        toast.update(toastId, { render: "Saved", })
-    })
+    dbConnection.set(fromRecordingConversation.toStored())
+        .then(r => {
+            toast.update(toastId, { render: "Saved", })
+        })
+        .catch(r => { toast.update(toastId, { render: "Error", type: "error" }) })
 }
 
 function saveName(newName: string) {
     conversationName.value = newName;
-}
-
-
-function reloadPage() {
-    window.location.reload()
 }
 
 function clearList() {
@@ -129,6 +126,10 @@ function clearList() {
         message3: NaN,
         message4: NaN,
     }
+}
+
+function reloadPage() {
+    window.location.reload()
 }
 </script>
 
