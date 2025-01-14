@@ -1,5 +1,4 @@
-import { type SerialConnection, getSerialConnection } from "./serial"
-import { serialMightBeConnected } from "./state"
+import { type SerialConnection, getSerialConnection, windowHasPort } from "./serial"
 
 // workerReady acts as a lock to keep multiple tasks from happening at once. 
 // Use the boolean to check if it's held, and the promise to wait for it to be released.
@@ -73,10 +72,6 @@ onmessage = (async (e: MessageEvent) => {
                 postMessage({
                     kind: "result", result: "reject", error: r, promiseID: message.promiseID
                 })
-            }).finally(() => {
-                // update the UI. This is a terrible name for this variable, I should change it
-                serialMightBeConnected.value = true
-
             })
             break
 
@@ -162,13 +157,17 @@ function connectSerial(): Promise<void> {
     // console.log("Connecting to serial...")
     // TODO choose a port more intelligently?
     return new Promise(async (resolve, reject) => {
-        const serialPort = (await navigator.serial.getPorts())[0]
-        getSerialConnection(serialPort).then(r => {
-            serialConnection = r
-            resolve()
-        }).catch((r) => {
-            reject(Error(r))
-        })
+        if (await windowHasPort()) {
+            const serialPort = (await navigator.serial.getPorts())[0]
+            getSerialConnection(serialPort).then(r => {
+                serialConnection = r
+                resolve()
+            }).catch((r) => {
+                reject(r)
+            })
+        } else {
+            reject("No serial port available")
+        }
     })
 }
 

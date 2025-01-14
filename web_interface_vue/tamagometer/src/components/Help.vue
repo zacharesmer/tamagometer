@@ -1,21 +1,20 @@
 <script lang="ts" setup>
-import { ref, useTemplateRef } from 'vue';
-import { connectSerial, getPortOrNeedToRetry, haveConversation, serialWorker, stopTask } from '@/serial';
+import { onMounted, ref, useTemplateRef } from 'vue';
+import { connectSerial, haveConversation, serialWorker, stopTask } from '@/serial';
 
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { serialMightBeConnected } from '@/state';
+import { portNeedsToBeRequested } from '@/state';
+import RequestSerialButton from './RequestSerialButton.vue';
 
-const workerHasBeenSetup = ref(false);
+const showRetryButton = ref(false)
 
 const statusIndicator = useTemplateRef("statusIndicator")
 
-async function setUpWorker() {
+onMounted(() => {
     let worker = serialWorker
-    workerHasBeenSetup.value = true;
     worker.addEventListener("message", helpEventListener)
-    connectSerial().catch(r => { console.log(r); })
-}
+})
 
 function helpEventListener(e: MessageEvent) {
 
@@ -31,7 +30,7 @@ function helpEventListener(e: MessageEvent) {
 }
 
 function startConversation(message1Bitstring: string, message2Bitstring: string) {
-    haveConversation(message1Bitstring, message2Bitstring, "initiate").catch(r => serialMightBeConnected.value = false)
+    haveConversation(message1Bitstring, message2Bitstring, "initiate").catch(r => { showRetryButton.value = true })
 }
 
 onBeforeRouteLeave(async (to, from) => {
@@ -63,9 +62,11 @@ function reloadPage() {
             <ol>
                 <li>Connect the Flipper Zero or DIY device to your computer. Ensure you are using a USB cable that is
                     set up for data transfer (not just charging).</li>
-                <li>Press the "Connect" button below (on the other pages the device should connect automatically so
-                    there's no button)</li>
-                <li>If prompted, select the serial port/COM port corresponding to your device. If nothing pops up, you
+                <li>If you see the "Connect" button above and/or below, press it. The button only appears if there's not
+                    a device
+                    already connected.</li>
+                <li>Select the serial port/COM port corresponding to your device. If there's no button or nothing pops
+                    up, you
                     have probably connected before and the device was saved.</li>
                 <li>On your Tamagotchi, wait for a visit (heart menu -&gt; visit; the screen should say "Stand by")</li>
                 <li>After connecting, there will be some buttons for different visiting animations below. Click one to
@@ -74,23 +75,14 @@ function reloadPage() {
             </ol>
         </div>
         <div class="interactive-container">
-            <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <div v-if="!workerHasBeenSetup">
-                <button class="icon-label-button" @click="() => { setUpWorker() }">
-                    <svg class="round-button-icon" transform="rotate(90)" viewBox="0 0 80 80" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M26 48L26 58C26 65.732 32.268 72 40 72C47.732 72 54 65.732 54 58V48" />
-                        <path d="M26 32L26 22C26 14.268 32.268 8 40 8C47.732 8 54 14.268 54 22V32" />
-                        <path d="M40 53L40 27" />
-                    </svg>
-                    <span>Connect!</span>
-                </button>
-
+            <div v-if="portNeedsToBeRequested">
+                <RequestSerialButton></RequestSerialButton>
             </div>
             <div v-else>
-                <div v-if="!serialMightBeConnected" class="retry">
+                <StatusIndicator ref="statusIndicator"></StatusIndicator>
+                <div v-if="showRetryButton" class="retry">
                     <p>Could not connect to serial.</p>
-                    <button @click="setUpWorker">Retry</button>
+                    <button @click="showRetryButton = false; connectSerial()">Retry</button>
                     <p>Or if that doesn't work</p>
                     <button @click="reloadPage">Refresh the page</button>
                 </div>

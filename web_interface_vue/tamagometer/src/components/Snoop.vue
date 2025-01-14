@@ -8,7 +8,7 @@ import { toast } from 'vue3-toastify';
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { serialWorker, listenContinuously, stopTask, waitForReady, connectSerial } from '@/serial';
-import { serialMightBeConnected } from '@/state';
+import { portNeedsToBeRequested } from '@/state';
 
 // Store recorded messages as strings
 let snoopOutput = ref(new Array<string>);
@@ -20,6 +20,9 @@ let snoopOutput = ref(new Array<string>);
 // snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
 
 let worker = serialWorker;
+
+// The retry button is shown when this is true or if a port needs to be requested
+const showRetryButton = ref(false)
 
 const statusIndicator = useTemplateRef("statusIndicator")
 
@@ -33,11 +36,17 @@ const stagedMessageIndeces = ref<{ message1: number, message2: number, message3:
     })
 
 onMounted(async () => {
-
     // Snoop-specific message handling code. More general message handling is in serial.ts
     worker.addEventListener("message", snoopEventListener)
     snoop()
 })
+
+async function snoop() {
+    showRetryButton.value = false
+    await waitForReady()
+    listenContinuously()
+        .catch(r => { console.log("Snoop stopped :("); showRetryButton.value = true })
+}
 
 onBeforeRouteLeave(async (to, from) => {
     stopTask().catch(r => { console.log(r) })
@@ -58,14 +67,6 @@ function snoopEventListener(e: MessageEvent) {
             break
         }
     }
-}
-
-async function snoop() {
-    serialMightBeConnected.value = true
-    connectSerial().catch(r => { console.log(r) })
-    await waitForReady()
-    listenContinuously()
-        .catch(r => { console.log("Snoop stopped :("); serialMightBeConnected.value = false })
 }
 
 function saveConversation() {
@@ -133,9 +134,9 @@ function clearList() {
 </script>
 
 <template>
-    <div v-if="!serialMightBeConnected" class="retry">
+    <div v-if="showRetryButton || portNeedsToBeRequested" class="retry">
         <p>Could not connect to serial.</p>
-        <button @click="snoop">Retry</button>
+        <button @click="connectSerial(); snoop()">Retry</button>
         <p>Or if that doesn't work</p>
         <button @click="reloadPage">Refresh the page</button>
     </div>

@@ -18,7 +18,8 @@ const routes = [
     { path: '/settings', component: Settings },
     { path: '/record', component: Snoop },
     { path: '/saved', component: Saved },
-    { path: '/help', component: Help }
+    { path: '/help', component: Help },
+    { path: '/', component: Help }
 ]
 
 const router = createRouter({

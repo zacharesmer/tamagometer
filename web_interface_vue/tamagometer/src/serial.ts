@@ -1,8 +1,10 @@
-export { getSerialConnection, getPortOrNeedToRetry }
-export { serialWorker, makeSerialWorker, connectSerial, listenContinuously, haveConversation, stopTask, waitForReady }
+export { getSerialConnection }
+export { serialWorker, makeSerialWorker, windowHasPort, connectSerial, listenContinuously, haveConversation, stopTask, waitForReady, connectToPort }
 export type { SerialConnection }
 
 import { matchCommandString, matchTimedOutString } from "./matchers"
+
+import { portNeedsToBeRequested } from "./state"
 
 // An object manage the connection to a serial device
 // It is exposed only through `getSerialConnection` because it requires async setup
@@ -209,33 +211,43 @@ class SerialConnection {
 // This has to be a factory because a constructor can't be async, but 
 // opening the serial port is async and must be awaited for the SerialConnection to be created.
 async function getSerialConnection(port: SerialPort) {
-    // console.log("Making a new serial connection")
+    // console.log("Making a new serial connection object")
     return await new SerialConnection().init(port)
 }
 
-// If a port has not been requested, request one.
-// If the request doesn't work, return false.
-async function getPortOrNeedToRetry(): Promise<boolean> {
-    let needToRetry = false
+// Check if the page has a port available. 
+// This is the case if a request for a device/port has previously been granted and that device is connected.
+async function windowHasPort() {
     // Check if serial API is even available
     if ("serial" in navigator) {
         let ports = await navigator.serial.getPorts()
         // console.log(ports)
-        // If there's not a connected serial device that has been used before, request access to one
-        if (ports.length === 0) {
-            try {
-                await navigator.serial.requestPort()
-            }
-            catch (err) {
-                needToRetry = true
-                console.error(err)
-            }
-        }
-    } else {
-        needToRetry = true
-        console.error("Web Serial is not available in this browser")
+        return !(ports.length == 0)
     }
-    return needToRetry
+}
+
+// TODO: should this return true or false instead of setting portNeedsToBeRequested?
+async function connectToPort(requestPort: boolean) {
+    if ("serial" in navigator) {
+        if (requestPort) {
+            await navigator.serial.requestPort().catch(r => { console.error(r); portNeedsToBeRequested.value = true })
+        }
+        if (await windowHasPort()) {
+            connectSerial()
+                .then((r) => { portNeedsToBeRequested.value = false })
+                .catch(r => {
+                    // InvalidStateError happens when the port is already open, which means it doesn't need to be requested.
+                    if ((r as DOMException).name == "InvalidStateError") {
+                        portNeedsToBeRequested.value = false
+                    } else {
+                        console.error("Could not connect to serial")
+                        portNeedsToBeRequested.value = true
+                    }
+                })
+        } else {
+            portNeedsToBeRequested.value = true
+        }
+    }
 }
 
 let serialWorker: Worker

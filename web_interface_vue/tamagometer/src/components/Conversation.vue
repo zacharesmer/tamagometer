@@ -6,14 +6,16 @@ import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { onMounted, ref, useTemplateRef } from 'vue';
-import { activeConversation as conversation, serialMightBeConnected } from '@/state';
-import { serialWorker, haveConversation, stopTask, connectSerial, waitForReady } from '@/serial';
+import { activeConversation as conversation } from '@/state';
+import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serial';
 
 import { toast } from 'vue3-toastify'
 import StatusIndicator from './StatusIndicator.vue';
 
 const route = useRoute()
 let worker: Worker
+
+const showRetryButton = ref(false)
 
 const statusIndicator = useTemplateRef("statusIndicator")
 
@@ -31,17 +33,6 @@ onBeforeRouteLeave(async (to, from) => {
     stopTask().catch(r => { })
     serialWorker.removeEventListener("message", conversationEventListener)
 })
-
-async function setUpSerial() {
-    connectSerial()
-        .catch(r => { console.log(r) })
-        .finally(() =>
-            // set this to true even if connectSerial fails, because sometimes the error means 
-            // the serial port is already open. If it's still broken, then it will show the retry button again
-            // after the next attempt
-            serialMightBeConnected.value = true
-        )
-}
 
 // Conversation-specific message handling. More general message handling is in serial.ts
 function conversationEventListener(e: MessageEvent) {
@@ -80,7 +71,7 @@ async function startConversation() {
         conversation.message1.getBitstring(),
         conversation.message3.getBitstring(),
         'initiate'
-    ).catch(r => { serialMightBeConnected.value = false })
+    ).catch(r => { showRetryButton.value = true })
 }
 
 async function awaitConversation() {
@@ -88,7 +79,7 @@ async function awaitConversation() {
         conversation.message2.getBitstring(),
         conversation.message4.getBitstring(),
         "await",
-    ).catch(r => { serialMightBeConnected.value = false })
+    ).catch(r => { showRetryButton.value = true  })
 }
 
 function stopWaiting() {
@@ -138,9 +129,9 @@ function reloadPage() {
                 @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
             </ConversationNameInput>
             <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <div v-if="!serialMightBeConnected" class="retry">
+            <div v-if="showRetryButton" class="retry">
                 <p>Could not connect to serial.</p>
-                <button @click="setUpSerial">Retry</button>
+                <button @click="showRetryButton = false; connectSerial()">Retry</button>
                 <p>Or if that doesn't work</p>
                 <button @click="reloadPage">Refresh the page</button>
             </div>
