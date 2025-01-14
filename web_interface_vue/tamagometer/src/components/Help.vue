@@ -1,41 +1,42 @@
 <script lang="ts" setup>
 import { ref, useTemplateRef } from 'vue';
-import { getPortOrNeedToRetry, haveConversation, serialWorker, stopTask } from '@/serial';
+import { connectSerial, getPortOrNeedToRetry, haveConversation, serialWorker, stopTask } from '@/serial';
 
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
+import { serialMightBeConnected } from '@/state';
 
-let worker: Worker
 const workerHasBeenSetup = ref(false);
 
-const needToRetry = ref(false)
 const statusIndicator = useTemplateRef("statusIndicator")
 
 async function setUpWorker() {
-    // console.log("Setting up conversation worker...")
-    needToRetry.value = await getPortOrNeedToRetry()
-    worker = serialWorker
+    let worker = serialWorker
     workerHasBeenSetup.value = true;
-    worker.addEventListener("message", (e: MessageEvent) => {
-        const message = e.data as FromWorker
-        switch (message.kind) {
-            case "animate": {
-                if (message.animation === "statusIndicator") {
-                    statusIndicator.value?.animateStatusIndicator()
-                }
-                break
+    worker.addEventListener("message", helpEventListener)
+    connectSerial().catch(r => { console.log(r); })
+}
+
+function helpEventListener(e: MessageEvent) {
+
+    const message = e.data as FromWorker
+    switch (message.kind) {
+        case "animate": {
+            if (message.animation === "statusIndicator") {
+                statusIndicator.value?.animateStatusIndicator()
             }
+            break
         }
-    })
-    worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+    }
 }
 
 function startConversation(message1Bitstring: string, message2Bitstring: string) {
-    haveConversation(message1Bitstring, message2Bitstring, "initiate")
+    haveConversation(message1Bitstring, message2Bitstring, "initiate").catch(r => serialMightBeConnected.value = false)
 }
 
 onBeforeRouteLeave(async (to, from) => {
-    await stopTask().catch(r => { })
+    stopTask().catch(r => { })
+
 })
 
 function reloadPage() {
@@ -87,7 +88,7 @@ function reloadPage() {
 
             </div>
             <div v-else>
-                <div v-if="needToRetry" class="retry">
+                <div v-if="!serialMightBeConnected" class="retry">
                     <p>Could not connect to serial.</p>
                     <button @click="setUpWorker">Retry</button>
                     <p>Or if that doesn't work</p>

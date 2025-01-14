@@ -3,6 +3,7 @@
 import { onMounted } from 'vue';
 import Settings from './components/Settings.vue';
 import { connectSerial, getPortOrNeedToRetry, makeSerialWorker } from './serial';
+import { serialMightBeConnected } from './state';
 
 let webSerialSupported = ("serial" in navigator)
 
@@ -10,7 +11,7 @@ onMounted(async () => {
   // TODO: Add something sensible for requesting access to a serial device on first usage
   // Also need to add the retry or refresh buttons back in
   makeSerialWorker()
-  await connectSerial().catch(r => { console.error("Could not connect to serial") })
+  connectSerial().then((r) => { serialMightBeConnected.value = true }).catch(r => { console.error("Could not connect to serial") })
 })
 
 </script>

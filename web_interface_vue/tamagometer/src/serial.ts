@@ -20,9 +20,6 @@ class SerialConnection {
 
     private cancelListen = false;
 
-    // Used to show a status indicator in the UI.
-    listenCallback: () => void
-
     // Do not call the constructor directly; it needs to be accessed through the getSerialConnection 
     // function so the object is actually initialized. This is necessary because opening the serial port is
     // asynchronous, and you can't await a constructor
@@ -31,7 +28,6 @@ class SerialConnection {
     async init(port: SerialPort) {
         this.serialPort = port
         this.serialPort.addEventListener("disconnect", () => {
-            this.destroy()
         })
         await this.serialPort.open({ baudRate: 460800 })
         // Set up a controller to cancel everything when it's done
@@ -221,7 +217,6 @@ async function getSerialConnection(port: SerialPort) {
 // If the request doesn't work, return false.
 async function getPortOrNeedToRetry(): Promise<boolean> {
     let needToRetry = false
-    let port: SerialPort
     // Check if serial API is even available
     if ("serial" in navigator) {
         let ports = await navigator.serial.getPorts()
@@ -277,6 +272,7 @@ function makeSerialWorker() {
         }
 
     })
+    serialWorker.onerror = (e) => { console.error("Error in worker:", e) }
 }
 
 // Sends a message to the web worker to call a function.

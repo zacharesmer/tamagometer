@@ -1,4 +1,5 @@
 import { type SerialConnection, getSerialConnection } from "./serial"
+import { serialMightBeConnected } from "./state"
 
 // workerReady acts as a lock to keep multiple tasks from happening at once. 
 // Use the boolean to check if it's held, and the promise to wait for it to be released.
@@ -72,6 +73,10 @@ onmessage = (async (e: MessageEvent) => {
                 postMessage({
                     kind: "result", result: "reject", error: r, promiseID: message.promiseID
                 })
+            }).finally(() => {
+                // update the UI. This is a terrible name for this variable, I should change it
+                serialMightBeConnected.value = true
+
             })
             break
 
@@ -105,7 +110,7 @@ onmessage = (async (e: MessageEvent) => {
             postMessage({ kind: "result", result: "resolve", promiseID: message.promiseID })
             break
 
-        // This actually isn't that important because the worker should remain active until the whole page closes
+        // This actually isn't used anywhere because the worker should remain active until the whole page closes
         case "stopWorker":
             {
                 await stopTask()
@@ -173,14 +178,14 @@ function initiateConversation(message1: string, message2: string): Promise<void>
         let received1 = await serialConnection.sendCommandUntilResponse(message1).catch(r => { reject("Error sending message 1") })
         if (received1 == null) {
             console.error("Response 1 not received")
-            reject("Response 1 not received")
+            resolve()
             return
         }
         console.log(`received ${received1}`)
         let received2 = await serialConnection.sendCommandUntilResponse(message2, 3).catch(r => { reject("Error sending message 2") })
         if (received2 == null) {
             console.error("Response 2 not received")
-            reject("Response 2 not received")
+            resolve()
             return
         }
         console.log(`received ${received2}`)
@@ -197,7 +202,7 @@ async function awaitConversation(message1: string, message2: string) {
         let received1 = await serialConnection.readOneCommandCancellable().catch(r => { reject("Error receiving message 1") })
         if (received1 == null) {
             console.log("Cancelled, message 1 not received")
-            reject("Message 1 not received")
+            resolve()
             return
         }
         console.log(`Received ${received1}`);
@@ -206,7 +211,7 @@ async function awaitConversation(message1: string, message2: string) {
         let received2 = await serialConnection.readOneCommandCancellable(3).catch(r => { reject("Error receiving message 3") })
         if (received2 == null) {
             console.error("Message 2 not received")
-            reject("Message 2 not received")
+            resolve()
             return
         }
         console.log(`received ${received2}`);
@@ -252,6 +257,7 @@ async function listenContinuously() {
             }
         }
         resolve()
+        cancelTask = false
     })
 }
 

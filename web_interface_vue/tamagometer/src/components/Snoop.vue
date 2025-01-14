@@ -2,12 +2,13 @@
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { onBeforeMount, onMounted, ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import ConversationNameInput from './ConversationNameInput.vue';
 import { toast } from 'vue3-toastify';
 import StatusIndicator from './StatusIndicator.vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { serialWorker, listenContinuously, stopTask, waitForReady } from '@/serial';
+import { serialWorker, listenContinuously, stopTask, waitForReady, connectSerial } from '@/serial';
+import { serialMightBeConnected } from '@/state';
 
 // Store recorded messages as strings
 let snoopOutput = ref(new Array<string>);
@@ -18,7 +19,6 @@ let snoopOutput = ref(new Array<string>);
 // snoopOutput.value.push("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011")
 // snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
 
-const needToRetry = ref(false);
 let worker = serialWorker;
 
 const statusIndicator = useTemplateRef("statusIndicator")
@@ -33,8 +33,9 @@ const stagedMessageIndeces = ref<{ message1: number, message2: number, message3:
     })
 
 onMounted(async () => {
-    setUpWorker()
-    await waitForReady()
+
+    // Snoop-specific message handling code. More general message handling is in serial.ts
+    worker.addEventListener("message", snoopEventListener)
     snoop()
 })
 
@@ -42,30 +43,29 @@ onBeforeRouteLeave(async (to, from) => {
     stopTask().catch(r => { console.log(r) })
 })
 
-function setUpWorker() {
-    // Snoop-specific message handling code. More general message handling is in serial.ts
-    worker.addEventListener("message", (e: MessageEvent) => {
-        const message = e.data as FromWorker
-        switch (message.kind) {
-            case "receivedBitstring": {
-                snoopOutput.value.push(message.bits)
-                break
-            }
-            case "animate": {
-                if (message.animation === "statusIndicator") {
-                    statusIndicator.value?.animateStatusIndicator()
-                }
-                break
-            }
+
+function snoopEventListener(e: MessageEvent) {
+    const message = e.data as FromWorker
+    switch (message.kind) {
+        case "receivedBitstring": {
+            snoopOutput.value.push(message.bits)
+            break
         }
-    })
-    worker.onerror = (e) => { console.error("Error in listening worker:", e) }
+        case "animate": {
+            if (message.animation === "statusIndicator") {
+                statusIndicator.value?.animateStatusIndicator()
+            }
+            break
+        }
+    }
 }
 
-function snoop() {
-    needToRetry.value = false
+async function snoop() {
+    serialMightBeConnected.value = true
+    connectSerial().catch(r => { console.log(r) })
+    await waitForReady()
     listenContinuously()
-        .catch(r => { console.log("Snoop stopped :("); needToRetry.value = true })
+        .catch(r => { console.log("Snoop stopped :("); serialMightBeConnected.value = false })
 }
 
 function saveConversation() {
@@ -133,7 +133,7 @@ function clearList() {
 </script>
 
 <template>
-    <div v-if="needToRetry" class="retry">
+    <div v-if="!serialMightBeConnected" class="retry">
         <p>Could not connect to serial.</p>
         <button @click="snoop">Retry</button>
         <p>Or if that doesn't work</p>
