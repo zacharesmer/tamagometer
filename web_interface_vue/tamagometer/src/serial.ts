@@ -4,8 +4,6 @@ export type { SerialConnection }
 
 import { matchCommandString, matchTimedOutString } from "./matchers"
 
-import { portNeedsToBeRequested } from "./state"
-
 // An object manage the connection to a serial device
 // It is exposed only through `getSerialConnection` because it requires async setup
 class SerialConnection {
@@ -226,28 +224,34 @@ async function windowHasPort() {
     }
 }
 
-// TODO: should this return true or false instead of setting portNeedsToBeRequested?
-async function connectToPort(requestPort: boolean) {
+// Return true if the connection is successful. The return value is used to determine 
+// whether or not to show the button in the UI to request a port
+async function connectToPort(requestPort: boolean): Promise<boolean> {
+    let success = false
     if ("serial" in navigator) {
         if (requestPort) {
-            await navigator.serial.requestPort().catch(r => { console.error(r); portNeedsToBeRequested.value = true })
+            await navigator.serial.requestPort().catch(r => { console.error(r); success = false })
         }
         if (await windowHasPort()) {
-            connectSerial()
-                .then((r) => { portNeedsToBeRequested.value = false })
+            await connectSerial()
                 .catch(r => {
-                    // InvalidStateError happens when the port is already open, which means it doesn't need to be requested.
+                    // InvalidStateError happens when the port is already open, which means it's 
+                    // successfully connected and doesn't need to be requested.
                     if ((r as DOMException).name == "InvalidStateError") {
-                        portNeedsToBeRequested.value = false
-                    } else {
+                        success = true
+                    } 
+                    else {
                         console.error("Could not connect to serial")
-                        portNeedsToBeRequested.value = true
+                        success = false
                     }
                 })
+            success = true
         } else {
-            portNeedsToBeRequested.value = true
+            success = false
         }
     }
+    console.log("Connection successful?", success)
+    return success
 }
 
 let serialWorker: Worker

@@ -4,13 +4,14 @@ import { onMounted, ref } from 'vue';
 import Settings from './components/Settings.vue';
 import { makeSerialWorker, connectToPort } from './serial';
 import RequestSerialButton from './components/RequestSerialButton.vue';
+import { portNeedsToBeRequested } from './state';
 
 const webSerialSupported = ref("serial" in navigator)
 
 onMounted(async () => {
     makeSerialWorker()
     // In the case where a port is already available, go ahead and connect to it without requesting a new port
-    connectToPort(false)
+    connectToPort(false).then(success => portNeedsToBeRequested.value = !success)
 })
 
 </script>
