@@ -3,6 +3,7 @@ import BitstringInput from './BitstringInput.vue';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
 import StatusIndicator from './StatusIndicator.vue';
+import RetryButton from './RetryButton.vue';
 
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
@@ -112,8 +113,9 @@ function saveName(newName: string) {
     conversation.name = newName;
 }
 
-function reloadPage() {
-    window.location.reload()
+function retry() {
+    showRetryButton.value = false
+    connectSerial()
 }
 
 </script>
@@ -127,12 +129,8 @@ function reloadPage() {
                 @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
             </ConversationNameInput>
             <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <div v-if="showRetryButton" class="retry">
-                <p>Could not connect to serial.</p>
-                <button @click="showRetryButton = false; connectSerial()">Retry</button>
-                <p>Or if that doesn't work</p>
-                <button @click="reloadPage">Refresh the page</button>
-            </div>
+            <RetryButton v-if="showRetryButton" direction="row" @retry="retry">
+            </RetryButton>
             <ConversationButtons v-else class="conversation-buttons" @start-conversation="() => { startConversation() }"
                 @await-conversation="() => { awaitConversation() }" @stop-waiting="() => { stopWaiting() }">
             </ConversationButtons>
@@ -160,12 +158,6 @@ function reloadPage() {
     justify-content: space-around;
     padding-bottom: 1rem;
     align-items: center;
-}
-
-.retry {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
 }
 
 .messages-container {

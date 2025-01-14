@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import ConversationNameInput from './ConversationNameInput.vue';
 import StatusIndicator from './StatusIndicator.vue';
+import RetryButton from './RetryButton.vue';
 
 import { onMounted, ref, useTemplateRef } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router';
@@ -51,6 +52,11 @@ async function snoop() {
     await waitForReady()
     listenContinuously()
         .catch(r => { console.log("Snoop stopped :("); showRetryButton.value = true })
+}
+
+function retry() {
+    connectSerial()
+    snoop()
 }
 
 function snoopEventListener(e: MessageEvent) {
@@ -128,18 +134,10 @@ function clearList() {
     }
 }
 
-function reloadPage() {
-    window.location.reload()
-}
 </script>
 
 <template>
-    <div v-if="showRetryButton || portNeedsToBeRequested" class="retry">
-        <p>Could not connect to serial.</p>
-        <button @click="connectSerial(); snoop()">Retry</button>
-        <p>Or if that doesn't work</p>
-        <button @click="reloadPage">Refresh the page</button>
-    </div>
+    <RetryButton v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></RetryButton>
     <div v-else>
         <div class="recording-body-container">
             <div class="recording-list">
@@ -297,11 +295,6 @@ th {
     background-color: var(--pink);
 }
 
-.retry {
-    display: flex;
-    flex-direction: column;
-    align-items: center
-}
 
 .staged-messages-container {
     display: flex;

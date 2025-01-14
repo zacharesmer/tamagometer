@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import StatusIndicator from './StatusIndicator.vue';
 import RequestSerialButton from './RequestSerialButton.vue';
+import RetryButton from './RetryButton.vue';
+
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 
@@ -15,8 +17,12 @@ onMounted(() => {
     serialWorker.addEventListener("message", helpEventListener)
 })
 
-function helpEventListener(e: MessageEvent) {
+onBeforeRouteLeave(async (to, from) => {
+    stopTask().catch(r => { })
+    serialWorker.removeEventListener("message", helpEventListener)
+})
 
+function helpEventListener(e: MessageEvent) {
     const message = e.data as FromWorker
     switch (message.kind) {
         case "animate": {
@@ -32,13 +38,9 @@ function startConversation(message1Bitstring: string, message2Bitstring: string)
     haveConversation(message1Bitstring, message2Bitstring, "initiate").catch(r => { showRetryButton.value = true })
 }
 
-onBeforeRouteLeave(async (to, from) => {
-    stopTask().catch(r => { })
-    serialWorker.removeEventListener("message", helpEventListener)
-})
-
-function reloadPage() {
-    window.location.reload()
+function retry() {
+    showRetryButton.value = false
+    connectSerial()
 }
 
 </script>
@@ -78,12 +80,8 @@ function reloadPage() {
         </div>
         <div v-else class="interactive-container">
             <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <div v-if="showRetryButton" class="retry">
-                <p>Could not connect to serial.</p>
-                <button @click="showRetryButton = false; connectSerial()">Retry</button>
-                <p>Or if that doesn't work</p>
-                <button @click="reloadPage">Refresh the page</button>
-            </div>
+            <RetryButton v-if="showRetryButton" direction="column" @retry="retry">
+            </RetryButton>
             <div v-else class="visits-container">
                 <div class="demo-visit-button-and-desc-row">
                     <!-- <div class="demo-visit-desc">Visit 1: Jump around and spin!</div> -->
@@ -180,12 +178,6 @@ function reloadPage() {
     max-width: 100ch;
     margin: 0 auto;
     line-height: 1.8;
-}
-
-.retry {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
 }
 
 .visits-container {
