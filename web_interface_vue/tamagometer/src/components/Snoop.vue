@@ -140,6 +140,9 @@ function clearList() {
     <RetryButton v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></RetryButton>
     <div v-else>
         <div class="recording-body-container">
+            <!-- TODO: refactor this recording-list div into its own component that handles the webworker stuff 
+             and emits signals with the recordings. This will allow swapping in a different component, like the
+             planned bootstrapping one. -->
             <div class="recording-list">
                 <div class="title">
                     <StatusIndicator ref="statusIndicator"></StatusIndicator>

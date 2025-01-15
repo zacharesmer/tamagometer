@@ -182,10 +182,10 @@ class SerialConnection {
             if (this.cancelListen) {
                 break
             }
-            // this times out after however long is set on the microcontroller (currently 1 second)
             this.sendCommand(message);
             // listen for a response
-            let response = await this.readOneCommand();
+            // this times out after however long is set on the microcontroller (currently 1 second)
+            response = await this.readOneCommand();
             if (response != null) {
                 break
             }
@@ -239,7 +239,7 @@ async function connectToPort(requestPort: boolean): Promise<boolean> {
                     // successfully connected and doesn't need to be requested.
                     if ((r as DOMException).name == "InvalidStateError") {
                         success = true
-                    } 
+                    }
                     else {
                         console.error("Could not connect to serial")
                         success = false

@@ -75,12 +75,12 @@ function retry() {
                 <li>Watch your Tamagotchi screen!</li>
             </ol>
         </div>
-        <div v-if="portNeedsToBeRequested">
+        <div v-if="portNeedsToBeRequested" class="request-serial-port-container">
             <RequestSerialButton></RequestSerialButton>
         </div>
         <div v-else class="interactive-container">
             <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <RetryButton v-if="showRetryButton" direction="column" @retry="retry">
+            <RetryButton v-if="showRetryButton" @retry="retry">
             </RetryButton>
             <div v-else class="visits-container">
                 <div class="demo-visit-button-and-desc-row">
@@ -190,5 +190,9 @@ function retry() {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+}
+.request-serial-port-container {
+    display: flex;
+    justify-content: center;
 }
 </style>
