@@ -88,3 +88,6 @@ This allows you to snoop/listen in on a conversation between two tamagotchis. Yo
 
 ## View Saved
 Recorded messages are saved locally on your computer using IndexedDB. If you clear your cookies and cache or site storage you will lose your saved messages! Please back them up by  using the export button to save them as a file so that you can add them back if this happens. Importing a file will add onto any existing saved messages; it won't overwrite them.
+
+# Disclaimer
+This project is entirely unofficial and not affiliated with Tamagotchi or Bandai. 
