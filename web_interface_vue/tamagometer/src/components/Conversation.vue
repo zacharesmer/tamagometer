@@ -1,22 +1,22 @@
 <script lang="ts" setup>
 import BitstringInput from './BitstringInput.vue';
-// import { editingConversation, selectedConversation } from '@/conversation'
-import { dbConnection } from '@/database';
 import ConversationButtons from './ConversationButtons.vue';
 import ConversationNameInput from './ConversationNameInput.vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { onMounted, ref, useTemplateRef } from 'vue';
-import { activeConversation as conversation } from '@/state';
-import { getPortOrNeedToRetry } from '@/serial';
-
-import { toast } from 'vue3-toastify'
 import StatusIndicator from './StatusIndicator.vue';
+import RetryButton from './RetryButton.vue';
+
+import { onMounted, ref, useTemplateRef } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { toast } from 'vue3-toastify'
+
+import { dbConnection } from '@/database';
+import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serial';
+import { activeConversation as conversation } from '@/state';
 
 const route = useRoute()
-let workerPromise: Promise<void>
-let worker: Worker
 
-const needToRetry = ref(false)
+const showRetryButton = ref(false)
+
 const statusIndicator = useTemplateRef("statusIndicator")
 
 onMounted(async () => {
@@ -25,87 +25,64 @@ onMounted(async () => {
         const stored = await dbConnection.get(dbId)
         conversation.initFromStored(stored)
     }
-    setUpWorker()
+    serialWorker.addEventListener("message", conversationEventListener)
 })
 
-onBeforeRouteLeave(async (to, from, next) => {
-    worker.postMessage({ kind: "stopWork" })
-    await workerPromise.catch(r => {
-        console.log(r)
-    })
-    next()
+onBeforeRouteLeave(async (to, from) => {
+    stopTask().catch(r => { })
+    serialWorker.removeEventListener("message", conversationEventListener)
 })
 
-async function setUpWorker() {
-    // console.log("Setting up conversation worker...")
-    needToRetry.value = await getPortOrNeedToRetry()
-    workerPromise = new Promise((resolve, reject) => {
-        worker = new Worker(new URL("@/conversationWorker.ts", import.meta.url), { type: "module" })
-        worker.onmessage = (e: MessageEvent) => {
-            const message = e.data as FromConversationWorker
-            switch (message.kind) {
-                // Update the UI with the responses
-                case "conversationResponse": {
-                    // console.log(message.response1, message.response2)
-                    // console.log(message)
-                    if (message.responseTo == "initiate") {
-                        console.log("Updating messages 2 and 4...")
-                        conversation.message2.update(message.response1)
-                        conversation.message4.update(message.response2)
-                    }
-                    if (message.responseTo == "await") {
-                        console.log("Updating messages 1 and 3...")
-                        conversation.message1.update(message.response1)
-                        conversation.message3.update(message.response2)
-                    }
-                    break
-                }
-                case "workerDone": {
-                    // console.log("Worker is done")
-                    resolve()
-                    break
-                }
-                case "workerError": {
-                    needToRetry.value = true
-                    reject(message.error)
-                    break
-                }
-                case "animate": {
-                    if (message.animation === "statusIndicator") {
-                        statusIndicator.value?.animateStatusIndicator()
-                    }
-                    break
-                }
+// Conversation-specific message handling. More general message handling is in serial.ts
+function conversationEventListener(e: MessageEvent) {
+    const message = e.data as FromWorker
+    switch (message.kind) {
+        // Update the UI with the responses
+        // In some distant future it could make sense for these responses to be passed through the `resolve` 
+        // of the promise. 
+        case "conversationResponse": {
+            // console.log(message.response1, message.response2)
+            // console.log(message)
+            if (message.responseTo == "initiate") {
+                console.log("Updating messages 2 and 4...")
+                conversation.message2.update(message.response1)
+                conversation.message4.update(message.response2)
             }
+            if (message.responseTo == "await") {
+                console.log("Updating messages 1 and 3...")
+                conversation.message1.update(message.response1)
+                conversation.message3.update(message.response2)
+            }
+            break
         }
-        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-        worker.postMessage({ kind: "connectSerial" })
-    })
+        case "animate": {
+            if (message.animation === "statusIndicator") {
+                statusIndicator.value?.animateStatusIndicator()
+            }
+            break
+        }
+    }
 }
 
-function startConversation() {
-    // TODO: I need something to prevent spamming the button. Maybe a promise in the 
-    // webworker so it will just ignore any messages until the conversation is complete or cancelled?
+async function startConversation() {
     // console.log("Starting conversation...")
-    worker.postMessage({
-        kind: "conversation",
-        message1: conversation.message1.getBitstring(),
-        message2: conversation.message3.getBitstring(),
-        conversationType: "start"
-    })
+    await haveConversation(
+        conversation.message1.getBitstring(),
+        conversation.message3.getBitstring(),
+        'initiate'
+    ).catch(r => { showRetryButton.value = true })
 }
 
-function awaitConversation() {
-    worker.postMessage({
-        kind: "conversation",
-        message1: conversation.message2.getBitstring(),
-        message2: conversation.message4.getBitstring(),
-        conversationType: "wait"
-    })
+async function awaitConversation() {
+    await haveConversation(
+        conversation.message2.getBitstring(),
+        conversation.message4.getBitstring(),
+        "await",
+    ).catch(r => { showRetryButton.value = true })
 }
 
 function stopWaiting() {
-    worker.postMessage({ kind: "stopWaitingForConversation" })
+    stopTask().catch(r => { })
 }
 
 // Write the current conversation to the database. 
@@ -136,8 +113,9 @@ function saveName(newName: string) {
     conversation.name = newName;
 }
 
-function reloadPage() {
-    window.location.reload()
+function retry() {
+    showRetryButton.value = false
+    connectSerial()
 }
 
 </script>
@@ -151,12 +129,8 @@ function reloadPage() {
                 @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
             </ConversationNameInput>
             <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <div v-if="needToRetry" class="retry">
-                <p>Could not connect to serial.</p>
-                <button @click="setUpWorker">Retry</button>
-                <p>Or if that doesn't work</p>
-                <button @click="reloadPage">Refresh the page</button>
-            </div>
+            <RetryButton v-if="showRetryButton" direction="row" @retry="retry">
+            </RetryButton>
             <ConversationButtons v-else class="conversation-buttons" @start-conversation="() => { startConversation() }"
                 @await-conversation="() => { awaitConversation() }" @stop-waiting="() => { stopWaiting() }">
             </ConversationButtons>
@@ -184,12 +158,6 @@ function reloadPage() {
     justify-content: space-around;
     padding-bottom: 1rem;
     align-items: center;
-}
-
-.retry {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
 }
 
 .messages-container {

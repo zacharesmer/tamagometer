@@ -1,13 +1,17 @@
 <script lang="ts" setup>
+import ConversationNameInput from './ConversationNameInput.vue';
+import StatusIndicator from './StatusIndicator.vue';
+import RetryButton from './RetryButton.vue';
+
+import { onMounted, ref, useTemplateRef } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router';
+import { toast } from 'vue3-toastify';
+
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
-import { onMounted, ref, useTemplateRef } from 'vue'
-import ConversationNameInput from './ConversationNameInput.vue';
-import { toast } from 'vue3-toastify';
-import { getPortOrNeedToRetry } from '@/serial';
-import StatusIndicator from './StatusIndicator.vue';
-import { onBeforeRouteLeave } from 'vue-router';
+import { serialWorker, listenContinuously, stopTask, waitForReady, connectSerial } from '@/serial';
+import { portNeedsToBeRequested } from '@/state';
 
 // Store recorded messages as strings
 let snoopOutput = ref(new Array<string>);
@@ -18,12 +22,12 @@ let snoopOutput = ref(new Array<string>);
 // snoopOutput.value.push("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011")
 // snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
 
-const needToRetry = ref(false);
-let worker: Worker;
-let workerPromise: Promise<void>
+// The retry button is shown when this is true or if a port needs to be requested
+const showRetryButton = ref(false)
+const conversationName = ref("Recorded Conversation")
+
 const statusIndicator = useTemplateRef("statusIndicator")
 
-const conversationName = ref("Recorded Conversation")
 const stagedMessageIndeces = ref<{ message1: number, message2: number, message3: number, message4: number }>(
     {
         message1: NaN,
@@ -32,41 +36,46 @@ const stagedMessageIndeces = ref<{ message1: number, message2: number, message3:
         message4: NaN
     })
 
-// Called when the component is mounted or if it fails and the retry button is clicked
+onMounted(async () => {
+    // Snoop-specific message handling code. More general message handling is in serial.ts
+    serialWorker.addEventListener("message", snoopEventListener)
+    snoop()
+})
+
+onBeforeRouteLeave(async (to, from) => {
+    stopTask().catch(r => { console.log(r) })
+    serialWorker.removeEventListener("message", snoopEventListener)
+})
+
 async function snoop() {
-    needToRetry.value = await getPortOrNeedToRetry()
-    // console.log("Snooping...");
-    workerPromise = new Promise((resolve, reject) => {
-        worker = new Worker(new URL("@/listeningWorker.ts", import.meta.url), { type: "module" })
-        worker.onmessage = (e: MessageEvent) => {
-            const message = e.data as FromListeningWorker
-            switch (message.kind) {
-                case "receivedBitstring": {
-                    snoopOutput.value.push(message.bits)
-                    break
-                }
-                case "workerDone": {
-                    resolve()
-                    break
-                }
-                case "workerError": {
-                    needToRetry.value = true
-                    reject(message.error)
-                    break
-                }
-                case "animate": {
-                    if (message.animation === "statusIndicator") {
-                        statusIndicator.value?.animateStatusIndicator()
-                    }
-                    break
-                }
-            }
-        }
-        worker.onerror = (e) => { console.error("Error in listening worker:", e) }
-        worker.postMessage({ kind: "connectSerial" })
-    })
+    showRetryButton.value = false
+    await waitForReady()
+    listenContinuously()
+        .catch(r => { console.log("Snoop stopped :("); showRetryButton.value = true })
 }
 
+function retry() {
+    connectSerial()
+    snoop()
+}
+
+function snoopEventListener(e: MessageEvent) {
+    const message = e.data as FromWorker
+    switch (message.kind) {
+        case "receivedBitstring": {
+            snoopOutput.value.push(message.bits)
+            break
+        }
+        case "animate": {
+            if (message.animation === "statusIndicator") {
+                statusIndicator.value?.animateStatusIndicator()
+            }
+            break
+        }
+    }
+}
+
+// Create a conversation from the staged messages and store it.
 function saveConversation() {
     // Check if all 4 messages have been selected, return and display an error if not
     if (Number.isNaN(stagedMessageIndeces.value.message1) ||
@@ -95,8 +104,6 @@ function saveConversation() {
         return
     }
 
-    // Create a conversation from the staged messages and store it
-
     const fromRecordingConversation = new Conversation(null)
     fromRecordingConversation.message1 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message1]);
     fromRecordingConversation.message2 = new TamaMessage(snoopOutput.value[stagedMessageIndeces.value.message2]);
@@ -105,31 +112,15 @@ function saveConversation() {
     fromRecordingConversation.name = conversationName.value;
 
     const toastId = toast("Saving...")
-    dbConnection.set(fromRecordingConversation.toStored()).then(result => {
-        toast.update(toastId, { render: "Saved", })
-    })
+    dbConnection.set(fromRecordingConversation.toStored())
+        .then(r => {
+            toast.update(toastId, { render: "Saved", })
+        })
+        .catch(r => { toast.update(toastId, { render: "Error", type: "error" }) })
 }
 
 function saveName(newName: string) {
     conversationName.value = newName;
-}
-
-onMounted(async () => {
-    snoop()
-})
-
-onBeforeRouteLeave(async (to, from, next) => {
-    worker.postMessage({ kind: "stopWork" })
-    await workerPromise.catch(r => {
-        // This is usually a TypeError because the serial reader was cancelled and closed while it was reading
-        // That's fine because it needs to stop no matter what when we leave the page.
-        // console.log(r)
-    })
-    next()
-})
-
-function reloadPage() {
-    window.location.reload()
 }
 
 function clearList() {
@@ -142,17 +133,16 @@ function clearList() {
         message4: NaN,
     }
 }
+
 </script>
 
 <template>
-    <div v-if="needToRetry" class="retry">
-        <p>Could not connect to serial.</p>
-        <button @click="snoop">Retry</button>
-        <p>Or if that doesn't work</p>
-        <button @click="reloadPage">Refresh the page</button>
-    </div>
+    <RetryButton v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></RetryButton>
     <div v-else>
         <div class="recording-body-container">
+            <!-- TODO: refactor this recording-list div into its own component that handles the webworker stuff 
+             and emits signals with the recordings. This will allow swapping in a different component, like the
+             planned bootstrapping one. -->
             <div class="recording-list">
                 <div class="title">
                     <StatusIndicator ref="statusIndicator"></StatusIndicator>
@@ -308,11 +298,6 @@ th {
     background-color: var(--pink);
 }
 
-.retry {
-    display: flex;
-    flex-direction: column;
-    align-items: center
-}
 
 .staged-messages-container {
     display: flex;

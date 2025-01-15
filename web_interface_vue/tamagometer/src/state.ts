@@ -1,4 +1,4 @@
-import { reactive } from "vue"
+import { reactive, ref } from "vue"
 import { Conversation } from "./conversation"
 
 export const pageSettings = reactive({
@@ -8,3 +8,4 @@ export const pageSettings = reactive({
 
 export let activeConversation: Conversation = reactive(new Conversation(null))
 
+export const portNeedsToBeRequested = ref(false)

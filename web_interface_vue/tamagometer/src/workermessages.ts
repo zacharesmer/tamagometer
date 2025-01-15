@@ -1,13 +1,54 @@
 // We have rust enums at home
 // Rust enums at home:
 
-// (I don't know if this is a good way to do this. It was slightly better than no type checking, maybe)
+// To worker:
 
-interface conversation {
+interface connectSerialMessage {
+    kind: "connectSerial"
+    promiseID: number
+}
+
+interface conversationMessage {
     kind: "conversation"
     message1: string
     message2: string
-    conversationType: "start" | "wait"
+    conversationType: "initiate" | "await"
+    promiseID: number
+}
+
+interface listenContinuouslyMessage {
+    kind: "listenContinuously"
+    promiseID: number
+}
+
+interface stopTaskMessage {
+    kind: "stopTask"
+    promiseID: number
+}
+
+interface stopWorkerMessage {
+    kind: "stopWorker"
+    promiseID: number
+}
+
+interface startBootstrapMessage {
+    kind: "startBootstrap"
+    promiseID: number
+}
+
+interface waitForReady {
+    kind: "waitForReady"
+    promiseID: number
+}
+
+// From Worker:
+
+interface result {
+    kind: "result"
+    result: "resolve" | "reject"
+    // only used in the case where it's a rejection
+    error?: Error
+    promiseID: number
 }
 
 interface conversationResponse {
@@ -17,41 +58,29 @@ interface conversationResponse {
     response2: string
 }
 
-interface stopWaitingForConversation {
-    kind: "stopWaitingForConversation"
+interface receivedBitstring {
+    kind: "receivedBitstring"
+    bits: string
 }
 
-interface stopWork {
-    kind: "stopWork"
+interface bootstrapStatus {
+    kind: "bootstrapStatus"
+    status: ""
+    message1: string
+    message2: string
+    message3: string
+    message4: string
 }
 
 interface workerDone {
     kind: "workerDone"
 }
 
-interface workerError {
-    kind: "workerError"
-    error: Error
-}
-
-interface connectSerial {
-    kind: "connectSerial"
-}
-
-interface receivedBitstring {
-    kind: "receivedBitstring"
-    bits: string
-}
-
 interface animate {
     kind: "animate"
-    animation: "statusIndicator" // | add more options as they get made
+    animation: "statusIndicator" // | add options if there are more animations one day
 }
 
-type ToConversationWorker = connectSerial | conversation | stopWork | stopWaitingForConversation
+type ToWorker = connectSerialMessage | conversationMessage | listenContinuouslyMessage | startBootstrapMessage | stopWorkerMessage | stopTaskMessage | waitForReady
 
-type FromConversationWorker = conversationResponse | workerDone | workerError | animate
-
-type ToListeningWorker = connectSerial | stopWork
-
-type FromListeningWorker = receivedBitstring | workerDone | workerError | animate
+type FromWorker = result | conversationResponse | receivedBitstring | bootstrapStatus | workerDone | animate 
