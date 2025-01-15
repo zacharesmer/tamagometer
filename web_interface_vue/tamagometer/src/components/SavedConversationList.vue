@@ -1,9 +1,14 @@
 <script lang="ts" setup>
-import { StoredConversation } from '@/conversation';
-import { useRouter } from 'vue-router';
-import { dbConnection } from '@/database';
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+import { StoredConversation } from '@/conversation';
+import { dbConnection } from '@/database';
+import { starterPack } from '@/starterpack';
+
+const emit = defineEmits(['refreshDb'])
+
+const router = useRouter()
 
 defineProps(
     {
@@ -11,15 +16,15 @@ defineProps(
     }
 )
 
-const emit = defineEmits(['refreshDb'])
-
-const router = useRouter()
+onMounted(() => {
+    emit("refreshDb")
+})
 
 function openForEditing(c: StoredConversation): void {
     // @ts-ignore
     console.log("opening " + c.id)
     // @ts-ignore
-    router.push({path: "conversation", query: {dbid: c.id}})
+    router.push({ path: "conversation", query: { dbid: c.id } })
 }
 
 // Typescript doesn't like the autoincrementing ID key, but it's a number
@@ -31,9 +36,13 @@ function deleteConversation(dbId) {
     }
 }
 
-onMounted(() => {
-    emit("refreshDb")
-})
+function importStarterPack() {
+    let dbPromises = []
+    for (let i = 0; i < starterPack.length; i++) {
+        dbPromises.push(dbConnection.set(starterPack[i]))
+    }
+    Promise.all(dbPromises).then(r => emit("refreshDb"))
+}
 
 </script>
 
@@ -84,7 +93,21 @@ onMounted(() => {
                     </tr>
                 </tbody>
             </table>
-            <p v-else>No conversations saved yet. Record or import something to get started.</p>
+            <div v-else>
+                <p>No conversations saved yet.</p>
+                <button @click="importStarterPack" class="icon-label-button">
+                    <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 35H62V63H18V35Z" />
+                        <path d="M18 49H62" />
+                        <path d="M40 63V35" />
+                        <path
+                            d="M24.8564 26.2584C27.0983 22.2231 32.9017 22.2231 35.1435 26.2584L39.8168 34.6702C39.899 34.8182 39.792 35 39.6227 35H30C25.5135 35 22.6776 30.1803 24.8564 26.2584Z" />
+                        <path
+                            d="M55.1436 26.2584C52.9017 22.2231 47.0983 22.2231 44.8565 26.2584L40.1832 34.6702C40.101 34.8182 40.208 35 40.3773 35H50C54.4865 35 57.3224 30.1803 55.1436 26.2584Z" />
+                    </svg>
+                    <span>Get started with some examples</span>
+                </button>
+            </div>
         </div>
     </div>
 </template>

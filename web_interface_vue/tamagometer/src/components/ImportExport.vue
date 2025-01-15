@@ -7,36 +7,62 @@ import { dbConnection } from '@/database';
 const emit = defineEmits(['refreshDb'])
 
 const importFileChooser = useTemplateRef("importConversationFileChooser")
-let conversationsFromFile = new Array<StoredConversation>
+let conversationsFromFile = new Array<StoredConversation>()
 const howManyConversationsFromFile = ref(0)
 
-// Any time the file input changes, read the file 
+// Any time the file input changes, update the list of conversations from the file
+// and how many were in it
 function fileChanged() {
     if (importFileChooser.value !== null && importFileChooser.value.files !== null) {
         // console.log(importFileChooser.value.files[0])
         const file = importFileChooser.value.files[0]
-        const reader = new FileReader()
-        reader.addEventListener("load", (event) => {
-            // console.log(reader.result)
-            if (reader !== null && reader.result !== null) {
-                conversationsFromFile = JSON.parse(reader.result.toString())
-                howManyConversationsFromFile.value = conversationsFromFile.length
-            }
+        getConversationsFromFile(file).then(r => {
+            conversationsFromFile = r
+            howManyConversationsFromFile.value = conversationsFromFile.length
+        }).catch(r => {
+            console.error(r)
+            resetFileChooser()
         })
-        reader.readAsText(file)
     }
 }
 
-async function importConversations() {
-    for (let i = 0; i < conversationsFromFile.length; i++) {
-        await dbConnection.set(conversationsFromFile[i])
-    }
+function getConversationsFromFile(file: File): Promise<Array<StoredConversation>> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        let conversationsFromFile = []
+        reader.addEventListener("load", (event) => {
+            // console.log(reader.result)
+            if (reader !== null && reader.result !== null) {
+                try {
+                    conversationsFromFile = JSON.parse(reader.result.toString())
+                    resolve(conversationsFromFile)
+                } catch (r) {
+                    reject(r)
+                }
+            } else {
+                reject("Could not read file")
+            }
+        })
+        reader.readAsText(file)
+    })
+}
+
+function resetFileChooser() {
     if (importFileChooser.value !== null && importFileChooser.value.value !== null) {
         conversationsFromFile = []
         importFileChooser.value.value = ""
-        howManyConversationsFromFile.value = conversationsFromFile.length;
+        howManyConversationsFromFile.value = 0;
     }
-    emit("refreshDb")
+}
+
+async function importConversationsFromFileChooser() {
+    // conversationsFromFile is set any time the selected file changes so it doesn't need to 
+    // be updated manually here
+    let dbPromises = []
+    for (let i = 0; i < conversationsFromFile.length; i++) {
+        dbPromises.push(dbConnection.set(conversationsFromFile[i]))
+    }
+    Promise.all(dbPromises).then(r => emit("refreshDb"))
 }
 
 
@@ -64,7 +90,7 @@ async function exportConversations() {
         <p>The saved conversations are stored in a local IndexedDB. If you clear your cookies/cache/local storage they
             will be lost. </p>
         <p>Export a file to back up your recordings or share them with someone else.</p>
-        <form @submit.prevent="importConversations">
+        <form @submit.prevent="importConversationsFromFileChooser">
             <!-- <label class="fake-button-for-file-chooser" for="import-conversation-file-chooser">Import</label> -->
             <input id="import-conversation-file-chooser" type="file" required="true" accept=".json,.tgir"
                 ref="importConversationFileChooser" @change="fileChanged">
