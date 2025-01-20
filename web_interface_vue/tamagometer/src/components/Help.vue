@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import StatusIndicator from './StatusIndicator.vue';
-import RequestSerialButton from './RequestSerialButton.vue';
-import RetryButton from './RetryButton.vue';
+import AppStatusIndicator from './AppStatusIndicator.vue';
+import AppButtonRequestSerial from './AppButtonRequestSerial.vue';
+import AppButtonRetry from './AppButtonRetry.vue';
 
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -76,12 +76,12 @@ function retry() {
             </ol>
         </div>
         <div v-if="portNeedsToBeRequested" class="request-serial-port-container">
-            <RequestSerialButton></RequestSerialButton>
+            <AppButtonRequestSerial></AppButtonRequestSerial>
         </div>
         <div v-else class="interactive-container">
-            <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <RetryButton v-if="showRetryButton" @retry="retry">
-            </RetryButton>
+            <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
+            <AppButtonRetry v-if="showRetryButton" @retry="retry">
+            </AppButtonRetry>
             <div v-else class="visits-container">
                 <div class="demo-visit-button-and-desc-row">
                     <!-- <div class="demo-visit-desc">Visit 1: Jump around and spin!</div> -->
@@ -191,6 +191,7 @@ function retry() {
     align-items: center;
     gap: 1rem;
 }
+
 .request-serial-port-container {
     display: flex;
     justify-content: center;

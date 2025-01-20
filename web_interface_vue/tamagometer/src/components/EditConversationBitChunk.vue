@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
 import { computed } from 'vue'
-import Bit from './Bit.vue'
+import EditConversationBit from './EditConversationBit.vue'
 import { TamaBits } from '@/model'
 import { pageSettings } from '@/state';
 
@@ -27,12 +27,12 @@ const showBits = computed(() => {
 
 <template>
     <div class="bits-container" v-if="showBits">
-        <bit v-for="(item, index) in bitList" @click="() => { model.flipBit(index); $emit('update:modelValue'); }"
-            :value="parseInt(item)" :changed="model.differsAt(index)"></bit>
+        <EditConversationBit v-for="(item, index) in bitList" @click="() => { model.flipBit(index); $emit('update:modelValue'); }"
+            :value="parseInt(item)" :changed="model.differsAt(index)"></EditConversationBit>
     </div>
 </template>
 
-<style>
+<style scoped>
 .bits-container {
     display: flex;
     gap: .1rem;

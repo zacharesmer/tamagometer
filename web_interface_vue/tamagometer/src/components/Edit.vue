@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import BitstringInput from './BitstringInput.vue';
-import ConversationButtons from './ConversationButtons.vue';
-import ConversationNameInput from './ConversationNameInput.vue';
-import StatusIndicator from './StatusIndicator.vue';
-import RetryButton from './RetryButton.vue';
+import EditConversationMessage from './EditConversationMessage.vue';
+import EditButtonsTxRx from './EditButtonsTxRx.vue';
+import AppInputConversationName from './AppInputConversationName.vue';
+import AppStatusIndicator from './AppStatusIndicator.vue';
+import AppButtonRetry from './AppButtonRetry.vue';
 
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
@@ -124,26 +124,26 @@ function retry() {
 <template>
     <div v-if="!conversation.oneOrMoreMessagesAreInvalid()">
         <div class="name-buttons-container">
-            <ConversationNameInput class="name-input"
+            <AppInputConversationName class="name-input"
                 @save-new-conversation="(newName) => { saveNewConversation(newName) }"
                 @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
-            </ConversationNameInput>
-            <StatusIndicator ref="statusIndicator"></StatusIndicator>
-            <RetryButton v-if="showRetryButton" direction="row" @retry="retry">
-            </RetryButton>
-            <ConversationButtons v-else class="conversation-buttons" @start-conversation="() => { startConversation() }"
+            </AppInputConversationName>
+            <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
+            <AppButtonRetry v-if="showRetryButton" direction="row" @retry="retry">
+            </AppButtonRetry>
+            <EditButtonsTxRx v-else class="conversation-buttons" @start-conversation="() => { startConversation() }"
                 @await-conversation="() => { awaitConversation() }" @stop-waiting="() => { stopWaiting() }">
-            </ConversationButtons>
+            </EditButtonsTxRx>
         </div>
         <div class="messages-container">
-            <BitstringInput :model="conversation.message1" bitstring-id="editingConversationMessage1"
-                class="message from-tama1"></BitstringInput>
-            <BitstringInput :model="conversation.message2" bitstring-id="editingConversationMessage2"
-                class="message from-tama2"></BitstringInput>
-            <BitstringInput :model="conversation.message3" bitstring-id="editingConversationMessage3"
-                class="message from-tama1"></BitstringInput>
-            <BitstringInput :model="conversation.message4" bitstring-id="editingConversationMessage4"
-                class="message from-tama2"></BitstringInput>
+            <EditConversationMessage :model="conversation.message1" bitstring-id="editingConversationMessage1"
+                class="message from-tama1"></EditConversationMessage>
+            <EditConversationMessage :model="conversation.message2" bitstring-id="editingConversationMessage2"
+                class="message from-tama2"></EditConversationMessage>
+            <EditConversationMessage :model="conversation.message3" bitstring-id="editingConversationMessage3"
+                class="message from-tama1"></EditConversationMessage>
+            <EditConversationMessage :model="conversation.message4" bitstring-id="editingConversationMessage4"
+                class="message from-tama2"></EditConversationMessage>
         </div>
     </div>
     <div v-else>

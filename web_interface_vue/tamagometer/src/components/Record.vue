@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import ConversationNameInput from './ConversationNameInput.vue';
-import StatusIndicator from './StatusIndicator.vue';
-import RetryButton from './RetryButton.vue';
+import AppInputConversationName from './AppInputConversationName.vue';
+import AppStatusIndicator from './AppStatusIndicator.vue';
+import AppButtonRetry from './AppButtonRetry.vue';
 
 import { onMounted, ref, useTemplateRef } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router';
@@ -137,7 +137,7 @@ function clearList() {
 </script>
 
 <template>
-    <RetryButton v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></RetryButton>
+    <AppButtonRetry v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></AppButtonRetry>
     <div v-else>
         <div class="recording-body-container">
             <!-- TODO: refactor this recording-list div into its own component that handles the webworker stuff 
@@ -145,7 +145,7 @@ function clearList() {
              planned bootstrapping one. -->
             <div class="recording-list">
                 <div class="title">
-                    <StatusIndicator ref="statusIndicator"></StatusIndicator>
+                    <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
                     <h2>Listening for input...</h2>
                 </div>
                 <div v-if="snoopOutput.length > 0" class="recording-table-container">
@@ -187,9 +187,9 @@ function clearList() {
                     class="icon-label-button">Clear</button>
             </div>
             <div class="staged-messages-container">
-                <ConversationNameInput :name="conversationName" @save-name="(newName) => { saveName(newName) }"
+                <AppInputConversationName :name="conversationName" @save-name="(newName) => { saveName(newName) }"
                     @save-new-conversation="saveConversation" class="title">
-                </ConversationNameInput>
+                </AppInputConversationName>
                 <div class="message-label-container">
                     <button class="message-label round-button"
                         :class="{ 'message-label-set': (!Number.isNaN(stagedMessageIndeces.message1)) }"

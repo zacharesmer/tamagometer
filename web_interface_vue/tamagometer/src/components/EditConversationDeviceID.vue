@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { TamaID } from '@/model';
 import { computed } from 'vue';
-import BitChunk from './BitChunk.vue';
+import EditConversationBitChunk from './EditConversationBitChunk.vue';
 
 const props = defineProps({
     model: { type: TamaID, required: true },
@@ -27,7 +27,7 @@ const idNumber = computed(
 <template>
     <div :class="['chunk-container', 'id-container', props.model.differs() ? 'changed' : '']">
         <label>Device ID </label>
-        <BitChunk :known="true" :model="props.model"></BitChunk>
+        <EditConversationBitChunk :known="true" :model="props.model"></EditConversationBitChunk>
         <input class="id-number" type="number" min="0" max="65535" step="1" v-model="idNumber">
     </div>
 </template>
@@ -43,5 +43,4 @@ const idNumber = computed(
 .id-number {
     font-size: large;
 }
-
 </style>

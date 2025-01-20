@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
 import { TamaName } from '@/model';
-import Letter from './Letter.vue'
+import EditConversationLetter from './EditConversationLetter.vue'
 const props = defineProps({
     model: { type: TamaName, required: true },
 })
@@ -13,12 +13,12 @@ const props = defineProps({
     <div :class="['chunk-container', 'name-container', model.differs() ? 'changed' : '']">
         <label>Name</label>
         <div class="letters-container">
-            <Letter v-for="letter in model.letters" :model="letter"></Letter>
+            <EditConversationLetter v-for="letter in model.letters" :model="letter"></EditConversationLetter>
         </div>
     </div>
 </template>
 
-<style>
+<style scoped>
 .letters-container {
     display: flex;
     flex-direction: row;

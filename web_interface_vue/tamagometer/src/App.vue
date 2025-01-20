@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// import BitstringInput from './components/BitstringInput.vue';
 import { onMounted, ref } from 'vue';
-import Settings from './components/Settings.vue';
+import SettingsMenu from './components/SettingsMenu.vue';
 import { makeSerialWorker, connectToPort } from './serial';
-import RequestSerialButton from './components/RequestSerialButton.vue';
+import AppButtonRequestSerial from './components/AppButtonRequestSerial.vue';
 import { portNeedsToBeRequested } from './state';
 
 const webSerialSupported = ref("serial" in navigator)
@@ -42,11 +41,11 @@ onMounted(async () => {
                             d="M34.3622 30.7155C37.5776 28.8591 41.5391 28.8591 44.7545 30.7155C47.9699 32.572 49.9506 36.0027 49.9506 39.7155C49.9506 43.4284 47.9699 46.8591 44.7545 48.7155C41.5391 50.572 37.5776 50.572 34.3622 48.7155C31.1468 46.8591 29.166 43.4284 29.166 39.7155C29.166 36.0027 31.1468 32.572 34.3622 30.7155Z" />
                     </svg>
                 </summary>
-                <Settings id="settings-panel"></Settings>
+                <SettingsMenu id="settings-panel"></SettingsMenu>
             </details>
         </div>
         <main>
-            <RequestSerialButton></RequestSerialButton>
+            <AppButtonRequestSerial></AppButtonRequestSerial>
             <RouterView />
         </main>
         <footer>
