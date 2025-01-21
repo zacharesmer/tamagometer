@@ -96,7 +96,7 @@ function saveConversation() {
                 @save-new-conversation="saveConversation" class="title">
             </AppInputConversationName>
             <div v-for="(n, index) in 4" class="message-label-container"
-                :class="{ 'swap-button-order': (index % 2 == 0) }">
+                :class="(index % 2 == 0) ? 'button-on-left' : 'button-on-right'">
                 <button class="message-label round-button"
                     :class="{ 'message-label-set': (!Number.isNaN(stagedMessages[index].recordingID)) }"
                     @click="() => { unstageMessage(index) }">{{ n }}</button>
@@ -174,7 +174,12 @@ h2 {
     align-items: end;
 }
 
-.swap-button-order {
+.button-on-left {
+    flex-direction: row;
+
+}
+
+.button-on-right {
     flex-direction: row-reverse;
 }
 </style>
