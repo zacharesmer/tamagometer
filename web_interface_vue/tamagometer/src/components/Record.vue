@@ -105,7 +105,7 @@ function saveConversation() {
             <div v-for="(n, index) in 4" class="message-label-container"
                 :class="(index % 2 == 0) ? 'button-on-left' : 'button-on-right'">
                 <button class="message-label round-button"
-                    :class="{ 'message-label-set': (!(stagedMessages[index].bitstring == "")) }"
+                    :class="{ 'message-label-set': (!(stagedMessages[index].bitstring == '')) }"
                     @click="() => { unstageMessage(index) }">{{ n }}</button>
                 <div :class="(index % 2 == 0) ? 'message from-tama1' : 'message from-tama2'">
                     {{ stagedMessages[index].bitstring }}
