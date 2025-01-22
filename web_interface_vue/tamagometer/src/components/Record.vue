@@ -8,9 +8,11 @@ import { toast } from 'vue3-toastify';
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
+import RecordBootstrap from './RecordBootstrap.vue';
 
 const conversationName = ref("Recorded Conversation")
 const snoopComponent = useTemplateRef("snoop")
+const recordingMode = ref("")
 
 const stagedMessages = ref<{ bitstring: string, recordingID: number }[]>([
     { bitstring: "", recordingID: NaN },
@@ -89,8 +91,14 @@ function saveConversation() {
 </script>
 
 <template>
+    <select v-model="recordingMode">
+        <option value="snoop">Two tamagotchis</option>
+        <option value="bootstrap">One tamagotchi</option>
+    </select>
     <div class="recording-body-container">
-        <RecordSnoop @stage-message="stageMessage" @clear-list="() => { clearList() }" ref="snoop" />
+        <RecordSnoop v-if="recordingMode == 'snoop'" @stage-message="stageMessage" @clear-list="() => { clearList() }"
+            ref="snoop" />
+        <RecordBootstrap v-if="recordingMode == 'bootstrap'" @stage-message="stageMessage" />
         <div class="staged-messages-container">
             <AppInputConversationName :name="conversationName" @save-name="(newName) => { saveName(newName) }"
                 @save-new-conversation="saveConversation" class="title">

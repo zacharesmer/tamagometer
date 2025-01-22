@@ -33,6 +33,8 @@ interface stopWorkerMessage {
 
 interface startBootstrapMessage {
     kind: "startBootstrap"
+    whichMessage: number
+    messagesSoFar: [string, string, string, string] // bootstrapping never actually uses the 4th message but for clarity I think it's nice to have
     promiseID: number
 }
 
@@ -63,13 +65,10 @@ interface receivedBitstring {
     bits: string
 }
 
-interface bootstrapStatus {
+interface bootstrapResponse {
     kind: "bootstrapStatus"
-    status: ""
-    message1: string
-    message2: string
-    message3: string
-    message4: string
+    bitstring: string
+    whichMessage: number
 }
 
 interface workerDone {
@@ -83,4 +82,4 @@ interface animate {
 
 type ToWorker = connectSerialMessage | conversationMessage | listenContinuouslyMessage | startBootstrapMessage | stopWorkerMessage | stopTaskMessage | waitForReady
 
-type FromWorker = result | conversationResponse | receivedBitstring | bootstrapStatus | workerDone | animate 
+type FromWorker = result | conversationResponse | receivedBitstring | bootstrapResponse | workerDone | animate 
