@@ -48,18 +48,17 @@ function saveName(newName: string) {
 // Create a conversation from the staged messages and store it.
 function saveConversation() {
     // Check if all 4 messages have been selected, return and display an error if not
-    if (Number.isNaN(stagedMessages.value[0].recordingID) ||
-        Number.isNaN(stagedMessages.value[1].recordingID) ||
-        Number.isNaN(stagedMessages.value[2].recordingID) ||
-        Number.isNaN(stagedMessages.value[3].recordingID)) {
-        toast("Could not save: missing messages", {
-            autoClose: true,
-            closeOnClick: true,
-            closeButton: true,
-            type: 'error',
-            isLoading: false,
-        })
-        return
+    for (let m of stagedMessages.value) {
+        if (m.bitstring == "") {
+            toast("Could not save: missing at least one message", {
+                autoClose: true,
+                closeOnClick: true,
+                closeButton: true,
+                type: 'error',
+                isLoading: false,
+            })
+            return
+        }
     }
 
     // Don't store a conversation with an empty name
@@ -106,7 +105,7 @@ function saveConversation() {
             <div v-for="(n, index) in 4" class="message-label-container"
                 :class="(index % 2 == 0) ? 'button-on-left' : 'button-on-right'">
                 <button class="message-label round-button"
-                    :class="{ 'message-label-set': (!Number.isNaN(stagedMessages[index].recordingID)) }"
+                    :class="{ 'message-label-set': (!(stagedMessages[index].bitstring == "")) }"
                     @click="() => { unstageMessage(index) }">{{ n }}</button>
                 <div :class="(index % 2 == 0) ? 'message from-tama1' : 'message from-tama2'">
                     {{ stagedMessages[index].bitstring }}
