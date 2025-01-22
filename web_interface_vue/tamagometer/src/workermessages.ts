@@ -32,7 +32,7 @@ interface stopWorkerMessage {
 }
 
 interface startBootstrapMessage {
-    kind: "startBootstrap"
+    kind: "startBootstrapMessage"
     whichMessage: number
     messagesSoFar: [string, string, string, string] // bootstrapping never actually uses the 4th message but for clarity I think it's nice to have
     promiseID: number
@@ -66,7 +66,7 @@ interface receivedBitstring {
 }
 
 interface bootstrapResponse {
-    kind: "bootstrapStatus"
+    kind: "bootstrapResponse"
     bitstring: string
     whichMessage: number
 }

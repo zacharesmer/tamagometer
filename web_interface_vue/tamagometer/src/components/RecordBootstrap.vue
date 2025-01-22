@@ -4,19 +4,20 @@ import AppButtonRetry from './AppButtonRetry.vue';
 
 import { ref, useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
 
-import { serialWorker, stopTask, connectSerial } from '@/serial'
+import { serialWorker, stopTask, connectSerial, bootstrap, waitForReady } from '@/serial'
 import { portNeedsToBeRequested } from '@/state';
 
-// The recordingID for each message that is staged.
-const stagedMessageIDs = ref([NaN, NaN, NaN, NaN])
-// const statusIndicator = useTemplateRef("statusIndicator")
+const statusIndicator = useTemplateRef("statusIndicator")
 // The retry button is shown when this is true or if a port needs to be requested
 const showRetryButton = ref(false)
-
+const nextMessage = ref<1 | 2 | 3 | 4>(1)
+let messagesSoFar: [string, string, string, string] = ["", "", "", ""]
 
 onMounted(async () => {
-    // Snoop-specific message handling code. More general message handling is in serial.ts
+    // Bootstrap-specific message handling code. More general message handling is in serial.ts
     serialWorker.addEventListener("message", bootstrapEventListener)
+    await waitForReady()
+    startBootstrap()
 })
 
 onBeforeUnmount(() => {
@@ -24,15 +25,42 @@ onBeforeUnmount(() => {
     serialWorker.removeEventListener("message", bootstrapEventListener)
 })
 
+function startBootstrap() {
+    showRetryButton.value = false
+    nextMessage.value = 1
+    messagesSoFar = ["", "", "", ""]
+    bootstrap(nextMessage.value, messagesSoFar).catch(r => {
+        showRetryButton.value = true
+    })
+}
+
+function bootstrapNext() {
+    // reimplement modulo arithmetic but 1 indexed and bad
+    if (nextMessage.value == 4) {
+        nextMessage.value = 1
+    } else {
+        nextMessage.value++
+    }
+    // TODO: it may be necessary to wait a couple of seconds for the tamagotchi to finish sending 
+    // repeated signals
+    bootstrap(nextMessage.value, messagesSoFar).catch(r => {
+        showRetryButton.value = true
+    })
+}
+
 function bootstrapEventListener(e: MessageEvent) {
     const message = e.data as FromWorker
     switch (message.kind) {
-        case "bootstrapStatus": {
+        case "bootstrapResponse": {
+            // emit a signal to stage the received message
+            stageMessage(message.whichMessage, message.bitstring)
+            // update the UI state
+            bootstrapNext()
             break
         }
         case "animate": {
             if (message.animation === "statusIndicator") {
-                // statusIndicator.value?.animateStatusIndicator()
+                statusIndicator.value?.animateStatusIndicator()
             }
             break
         }
@@ -52,16 +80,20 @@ const emit = defineEmits<{
 }>()
 
 
-function stageMessage(recordingID: number, stagedIndex: number, bitstring: string) {
+function stageMessage(stagedIndex: number, bitstring: string) {
     if (stagedIndex < 0 || stagedIndex > 3) {
         throw Error("Invalid index, can only stage a message at index 0, 1, 2, or 3")
     }
-    stagedMessageIDs.value[stagedIndex] = recordingID
-    emit("stageMessage", stagedIndex, recordingID, bitstring)
+    emit("stageMessage", stagedIndex, NaN, bitstring)
+    // Also update the local copy of messages so far
+    messagesSoFar[stagedIndex] = bitstring
 }
 
-function retry() {
+async function retry() {
+    showRetryButton.value = false
     connectSerial()
+    await stopTask().catch(r => { console.log(r) })
+    startBootstrap()
 }
 
 // - wait for a valid message (#1).
@@ -82,9 +114,18 @@ function retry() {
 
     <AppButtonRetry v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></AppButtonRetry>
     <div v-else>
-        <div class="title">
-            <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
-            <h2>Listening for input...</h2>
+        <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
+        <div v-if="nextMessage == 1">
+            Start an interaction on your tamagotchi
+        </div>
+        <div v-if="nextMessage == 2">
+            Wait for interaction on your tamagotchi
+        </div>
+        <div v-if="nextMessage == 3">
+            Start the interaction on your tamagotchi
+        </div>
+        <div v-if="nextMessage == 4">
+            Wait for interaction on your tamagotchi
         </div>
     </div>
 </template>

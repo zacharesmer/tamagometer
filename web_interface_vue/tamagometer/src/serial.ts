@@ -1,5 +1,5 @@
 export { getSerialConnection }
-export { serialWorker, makeSerialWorker, windowHasPort, connectSerial, listenContinuously, haveConversation, stopTask, waitForReady, connectToPort }
+export { serialWorker, makeSerialWorker, windowHasPort, connectSerial, listenContinuously, haveConversation, stopTask, waitForReady, connectToPort, bootstrap }
 export type { SerialConnection }
 
 import { matchCommandString, matchTimedOutString } from "./matchers"
@@ -326,4 +326,8 @@ function stopTask(): Promise<void> {
 
 function waitForReady(): Promise<void> {
     return postMessagePromise({ kind: "waitForReady", promiseID: NaN })
+}
+
+function bootstrap(whichMessage: number, messagesSoFar: [string, string, string, string]): Promise<void> {
+    return postMessagePromise({ kind: "startBootstrapMessage", whichMessage, messagesSoFar, promiseID: NaN })
 }

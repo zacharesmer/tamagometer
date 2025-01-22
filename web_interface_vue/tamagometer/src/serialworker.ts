@@ -53,7 +53,7 @@ onmessage = (async (e: MessageEvent) => {
             makePromiseWithLock(listenContinuously, message.promiseID)
             break
 
-        case "startBootstrap":
+        case "startBootstrapMessage":
             makePromiseWithLock(async () => { await startBootstrap(message.whichMessage, message.messagesSoFar) }, message.promiseID)
             break
 
@@ -94,7 +94,7 @@ onmessage = (async (e: MessageEvent) => {
                     })
             } else {
                 postMessage({
-                    kind: "result", result: "reject", error: "Could not run command", promiseID: message.promiseID
+                    kind: "result", result: "reject", error: "Could not run command " + message.kind, promiseID: message.promiseID
                 })
             }
             break
@@ -264,16 +264,16 @@ async function startBootstrap(whichMessage: number, messagesSoFar: [string, stri
     return new Promise<void>(async (resolve, reject) => {
         switch (whichMessage) {
             case 1:
-                await bootstrapMessage1()
+                await bootstrapMessage1().catch(r => reject(r))
                 break
             case 2:
-                await bootstrapMessage2(messagesSoFar[0])
+                await bootstrapMessage2(messagesSoFar[0]).catch(r => reject(r))
                 break
             case 3:
-                await bootstrapMessage3(messagesSoFar[1])
+                await bootstrapMessage3(messagesSoFar[1]).catch(r => reject(r))
                 break
             case 4:
-                await bootstrapMessage4(messagesSoFar[0], messagesSoFar[2])
+                await bootstrapMessage4(messagesSoFar[0], messagesSoFar[2]).catch(r => reject(r))
                 break
             default:
                 reject("Invalid message number, must be 1, 2, 3, or 4")
