@@ -10,7 +10,7 @@ import { portNeedsToBeRequested } from '@/state';
 const statusIndicator = useTemplateRef("statusIndicator")
 // The retry button is shown when this is true or if a port needs to be requested
 const showRetryButton = ref(false)
-const nextMessage = ref<1 | 2 | 3 | 4>(1)
+const nextMessage = ref<1 | 2 | 3 | 4 | "idle">(1)
 let messagesSoFar: [string, string, string, string] = ["", "", "", ""]
 
 onMounted(async () => {
@@ -34,18 +34,33 @@ function startBootstrap() {
     })
 }
 
-function bootstrapNext() {
-    // reimplement modulo arithmetic but 1 indexed and bad
-    if (nextMessage.value == 4) {
-        nextMessage.value = 1
-    } else {
-        nextMessage.value++
+// advance the UI state and also tell the web worker to look for the next message
+async function bootstrapNext() {
+    // reimplement modulo arithmetic but 1 indexed, including a string, and bad
+    console.log("hello there from bootstrapNext")
+    console.log("Next message:", nextMessage.value)
+    switch (nextMessage.value) {
+        case "idle":
+            nextMessage.value = 1
+            break
+        case 1:
+        case 2:
+        case 3:
+            nextMessage.value++
+            // wait for the tamagotchi to stop attempting to connect from last time
+            console.log("Waiting for tamagotchi to finish sending")
+            await new Promise(resolve => setTimeout(resolve, 3000))
+            console.log("next step starting now")
+            bootstrap(nextMessage.value, messagesSoFar).catch(r => {
+                showRetryButton.value = true
+            })
+            break
+        case 4:
+            nextMessage.value = "idle"
+            break
+        default:
+            console.error("Danger danger this should never reach the default case")
     }
-    // TODO: it may be necessary to wait a couple of seconds for the tamagotchi to finish sending 
-    // repeated signals
-    bootstrap(nextMessage.value, messagesSoFar).catch(r => {
-        showRetryButton.value = true
-    })
 }
 
 function bootstrapEventListener(e: MessageEvent) {
@@ -80,53 +95,49 @@ const emit = defineEmits<{
 }>()
 
 
-function stageMessage(stagedIndex: number, bitstring: string) {
-    if (stagedIndex < 0 || stagedIndex > 3) {
-        throw Error("Invalid index, can only stage a message at index 0, 1, 2, or 3")
+function stageMessage(whichMessage: number, bitstring: string) {
+    if (whichMessage < 1 || whichMessage > 4) {
+        throw Error("Invalid message number," + whichMessage + ", can only stage a message at index 1, 2, 3, or 4")
     }
-    emit("stageMessage", stagedIndex, NaN, bitstring)
+    emit("stageMessage", whichMessage - 1, NaN, bitstring)
     // Also update the local copy of messages so far
-    messagesSoFar[stagedIndex] = bitstring
+    messagesSoFar[whichMessage - 1] = bitstring
 }
 
 async function retry() {
     showRetryButton.value = false
     connectSerial()
+    emit("clearList")
     await stopTask().catch(r => { console.log(r) })
     startBootstrap()
 }
-
-// - wait for a valid message (#1).
-// - When a message (#1) is received, stage message #1 and tell the person to put their tamagotchi in waiting mode
-// - Repeatedly send message (#1) and listen for a response.
-// - When a message (#2) is received, stage message #2 and tell the person to send a request from their tamagotchi
-// - Wait 3 seconds for the tamagotchi to finish its attempts and then begin listening again.
-// - When a message (#1) is received, send message #2. Listen for a response. 
-// - When a message (#3) is received, stage message #3. Wait for the tamagotchi to finish?
-// - Repeatedly send message #1 and listen for a response. 
-// - When a message (#2) is received, send message #3 and wait for a response. 
-// - When a message (#4) is received, stage message #4
-
 
 </script>
 
 <template>
 
     <AppButtonRetry v-if="showRetryButton || portNeedsToBeRequested" direction="column" @retry="retry"></AppButtonRetry>
-    <div v-else>
+    <div v-else class="prompt-container">
         <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
         <div v-if="nextMessage == 1">
-            Start an interaction on your tamagotchi
+            <p>Getting message 1...</p>
+            <p>Start an interaction on your tamagotchi</p>
         </div>
         <div v-if="nextMessage == 2">
-            Wait for interaction on your tamagotchi
+            <p>Getting message 2...</p>
+            <p>Wait for the same interaction on your tamagotchi</p>
         </div>
         <div v-if="nextMessage == 3">
-            Start the interaction on your tamagotchi
+            <p>Getting message 3...</p>
+            <p>Start the interaction on your tamagotchi</p>
         </div>
         <div v-if="nextMessage == 4">
-            Wait for interaction on your tamagotchi
+            <p>Getting message 4...</p>
+            <p>Wait for the interaction on your tamagotchi</p>
         </div>
+        <div v-if="nextMessage == 'idle'">
+        </div>
+        <button @click="retry">Start over</button>
     </div>
 </template>
 
@@ -139,5 +150,12 @@ async function retry() {
 
 h2 {
     text-align: center;
+}
+
+.prompt-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 </style>

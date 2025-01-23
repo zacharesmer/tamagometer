@@ -2,13 +2,14 @@
 import AppInputConversationName from './AppInputConversationName.vue';
 import RecordSnoop from './RecordSnoop.vue';
 
-import { ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import { toast } from 'vue3-toastify';
 
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { TamaMessage } from '@/model';
 import RecordBootstrap from './RecordBootstrap.vue';
+import { useRoute } from 'vue-router';
 
 const conversationName = ref("Recorded Conversation")
 const snoopComponent = useTemplateRef("snoop")
@@ -20,6 +21,16 @@ const stagedMessages = ref<{ bitstring: string, recordingID: number }[]>([
     { bitstring: "", recordingID: NaN },
     { bitstring: "", recordingID: NaN },
 ])
+
+onMounted(() => {
+    const route = useRoute()
+    const mode = route.query.recordingMode
+    if (mode == 'snoop' || mode == 'bootstrap') {
+        recordingMode.value = mode
+    } else {
+        recordingMode.value = 'snoop'
+    }
+})
 
 function stageMessage(stagedIndex: number, recordingID: number, bitstring: string) {
     stagedMessages.value[stagedIndex] = { bitstring, recordingID }
@@ -90,14 +101,13 @@ function saveConversation() {
 </script>
 
 <template>
-    <select v-model="recordingMode">
-        <option value="snoop">Two tamagotchis</option>
-        <option value="bootstrap">One tamagotchi</option>
-    </select>
+    <a href="?recordingMode=snoop">Two tamagotchis</a>
+    <a href="?recordingMode=bootstrap">One tamagotchi</a>
     <div class="recording-body-container">
         <RecordSnoop v-if="recordingMode == 'snoop'" @stage-message="stageMessage" @clear-list="() => { clearList() }"
             ref="snoop" />
-        <RecordBootstrap v-if="recordingMode == 'bootstrap'" @stage-message="stageMessage" />
+        <RecordBootstrap v-if="recordingMode == 'bootstrap'" @stage-message="stageMessage"
+            @clear-list="() => { clearList() }" />
         <div class="staged-messages-container">
             <AppInputConversationName :name="conversationName" @save-name="(newName) => { saveName(newName) }"
                 @save-new-conversation="saveConversation" class="title">
@@ -133,6 +143,13 @@ h2 {
     gap: 2rem 10rem;
     align-items: start;
     justify-content: space-around;
+}
+
+.recorder-selector-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .set-message-buttons-container {

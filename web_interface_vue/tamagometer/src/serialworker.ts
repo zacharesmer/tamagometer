@@ -276,7 +276,7 @@ async function startBootstrap(whichMessage: number, messagesSoFar: [string, stri
                 await bootstrapMessage4(messagesSoFar[0], messagesSoFar[2]).catch(r => reject(r))
                 break
             default:
-                reject("Invalid message number, must be 1, 2, 3, or 4")
+                reject("Invalid message number " + whichMessage + ", must be 1, 2, 3, or 4")
                 return
         }
         resolve()
@@ -303,7 +303,7 @@ async function bootstrapMessage1() {
 async function bootstrapMessage2(message1: string) {
     return new Promise<void>(async (resolve, reject) => {
         // - Repeatedly send message (#1) and listen for a response.
-        let received1 = await serialConnection.sendCommandUntilResponse(message1).catch(r => { reject("Error sending message 1") })
+        let received1 = await serialConnection.sendCommandUntilResponse(message1, 999).catch(r => { reject("Error sending message 1") })
         if (received1 == null) {
             console.error("Response 1 not received")
             // TODO: should this reject?
@@ -329,7 +329,7 @@ async function bootstrapMessage3(message2: string) {
         }
         // - When a message (#1) is received, send message #2, wait for a response
         // console.log(`Received message 1: ${received1}`);
-        let received2 = await serialConnection.sendCommandUntilResponse(message2).catch(r => { reject("Error sending message 1") })
+        let received2 = await serialConnection.sendCommandUntilResponse(message2, 3).catch(r => { reject("Error sending message 1") })
         if (received2 == null) {
             console.error("Response 2 not received")
             // TODO: should this reject?
@@ -346,7 +346,7 @@ async function bootstrapMessage3(message2: string) {
 async function bootstrapMessage4(message1: string, message3: string) {
     return new Promise<void>(async (resolve, reject) => {
         // - Repeatedly send message (#1) and listen for a response.
-        let received1 = await serialConnection.sendCommandUntilResponse(message1).catch(r => { reject("Error sending message 1") })
+        let received1 = await serialConnection.sendCommandUntilResponse(message1, 999).catch(r => { reject("Error sending message 1") })
         if (received1 == null) {
             console.error("Response 1 not received")
             // TODO: should this reject?
@@ -355,7 +355,7 @@ async function bootstrapMessage4(message1: string, message3: string) {
         }
         // - When a message (#2) is received, send message #3 and wait for a response. 
         // console.log(`Received message 2: ${received1}`);
-        let received2 = await serialConnection.sendCommandUntilResponse(message3).catch(r => { reject("Error sending message 1") })
+        let received2 = await serialConnection.sendCommandUntilResponse(message3, 3).catch(r => { reject("Error sending message 1") })
         if (received2 == null) {
             console.error("Response 2 not received")
             // TODO: should this reject?

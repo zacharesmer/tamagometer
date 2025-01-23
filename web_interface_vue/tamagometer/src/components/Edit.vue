@@ -13,13 +13,13 @@ import { dbConnection } from '@/database';
 import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serial';
 import { activeConversation as conversation } from '@/state';
 
-const route = useRoute()
 
 const showRetryButton = ref(false)
 
 const statusIndicator = useTemplateRef("statusIndicator")
 
 onMounted(async () => {
+    const route = useRoute()
     if (route.query.dbid) {
         const dbId = parseInt(route.query.dbid as string)
         const stored = await dbConnection.get(dbId)
