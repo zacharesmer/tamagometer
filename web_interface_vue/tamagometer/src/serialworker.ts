@@ -329,8 +329,9 @@ async function bootstrapMessage3(message2: string) {
         }
         // - When a message (#1) is received, send message #2, wait for a response
         // console.log(`Received message 1: ${received1}`);
-        let received2 = await serialConnection.sendCommandUntilResponse(message2, 3).catch(r => { reject("Error sending message 1") })
+        let received2 = await serialConnection.sendCommandUntilResponse(message2, 4).catch(r => { reject("Error sending message 2") })
         if (received2 == null) {
+            console.log("Sent", message2)
             console.error("Response 2 not received")
             // TODO: should this reject?
             resolve()

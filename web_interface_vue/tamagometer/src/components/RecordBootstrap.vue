@@ -25,6 +25,21 @@ onBeforeUnmount(() => {
     serialWorker.removeEventListener("message", bootstrapEventListener)
 })
 
+
+// Send messages to update the parent component. This is necessary because there 
+// will be other components that can be used instead to record in different ways.
+const emit = defineEmits<{
+    (e: 'stageMessage',
+        whichMessage: number, // which message this should be in the conversation
+        recordingID: number, // In this case,the index of the array the recording is stored in
+        bitstring: string // the bitstring for the message
+    ): void,
+    (e: 'clearList'
+    ): void
+}>()
+
+defineExpose({ retryFrom })
+
 function startBootstrap() {
     showRetryButton.value = false
     nextMessage.value = 1
@@ -49,9 +64,10 @@ async function bootstrapNext() {
             nextMessage.value++
             // wait for the tamagotchi to stop attempting to connect from last time
             console.log("Waiting for tamagotchi to finish sending")
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            console.log("next step starting now")
+            await new Promise(resolve => setTimeout(resolve, 3300))
+            console.log("next step starting now, getting message ", nextMessage.value)
             bootstrap(nextMessage.value, messagesSoFar).catch(r => {
+                // TODO check if the rejection was because a message wasn't received and show a different retry button 
                 showRetryButton.value = true
             })
             break
@@ -82,26 +98,17 @@ function bootstrapEventListener(e: MessageEvent) {
     }
 }
 
-// Send messages to update the parent component. This is necessary because there 
-// will be other components that can be used instead to record in different ways.
-const emit = defineEmits<{
-    (e: 'stageMessage',
-        stagedIndex: number, // which message this should be in the conversation
-        recordingID: number, // In this case,the index of the array the recording is stored in
-        bitstring: string // the bitstring for the message
-    ): void,
-    (e: 'clearList'
-    ): void
-}>()
-
-
 function stageMessage(whichMessage: number, bitstring: string) {
     if (whichMessage < 1 || whichMessage > 4) {
-        throw Error("Invalid message number," + whichMessage + ", can only stage a message at index 1, 2, 3, or 4")
+        throw Error("Invalid message number," + whichMessage + ", can only stage message 1, 2, 3, or 4")
     }
-    emit("stageMessage", whichMessage - 1, NaN, bitstring)
+    emit("stageMessage", whichMessage, NaN, bitstring)
     // Also update the local copy of messages so far
     messagesSoFar[whichMessage - 1] = bitstring
+}
+
+function retryFrom(whichMessage: number) {
+
 }
 
 async function retry() {

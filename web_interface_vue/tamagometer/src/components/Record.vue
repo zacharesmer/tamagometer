@@ -13,8 +13,10 @@ import { useRoute } from 'vue-router';
 
 const conversationName = ref("Recorded Conversation")
 const snoopComponent = useTemplateRef("snoop")
+const bootstrapComponent = useTemplateRef("bootstrap")
 const recordingMode = ref("")
 
+// messages are 1-indexed everywhere except when stored in this array
 const stagedMessages = ref<{ bitstring: string, recordingID: number }[]>([
     { bitstring: "", recordingID: NaN },
     { bitstring: "", recordingID: NaN },
@@ -32,15 +34,18 @@ onMounted(() => {
     }
 })
 
-function stageMessage(stagedIndex: number, recordingID: number, bitstring: string) {
-    stagedMessages.value[stagedIndex] = { bitstring, recordingID }
+function stageMessage(whichMessage: number, recordingID: number, bitstring: string) {
+    stagedMessages.value[whichMessage - 1] = { bitstring, recordingID }
 }
 
-function unstageMessage(stagedIndex: number) {
-    stagedMessages.value[stagedIndex] = { bitstring: "", recordingID: NaN }
+function unstageMessage(whichMessage: number) {
+    stagedMessages.value[whichMessage - 1] = { bitstring: "", recordingID: NaN }
     // tell the recording component to mark the message as unstaged too
     if (snoopComponent.value != null) {
-        snoopComponent.value.unstageMessage(stagedIndex)
+        snoopComponent.value.unstageMessage(whichMessage)
+    }
+    if (bootstrapComponent.value != null) {
+        bootstrapComponent.value.retryFrom(whichMessage)
     }
 }
 
@@ -107,7 +112,7 @@ function saveConversation() {
         <RecordSnoop v-if="recordingMode == 'snoop'" @stage-message="stageMessage" @clear-list="() => { clearList() }"
             ref="snoop" />
         <RecordBootstrap v-if="recordingMode == 'bootstrap'" @stage-message="stageMessage"
-            @clear-list="() => { clearList() }" />
+            @clear-list="() => { clearList() }" ref="bootstrap" />
         <div class="staged-messages-container">
             <AppInputConversationName :name="conversationName" @save-name="(newName) => { saveName(newName) }"
                 @save-new-conversation="saveConversation" class="title">
@@ -116,7 +121,7 @@ function saveConversation() {
                 :class="(index % 2 == 0) ? 'button-on-left' : 'button-on-right'">
                 <button class="message-label round-button"
                     :class="{ 'message-label-set': (!(stagedMessages[index].bitstring == '')) }"
-                    @click="() => { unstageMessage(index) }">{{ n }}</button>
+                    @click="() => { unstageMessage(n) }">{{ n }}</button>
                 <div :class="(index % 2 == 0) ? 'message from-tama1' : 'message from-tama2'">
                     {{ stagedMessages[index].bitstring }}
                 </div>

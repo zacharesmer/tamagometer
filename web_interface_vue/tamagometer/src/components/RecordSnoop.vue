@@ -20,7 +20,7 @@ const showRetryButton = ref(false)
 // will be other components that can be used instead to record in different ways.
 const emit = defineEmits<{
     (e: 'stageMessage',
-        stagedIndex: number, // which message this should be in the conversation
+        whichMessage: number, // which message this should be in the conversation
         recordingID: number, // In this case,the index of the array the recording is stored in
         bitstring: string // the bitstring for the message
     ): void,
@@ -30,19 +30,19 @@ const emit = defineEmits<{
 
 defineExpose({ unstageMessage })
 
-function stageMessage(recordingID: number, stagedIndex: number) {
-    if (stagedIndex < 0 || stagedIndex > 3) {
-        throw Error("Invalid index, can only stage a message at index 0, 1, 2, or 3")
+function stageMessage(recordingID: number, whichMessage: number) {
+    if (whichMessage < 1 || whichMessage > 4) {
+        throw Error("Invalid message" + whichMessage + ", can only stage message 1, 2, 3, or 4")
     }
-    stagedMessageIDs.value[stagedIndex] = recordingID
-    emit("stageMessage", stagedIndex, recordingID, snoopOutput.value[recordingID])
+    stagedMessageIDs.value[whichMessage - 1] = recordingID
+    emit("stageMessage", whichMessage, recordingID, snoopOutput.value[recordingID])
 }
 
-function unstageMessage(stagedIndex: number) {
-    if (stagedIndex < 0 || stagedIndex > 3) {
-        throw Error("Invalid index, can only stage a message at index 0, 1, 2, or 3")
+function unstageMessage(whichMessage: number) {
+    if (whichMessage < 1 || whichMessage > 4) {
+        throw Error("Invalid message" + whichMessage + ", can only unstage message 1, 2, 3, or 4")
     }
-    stagedMessageIDs.value[stagedIndex] = NaN
+    stagedMessageIDs.value[whichMessage - 1] = NaN
 }
 
 function clearList() {
@@ -60,10 +60,10 @@ onMounted(async () => {
     // snoopOutput.value.push("0000111000000001101111110010001000110001000110010000000000000010000001111000000100000000011001000010001000000000000000000000000000000000000000000000101001010100")
     // snoopOutput.value.push("0000111000001000110111100101101000110010100010001000100010001000100010001000100000000011000000000000000000000000000000000000000000000000000000000000000000101011")
     // snoopOutput.value.push("0000111000001001101111110010001000110001000110010000000000000010000001111000000100000011000000000000000000000000000000000000000000000000000000000000000011001111")
-    // stageMessage(0, 0)
-    // stageMessage(1, 1)
-    // stageMessage(2, 2)
-    // stageMessage(3, 3)
+    // stageMessage(1, 0)
+    // stageMessage(2, 1)
+    // stageMessage(3, 2)
+    // stageMessage(4, 3)
 })
 
 // TODO: this was OnBeforeRouteLeave, did that break anything
@@ -126,7 +126,8 @@ function snoopEventListener(e: MessageEvent) {
                                         <!-- n is 1-based, buttonIndex is 0 based -->
                                         <button v-for="(n, buttonIndex) in 4" class="round-button"
                                             :class="{ 'active-message-set-button': (messageIndex === stagedMessageIDs[buttonIndex]) }"
-                                            @click="() => { stageMessage(messageIndex, buttonIndex) }">{{ n }}</button>
+                                            @click="() => { stageMessage(messageIndex, n) }">{{ n
+                                            }}</button>
                                     </div>
                                 </td>
                                 <td>
