@@ -2,11 +2,9 @@ Check out the web app here: https://zacharesmer.github.io/tamagometer/
 
 # Hardware
 ## Flipper Zero
-There's a flipper app, so if you have a Flipper Zero, you don't need to build any hardware. 
+If you have a Flipper Zero, you can use that, just install the app and open it. 
 
-It is currently in ultra-pre-alpha/sympathetic-developer-eyes-only stage, but hopefully it will exit that soon. 
-
-It is also not yet in the app catalog, since it is hot off the presses and I haven't figured out how to do that yet. [Here's the repository](https://github.com/zacharesmer/tamagometer-companion-flipper); it's also in here as a submodule, so to clone it all at once use `git clone --recursive https://github.com/zacharesmer/tamagometer.git`
+Get it from the Flipper App Catalog (search "Tamagometer"), download a pre-built version from Github, or build it yourself. [Here's the repository](https://github.com/zacharesmer/tamagometer-companion-flipper). The source code is also in the `flipper` folder of this repo as a submodule, so if you want to clone it all at once use `git clone --recursive https://github.com/zacharesmer/tamagometer.git`
 
 ## Bring Your Own Board
 If you don't have a Flipper, you can make your own transmitter/receiver from a Raspberry Pi Pico. The firmware is written in MicroPython, so you'll need to prepare the Pico to run micropython programs. It might work on other boards that can run micropython, but I haven't tested any. 
@@ -28,7 +26,7 @@ I haven't tested with an ESP32 or any other boards but it should probably work a
 [This looks like the receiver I used](https://www.ebay.com/itm/172087478029), and [this looks like the transmitter](https://www.ebay.com/itm/294328064400). I didn't actually order either of those from those sellers, so I'm not recommending those in particular. There are also bundles on Amazon and AliExpress with receivers and transmitters, and Adafruit even sells a transceiver where both are built into one chip. The important things to check for:
 
 - They must deal with the 38kHz modulation in hardware. A plain IR LED or an analog sensor will not work with the firmware as it is written. It would not be very hard to make it work with a regular LED, I just didn't yet. Contributions are welcome if you make that work and want to share!
-- If you get something that only works on 5V, you'll need a level shifter since the pico is 3.3V
+- If you get something that only works on 5V, you'll need a level shifter since the pico GPIO puts out 3.3V
 
 ### Pins
 - Transmitter power: GPIO 2
@@ -76,7 +74,7 @@ This allows you to snoop/listen in on a conversation between two tamagotchis. Yo
 Recorded messages are saved locally on your computer using IndexedDB. If you clear your cookies and cache or site storage you will lose your saved messages! Please back them up by  using the export button to save them as a file so that you can add them back if this happens. Importing a file will add onto any existing saved messages; it won't overwrite them.
 
 # Goals/Roadmap
-- Understand the infrared messages that the tamagotchis send
+- Understand the infrared messages that the tamagotchis send to the point where you can create one from scratch that does whatever you want it to do.
 - Make a flipper app so the tamagotchis can directly interact with the flipper
 - Internationalization: Tamagotchis are Japanese so I'm guessing it might be useful if I could translate this page into Japanese (and once the architecture is there, there's not a lot of text so it should not be too hard to do other languages too)
 
