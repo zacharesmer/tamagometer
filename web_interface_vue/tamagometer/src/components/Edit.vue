@@ -10,7 +10,7 @@ import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { toast } from 'vue3-toastify'
 
 import { dbConnection } from '@/database';
-import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serial';
+import { serialWorker, haveConversation, stopTask, connectSerial } from '@/serialworkerinterface';
 import { activeConversation as conversation } from '@/state';
 
 

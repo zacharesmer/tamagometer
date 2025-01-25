@@ -4,7 +4,7 @@ import AppButtonRetry from './AppButtonRetry.vue';
 
 import { ref, useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
 
-import { serialWorker, stopTask, waitForReady, listenContinuously, connectSerial } from '@/serial'
+import { serialWorker, stopTask, waitForReady, listenContinuously, connectSerial } from '@/serialworkerinterface'
 import { portNeedsToBeRequested } from '@/state';
 
 // Store recorded messages as strings

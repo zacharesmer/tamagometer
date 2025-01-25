@@ -4,7 +4,7 @@ import AppButtonRetry from './AppButtonRetry.vue';
 
 import { ref, useTemplateRef, onMounted, onBeforeUnmount } from 'vue'
 
-import { serialWorker, stopTask, connectSerial, bootstrap, waitForReady } from '@/serial'
+import { serialWorker, stopTask, connectSerial, bootstrap, waitForReady } from '@/serialworkerinterface'
 import { portNeedsToBeRequested } from '@/state';
 
 const statusIndicator = useTemplateRef("statusIndicator")

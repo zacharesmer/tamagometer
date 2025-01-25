@@ -1,4 +1,4 @@
-import { type SerialConnection, getSerialConnection, windowHasPort } from "./serial"
+import { type SerialConnection, getSerialConnection, windowHasPort } from "./serialabstractionlayer"
 
 // workerReady acts as a lock to keep multiple tasks from happening at once. 
 // Use the boolean to check if it's held, and the promise to wait for it to be released.

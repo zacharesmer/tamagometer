@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import SettingsMenu from './components/SettingsMenu.vue';
-import { makeSerialWorker, connectToPort } from './serial';
+import { makeSerialWorker, connectToPort } from './serialworkerinterface';
 import AppButtonRequestSerial from './components/AppButtonRequestSerial.vue';
 import { portNeedsToBeRequested } from './state';
 

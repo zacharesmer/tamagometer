@@ -6,7 +6,7 @@ import AppButtonRetry from './AppButtonRetry.vue';
 import { onMounted, ref, useTemplateRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 
-import { connectSerial, haveConversation, serialWorker, stopTask } from '@/serial';
+import { connectSerial, haveConversation, serialWorker, stopTask } from '@/serialworkerinterface';
 import { portNeedsToBeRequested } from '@/state';
 
 const showRetryButton = ref(false)
