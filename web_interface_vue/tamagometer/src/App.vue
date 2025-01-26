@@ -131,6 +131,7 @@ nav {
 }
 
 .dropdown {
+    position: relative;
     z-index: 3;
 }
 
