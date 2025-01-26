@@ -27,7 +27,17 @@ onMounted(async () => {
         <div class="top-bar">
             <nav>
                 <RouterLink class="navlink first-link" to="/conversation/">Edit</RouterLink>
-                <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
+                <div class="dropdown">
+                    <RouterLink class="dropdown navlink middle-link" to="/record">Record</RouterLink>
+                    <ul class="dropdown-content">
+                        <li>
+                            <RouterLink class="navlink middle-link" to="/record/bootstrap">One Tamagotchi</RouterLink>
+                        </li>
+                        <li>
+                            <RouterLink class="navlink middle-link" to="/record/snoop">Two Tamagotchis</RouterLink>
+                        </li>
+                    </ul>
+                </div>
                 <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
                 <RouterLink class="navlink middle-link" to="/help">Help</RouterLink>
             </nav>
@@ -95,6 +105,7 @@ nav {
     width: 10rem;
     height: 4rem;
     line-height: 4rem;
+    display: block;
 
     background-color: var(--vanilla);
     border-style: solid;
@@ -117,11 +128,54 @@ nav {
     background-color: var(--pink);
     border-radius: 30%/70% 0%;
     /* border-radius: 0% 30% / 70%; */
-
 }
 
-.status-indicator {
-    align-self: center;
+.dropdown {
+    z-index: 3;
+}
+
+.dropdown-content {
+    transition: height .2s ease;
+    list-style: none;
+    /* display: none; */
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    text-wrap: nowrap;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+    /* display: block; */
+    height: 10rem;
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-content>li:nth-child(1) {
+    transform: translate(0px, -4rem);
+    transition: all .2s ease;
+    z-index: 2;
+    position: relative;
+}
+
+.dropdown:hover .dropdown-content>li:nth-child(1),
+.dropdown:focus-within .dropdown-content>li:nth-child(1) {
+    transform: translate(0, 0);
+}
+
+.dropdown-content>li:nth-child(2) {
+    transform: translate(0px, -8rem);
+    transition: all .2s ease;
+    z-index: 1;
+    position: relative;
+}
+
+.dropdown:hover .dropdown-content>li:nth-child(2),
+.dropdown:focus-within .dropdown-content>li:nth-child(2) {
+    transform: translate(0, 0);
 }
 
 /* For the settings disclosure menu */

@@ -2,7 +2,7 @@
 import AppInputConversationName from './AppInputConversationName.vue';
 import RecordSnoop from './RecordSnoop.vue';
 
-import { onMounted, ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef, watch } from 'vue'
 import { toast } from 'vue3-toastify';
 
 import { Conversation } from '@/conversation';
@@ -15,6 +15,7 @@ const conversationName = ref("Recorded Conversation")
 const snoopComponent = useTemplateRef("snoop")
 const bootstrapComponent = useTemplateRef("bootstrap")
 const recordingMode = ref("")
+const route = useRoute()
 
 // messages are 1-indexed everywhere except when stored in this array
 const stagedMessages = ref<{ bitstring: string, recordingID: number }[]>([
@@ -25,14 +26,24 @@ const stagedMessages = ref<{ bitstring: string, recordingID: number }[]>([
 ])
 
 onMounted(() => {
-    const route = useRoute()
-    const mode = route.query.recordingMode
+    const mode = route.params.mode
     if (mode == 'snoop' || mode == 'bootstrap') {
         recordingMode.value = mode
     } else {
         recordingMode.value = 'snoop'
     }
 })
+
+watch(
+    () => route.params.mode,
+    (newMode, oldMode) => {
+        if (newMode == 'snoop' || newMode == 'bootstrap') {
+            recordingMode.value = newMode
+        } else {
+            recordingMode.value = 'snoop'
+        }
+    }
+)
 
 function stageMessage(whichMessage: number, recordingID: number, bitstring: string) {
     stagedMessages.value[whichMessage - 1] = { bitstring, recordingID }
@@ -106,8 +117,6 @@ function saveConversation() {
 </script>
 
 <template>
-    <a href="?recordingMode=snoop">Two tamagotchis</a>
-    <a href="?recordingMode=bootstrap">One tamagotchi</a>
     <div class="recording-body-container">
         <RecordSnoop v-if="recordingMode == 'snoop'" @stage-message="stageMessage" @clear-list="() => { clearList() }"
             ref="snoop" />

@@ -14,7 +14,7 @@ import Help from './components/Help.vue'
 const routes = [
     // { path: '/', component: TBD},
     { path: '/conversation', component: Edit },
-    { path: '/record', component: Record },
+    { path: '/record/:mode?', component: Record },
     { path: '/saved', component: Saved },
     { path: '/help', component: Help },
     { path: '/', component: Help }
