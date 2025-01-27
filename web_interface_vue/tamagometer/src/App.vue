@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import SettingsMenu from './components/SettingsMenu.vue';
 import { makeSerialWorker, connectToPort } from './serialworkerinterface';
 import AppButtonRequestSerial from './components/AppButtonRequestSerial.vue';
 import { portNeedsToBeRequested } from './state';
+import { useRoute } from 'vue-router';
 
 const webSerialSupported = ref("serial" in navigator)
+const route = useRoute()
+const backToTop = useTemplateRef("backToTop")
 
 onMounted(async () => {
     makeSerialWorker()
@@ -13,9 +16,16 @@ onMounted(async () => {
     connectToPort(false).then(success => portNeedsToBeRequested.value = !success)
 })
 
+watch(
+    () => route.path,
+    () => backToTop.value?.focus()
+)
+
 </script>
 
 <template>
+    <span ref="backToTop" tabindex="-1" />
+    <a href="#main" ref="skipLink" class="skip-link">Skip to main content</a>
     <div id="body-container">
         <div v-if="!webSerialSupported" class="web-serial-compatibility-warning">
             <p>Web serial API is not supported in your browser.</p>
@@ -54,7 +64,7 @@ onMounted(async () => {
                 <SettingsMenu id="settings-panel"></SettingsMenu>
             </details>
         </div>
-        <main>
+        <main id="main">
             <AppButtonRequestSerial></AppButtonRequestSerial>
             <RouterView />
         </main>
@@ -69,6 +79,23 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.skip-link {
+    white-space: nowrap;
+    margin: 1em auto;
+    top: 0;
+    position: fixed;
+    left: 50%;
+    margin-left: -72px;
+    opacity: 0;
+}
+
+.skip-link:focus {
+    opacity: 1;
+    background-color: white;
+    padding: 0.5em;
+    border: 1px solid black;
+}
+
 #body-container {
     display: flex;
     flex-direction: column;
