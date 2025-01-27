@@ -146,7 +146,8 @@ nav {
     text-align: center;
 }
 
-.navlink:hover {
+.navlink:hover,
+.navlink:focus {
     border-radius: 30%/70% 0%;
     transition: .1s;
 }
