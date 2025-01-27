@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { TamaLetter } from '@/model';
 import { computed } from 'vue';
-import BitChunk from './BitChunk.vue';
+import EditConversationBitChunk from './EditConversationBitChunk.vue';
 
 const props = defineProps({
     model: { type: TamaLetter, required: true },
@@ -24,7 +24,7 @@ const symbol = computed({
 
 <template>
     <div class="letter-container">
-        <BitChunk :known="true" :model="model"></BitChunk>
+        <EditConversationBitChunk :known="true" :model="model"></EditConversationBitChunk>
         <!-- <div class="symbol">{{ model.getSymbol() }}</div> -->
         <select v-model="symbol" class="symbol">
             <option v-for="[key, value] in model.lettersSymbols" :value="key">{{ value }}
@@ -45,5 +45,4 @@ const symbol = computed({
 .symbol {
     font-size: xx-large;
 }
-
 </style>

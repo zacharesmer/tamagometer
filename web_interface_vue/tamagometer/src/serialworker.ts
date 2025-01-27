@@ -1,4 +1,4 @@
-import { type SerialConnection, getSerialConnection, windowHasPort } from "./serial"
+import { type SerialConnection, getSerialConnection, windowHasPort } from "./serialabstractionlayer"
 
 // workerReady acts as a lock to keep multiple tasks from happening at once. 
 // Use the boolean to check if it's held, and the promise to wait for it to be released.
@@ -53,8 +53,8 @@ onmessage = (async (e: MessageEvent) => {
             makePromiseWithLock(listenContinuously, message.promiseID)
             break
 
-        case "startBootstrap":
-            makePromiseWithLock(startBootstrap, message.promiseID)
+        case "startBootstrapMessage":
+            makePromiseWithLock(async () => { await startBootstrap(message.whichMessage, message.messagesSoFar) }, message.promiseID)
             break
 
         case "connectSerial":
@@ -94,7 +94,7 @@ onmessage = (async (e: MessageEvent) => {
                     })
             } else {
                 postMessage({
-                    kind: "result", result: "reject", error: "Could not run command", promiseID: message.promiseID
+                    kind: "result", result: "reject", error: "Could not run command " + message.kind, promiseID: message.promiseID
                 })
             }
             break
@@ -260,7 +260,112 @@ async function listenContinuously() {
     })
 }
 
-// TODO
-async function startBootstrap() {
-    return Promise.resolve()
+async function startBootstrap(whichMessage: number, messagesSoFar: [string, string, string, string]) {
+    return new Promise<void>(async (resolve, reject) => {
+        switch (whichMessage) {
+            case 1:
+                await bootstrapMessage1().catch(r => reject(r))
+                break
+            case 2:
+                await bootstrapMessage2(messagesSoFar[0]).catch(r => reject(r))
+                break
+            case 3:
+                await bootstrapMessage3(messagesSoFar[1]).catch(r => reject(r))
+                break
+            case 4:
+                await bootstrapMessage4(messagesSoFar[0], messagesSoFar[2]).catch(r => reject(r))
+                break
+            default:
+                reject("Invalid message number " + whichMessage + ", must be 1, 2, 3, or 4")
+                return
+        }
+        resolve()
+    })
+}
+
+async function bootstrapMessage1() {
+    return new Promise<void>(async (resolve, reject) => {
+        // - wait for a valid message (#1).
+        let received1 = await serialConnection.readOneCommandCancellable().catch(r => { reject("Error receiving message 1") })
+        if (received1 == null) {
+            console.log("Cancelled, message 1 not received")
+            // TODO should this reject?
+            resolve()
+            return
+        }
+        // - When a message (#1) is received, send message #1 to be staged
+        console.log(`Received message 1: ${received1}`);
+        postMessage({ kind: "bootstrapResponse", bitstring: received1, whichMessage: 1 })
+        resolve()
+    })
+}
+
+async function bootstrapMessage2(message1: string) {
+    return new Promise<void>(async (resolve, reject) => {
+        // - Repeatedly send message (#1) and listen for a response.
+        let received1 = await serialConnection.sendCommandUntilResponse(message1, 999).catch(r => { reject("Error sending message 1") })
+        if (received1 == null) {
+            console.error("Response 1 not received")
+            // TODO: should this reject?
+            resolve()
+            return
+        }
+        // - When a message (#2) is received, stage message #2
+        console.log(`Received message 2: ${received1}`);
+        postMessage({ kind: "bootstrapResponse", bitstring: received1, whichMessage: 2 })
+        resolve()
+    })
+}
+
+async function bootstrapMessage3(message2: string) {
+    return new Promise<void>(async (resolve, reject) => {
+        // - wait for a valid message (#1).
+        let received1 = await serialConnection.readOneCommandCancellable().catch(r => { reject("Error receiving message 1") })
+        if (received1 == null) {
+            console.log("Cancelled, message 1 not received")
+            // TODO should this reject?
+            resolve()
+            return
+        }
+        // - When a message (#1) is received, send message #2, wait for a response
+        // console.log(`Received message 1: ${received1}`);
+        let received2 = await serialConnection.sendCommandUntilResponse(message2, 4).catch(r => { reject("Error sending message 2") })
+        if (received2 == null) {
+            console.log("Sent", message2)
+            console.error("Response 2 not received")
+            // TODO: should this reject?
+            resolve()
+            return
+        }
+        // - When a message (#3) is received, stage message #3.
+        console.log(`Received message 3: ${received1}`);
+        postMessage({ kind: "bootstrapResponse", bitstring: received2, whichMessage: 3 })
+        resolve()
+    })
+}
+
+async function bootstrapMessage4(message1: string, message3: string) {
+    return new Promise<void>(async (resolve, reject) => {
+        // - Repeatedly send message (#1) and listen for a response.
+        let received1 = await serialConnection.sendCommandUntilResponse(message1, 999).catch(r => { reject("Error sending message 1") })
+        if (received1 == null) {
+            console.error("Response 1 not received")
+            // TODO: should this reject?
+            resolve()
+            return
+        }
+        // - When a message (#2) is received, send message #3 and wait for a response. 
+        // console.log(`Received message 2: ${received1}`);
+        let received2 = await serialConnection.sendCommandUntilResponse(message3, 3).catch(r => { reject("Error sending message 1") })
+        if (received2 == null) {
+            console.error("Response 2 not received")
+            // TODO: should this reject?
+            resolve()
+            return
+        }
+        // - When a message (#4) is received, stage message #4
+        console.log(`Received message 4: ${received2}`);
+        postMessage({ kind: "bootstrapResponse", bitstring: received2, whichMessage: 4 })
+        resolve()
+    })
 }

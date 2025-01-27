@@ -118,3 +118,9 @@ th {
 .changed {
     border-style: dashed;
 }
+
+:focus-visible {
+    outline-width: medium;
+    outline-style: dashed;
+    outline-color: var(--dark-blue);
+}

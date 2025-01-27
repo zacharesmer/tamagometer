@@ -6,17 +6,15 @@ import { createWebHistory, createRouter } from 'vue-router'
 import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 
-import Conversation from './components/Conversation.vue'
-import Settings from './components/Settings.vue'
-import Snoop from './components/Snoop.vue'
+import Edit from './components/Edit.vue'
+import Record from './components/Record.vue'
 import Saved from './components/Saved.vue'
 import Help from './components/Help.vue'
 
 const routes = [
     // { path: '/', component: TBD},
-    { path: '/conversation', component: Conversation },
-    { path: '/settings', component: Settings },
-    { path: '/record', component: Snoop },
+    { path: '/conversation', component: Edit },
+    { path: '/record/:mode?', component: Record },
     { path: '/saved', component: Saved },
     { path: '/help', component: Help },
     { path: '/', component: Help }

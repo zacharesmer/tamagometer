@@ -1,7 +1,9 @@
 <script lang="ts" setup>
-import { TamaAppearance } from '@/model';
 import { computed } from 'vue';
-import BitChunk from './BitChunk.vue';
+
+import EditConversationBitChunk from './EditConversationBitChunk.vue';
+
+import { TamaAppearance } from '@/model';
 
 const props = defineProps({
     model: { type: TamaAppearance, required: true },
@@ -29,7 +31,7 @@ const imageSource = computed(() => {
 <template>
     <div :class="['chunk-container', 'appearance-container', model.differs() ? 'changed' : '']">
         <label>Character</label>
-        <BitChunk :known="true" :model="model"></BitChunk>
+        <EditConversationBitChunk :known="true" :model="model"></EditConversationBitChunk>
         <img :src="imageSource">
         <select v-model="character" class="symbol" aria-label="Character selector">
             <option v-for="[key, value] in model.characterNames" :value="key">{{ value }}

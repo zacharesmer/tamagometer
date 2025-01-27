@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
 import { computed } from 'vue'
-import Bit from './Bit.vue';
+import EditConversationBit from './EditConversationBit.vue';
 import { pageSettings } from '@/state';
 
 const props = defineProps({
@@ -26,18 +26,10 @@ const showBits = computed(() => {
     <div class="chunk-container checksum-container">
         <label>Checksum</label>
         <div v-if="showBits">
-            <bit v-for="(item, index) in bitList" :value="parseInt(item)" :changed="false"></bit>
+            <EditConversationBit v-for="(item, index) in bitList" :value="parseInt(item)" :changed="false">
+            </EditConversationBit>
         </div>
         <div>{{ parseInt(bits, 2) }}</div>
     </div>
 </template>
 
-<style>
-/* reuses some style from BitChunk.vue */
-.checksum-container {
-    /* display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: solid; */
-}
-</style>

@@ -2,7 +2,7 @@
 import { StoredConversation } from '@/conversation';
 import { dbConnection } from '@/database';
 import { ref } from 'vue';
-import ImportExport from './ImportExport.vue';
+import SavedImportExport from './SavedImportExport.vue';
 import SavedConversationList from './SavedConversationList.vue';
 
 const conversations = ref<StoredConversation[]>([])
@@ -20,7 +20,7 @@ async function refreshDb() {
 <template>
     <div class="saved-import-container">
         <SavedConversationList :conversations="conversations" @refresh-db="refreshDb"></SavedConversationList>
-        <ImportExport @refresh-db="refreshDb"></ImportExport>
+        <SavedImportExport @refresh-db="refreshDb"></SavedImportExport>
     </div>
 </template>
 
