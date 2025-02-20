@@ -22,7 +22,7 @@ npm run dev
 To add a selector to a section of bits:
 - extend the class TamaBits in model.ts
 - edit the constructor and init methods of TamaMessage in model.ts. You'll be replacing one or more "UnknownBits" objects.
-- create a vue component, and then add it to BitstringInput.vue. `Letter.vue` is a good example of a component if you want a starting place.
+- create a vue component, and then add it to EditConversationMessage.vue. `EditConversationLetter.vue` is a good example of a component if you want a starting place.
 
 # Hardware/serial Specification/API
 ## IMPORTANT NOTE: THIS WILL PROBABLY CHANGE SOON

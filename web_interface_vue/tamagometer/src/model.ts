@@ -75,7 +75,7 @@ class TamaMessage {
 
     chunks: TamaChunk[]
     constructor(bitstring: string | null) {
-        // To add a new section, also update update() and BitstringInput.vue
+        // To add a new section, also update update() and EditConversationMessage.vue
         this.hardcodedThing = new UnknownBits(null);
         this.unknown1 = new UnknownBits(null);
         this.deviceID = new TamaID(null);

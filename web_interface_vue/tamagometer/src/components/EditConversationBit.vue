@@ -14,7 +14,7 @@ const props = defineProps({
     </button>
 </template>
 
-<style>
+<style scoped>
 .bit {
     height: 2rem;
     width: 2rem;

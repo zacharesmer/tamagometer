@@ -1,12 +1,14 @@
 <script setup lang="ts">
-// import BitstringInput from './components/BitstringInput.vue';
-import { onMounted, ref } from 'vue';
-import Settings from './components/Settings.vue';
-import { makeSerialWorker, connectToPort } from './serial';
-import RequestSerialButton from './components/RequestSerialButton.vue';
+import { onMounted, ref, useTemplateRef, watch } from 'vue';
+import SettingsMenu from './components/SettingsMenu.vue';
+import { makeSerialWorker, connectToPort } from './serialworkerinterface';
+import AppButtonRequestSerial from './components/AppButtonRequestSerial.vue';
 import { portNeedsToBeRequested } from './state';
+import { useRoute } from 'vue-router';
 
 const webSerialSupported = ref("serial" in navigator)
+const route = useRoute()
+const backToTop = useTemplateRef("backToTop")
 
 onMounted(async () => {
     makeSerialWorker()
@@ -14,9 +16,16 @@ onMounted(async () => {
     connectToPort(false).then(success => portNeedsToBeRequested.value = !success)
 })
 
+watch(
+    () => route.path,
+    () => backToTop.value?.focus()
+)
+
 </script>
 
 <template>
+    <span ref="backToTop" tabindex="-1" />
+    <a href="#main" ref="skipLink" class="skip-link">Skip to main content</a>
     <div id="body-container">
         <div v-if="!webSerialSupported" class="web-serial-compatibility-warning">
             <p>Web serial API is not supported in your browser.</p>
@@ -28,7 +37,17 @@ onMounted(async () => {
         <div class="top-bar">
             <nav>
                 <RouterLink class="navlink first-link" to="/conversation/">Edit</RouterLink>
-                <RouterLink class="navlink middle-link" to="/record">Record</RouterLink>
+                <div class="dropdown">
+                    <RouterLink class="dropdown navlink middle-link" to="/record">Record</RouterLink>
+                    <ul class="dropdown-content">
+                        <li>
+                            <RouterLink class="navlink middle-link" to="/record/bootstrap">One Tamagotchi</RouterLink>
+                        </li>
+                        <li>
+                            <RouterLink class="navlink middle-link" to="/record/snoop">Two Tamagotchis</RouterLink>
+                        </li>
+                    </ul>
+                </div>
                 <RouterLink class="navlink middle-link" to="/saved">View Saved</RouterLink>
                 <RouterLink class="navlink middle-link" to="/help">Help</RouterLink>
             </nav>
@@ -42,11 +61,11 @@ onMounted(async () => {
                             d="M34.3622 30.7155C37.5776 28.8591 41.5391 28.8591 44.7545 30.7155C47.9699 32.572 49.9506 36.0027 49.9506 39.7155C49.9506 43.4284 47.9699 46.8591 44.7545 48.7155C41.5391 50.572 37.5776 50.572 34.3622 48.7155C31.1468 46.8591 29.166 43.4284 29.166 39.7155C29.166 36.0027 31.1468 32.572 34.3622 30.7155Z" />
                     </svg>
                 </summary>
-                <Settings id="settings-panel"></Settings>
+                <SettingsMenu id="settings-panel"></SettingsMenu>
             </details>
         </div>
-        <main>
-            <RequestSerialButton></RequestSerialButton>
+        <main id="main">
+            <AppButtonRequestSerial></AppButtonRequestSerial>
             <RouterView />
         </main>
         <footer>
@@ -60,6 +79,23 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.skip-link {
+    white-space: nowrap;
+    margin: 1em auto;
+    top: 0;
+    position: fixed;
+    left: 50%;
+    margin-left: -72px;
+    opacity: 0;
+}
+
+.skip-link:focus {
+    opacity: 1;
+    background-color: white;
+    padding: 0.5em;
+    border: 1px solid black;
+}
+
 #body-container {
     display: flex;
     flex-direction: column;
@@ -96,6 +132,7 @@ nav {
     width: 10rem;
     height: 4rem;
     line-height: 4rem;
+    display: block;
 
     background-color: var(--vanilla);
     border-style: solid;
@@ -109,7 +146,8 @@ nav {
     text-align: center;
 }
 
-.navlink:hover {
+.navlink:hover,
+.navlink:focus {
     border-radius: 30%/70% 0%;
     transition: .1s;
 }
@@ -118,11 +156,55 @@ nav {
     background-color: var(--pink);
     border-radius: 30%/70% 0%;
     /* border-radius: 0% 30% / 70%; */
-
 }
 
-.status-indicator {
-    align-self: center;
+.dropdown {
+    position: relative;
+    z-index: 3;
+}
+
+.dropdown-content {
+    transition: height .2s ease;
+    list-style: none;
+    /* display: none; */
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    text-wrap: nowrap;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+    /* display: block; */
+    height: 10rem;
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-content>li:nth-child(1) {
+    transform: translate(0px, -4rem);
+    transition: all .2s ease;
+    z-index: 2;
+    position: relative;
+}
+
+.dropdown:hover .dropdown-content>li:nth-child(1),
+.dropdown:focus-within .dropdown-content>li:nth-child(1) {
+    transform: translate(0, 0);
+}
+
+.dropdown-content>li:nth-child(2) {
+    transform: translate(0px, -8rem);
+    transition: all .2s ease;
+    z-index: 1;
+    position: relative;
+}
+
+.dropdown:hover .dropdown-content>li:nth-child(2),
+.dropdown:focus-within .dropdown-content>li:nth-child(2) {
+    transform: translate(0, 0);
 }
 
 /* For the settings disclosure menu */

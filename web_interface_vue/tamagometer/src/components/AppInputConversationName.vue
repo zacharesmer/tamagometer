@@ -19,6 +19,8 @@ let newName = ref<string>(props.name ? props.name : '')
 // this will hold the name any time someone starts editing so it can be reverted
 let previousName = props.name ? props.name : ''
 
+let beenAMoment = false // if you click the enter key, this is to stop it immediately exiting because of that same keypress
+
 // Some of this is cursed because I'm doing a lot to emulate the normal 
 // regular behavior of form/event based design
 watch(props, () => {
@@ -31,6 +33,10 @@ watch(props, () => {
 const nameInputField = useTemplateRef("name-input-field")
 
 function startEditingName() {
+    // Ignore the enter key for a moment in case it was pressed to start editing. Otherwise it will
+    // immediately close the name input 
+    beenAMoment = false
+    setTimeout(() => { beenAMoment = true }, 500)
     previousName = newName.value
     editingName.value = true
     // wait for the text input to render then focus on it
@@ -65,7 +71,8 @@ function handleKeyUp(e: KeyboardEvent) {
         cancelEditingName()
         editingName.value = false;
     } else if (e.key === "Enter") {
-        saveName()
+        if (beenAMoment == true)
+            saveName()
     }
 }
 </script>
