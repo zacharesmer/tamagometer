@@ -41,6 +41,11 @@ button {
     cursor: pointer;
 }
 
+button:hover {
+    border-radius: 1.5rem;
+    transition: .1s;
+}
+
 .round-button-icon>path {
     stroke: var(--dark-blue);
     stroke-linecap: round;

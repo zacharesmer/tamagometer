@@ -137,8 +137,9 @@ nav {
     background-color: var(--vanilla);
     border-style: solid;
     border-color: var(--dark-blue);
-    border-width: thin;
-    border-radius: 0% 30% / 70%;
+    /* match default button border thickness */
+    border-width: 2px;
+    border-radius: 1rem;
 
     color: inherit;
     text-decoration: none;
@@ -148,14 +149,12 @@ nav {
 
 .navlink:hover,
 .navlink:focus {
-    border-radius: 30%/70% 0%;
+    border-radius: 1.5rem;
     transition: .1s;
 }
 
 .router-link-active {
     background-color: var(--pink);
-    border-radius: 30%/70% 0%;
-    /* border-radius: 0% 30% / 70%; */
 }
 
 .dropdown {
