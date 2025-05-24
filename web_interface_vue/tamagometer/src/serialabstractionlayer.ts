@@ -1,6 +1,7 @@
 export { getSerialConnection, windowHasPort }
 export type { SerialConnection }
 import { matchCommandString, matchTimedOutString } from "./matchers"
+import { serial as polyfill } from 'web-serial-polyfill'
 
 
 // An object to manage the connection to a serial device
@@ -216,7 +217,11 @@ async function getSerialConnection(port: SerialPort) {
 // This is the case if a request for a device/port has previously been granted and that device is connected.
 async function windowHasPort() {
     // Check if serial API is even available
-    if ("serial" in navigator) {
+    if ("serial" in navigator || "usb" in navigator) {
+        if (!("serial" in navigator)) {
+            let serial = polyfill
+            console.log("using polyfill")
+        }
         let ports = await navigator.serial.getPorts()
         // console.log(ports)
         return !(ports.length == 0)

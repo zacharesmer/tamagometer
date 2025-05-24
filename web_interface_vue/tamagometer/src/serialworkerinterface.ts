@@ -1,5 +1,6 @@
 export { serialWorker, makeSerialWorker, connectSerial, listenContinuously, haveConversation, stopTask, waitForReady, connectToPort, bootstrap }
 import { windowHasPort } from "./serialabstractionlayer"
+import { serial as polyfill } from 'web-serial-polyfill'
 
 let serialWorker: Worker
 let promiseRegistry: PromiseRegistry
@@ -8,7 +9,11 @@ let promiseRegistry: PromiseRegistry
 // whether or not to show the button in the UI to request a port
 async function connectToPort(requestPort: boolean): Promise<boolean> {
     let success = false
-    if ("serial" in navigator) {
+    if ("serial" in navigator || "usb" in navigator) {
+        if (!("serial" in navigator)) {
+            let serial = polyfill
+            console.log("using polyfill")
+        }
         if (requestPort) {
             await navigator.serial.requestPort().catch(r => { console.error(r); success = false })
         }

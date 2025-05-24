@@ -10,3 +10,5 @@ captures
 flipper/env
 
 jupyter
+
+node_modules
