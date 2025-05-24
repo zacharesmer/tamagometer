@@ -28,7 +28,7 @@ watch(
     <span ref="backToTop" tabindex="-1" />
     <a href="#main" ref="skipLink" class="skip-link">Skip to main content</a>
     <div id="body-container">
-        <div v-if="!webSerialSupported && !webUSBSupported" class="web-serial-compatibility-warning">
+        <div v-if="!webSerialSupported" class="web-serial-compatibility-warning">
             <p>Web serial API is not supported in your browser.</p>
             <p>You will not be able to connect to a device to send or receive infrared signals.
             </p>
