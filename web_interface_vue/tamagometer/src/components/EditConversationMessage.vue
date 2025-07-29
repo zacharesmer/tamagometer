@@ -6,6 +6,7 @@ import EditConversationNameBits from './EditConversationNameBits.vue'
 import EditConversationChecksumBits from './EditConversationChecksumBits.vue';
 import EditConversationAppearance from './EditConversationAppearance.vue';
 import EditConversationDeviceID from './EditConversationDeviceID.vue';
+import EditConversationGiftItem from './EditConversationGiftItem.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true },
@@ -43,7 +44,7 @@ let bitstring = computed({
       <EditConversationBitChunk :model="message.unknown4"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown5"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown6"></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown7"></EditConversationBitChunk>
+      <EditConversationGiftItem :model="message.giftitem"></EditConversationGiftItem>
       <EditConversationBitChunk :model="message.unknown8"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown9"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown10"></EditConversationBitChunk>

@@ -1,4 +1,4 @@
-export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID }
+export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -65,7 +65,7 @@ class TamaMessage {
     unknown4: UnknownBits
     unknown5: UnknownBits
     unknown6: UnknownBits
-    unknown7: UnknownBits
+    giftitem: TamaGiftItem
     unknown8: UnknownBits
     unknown9: UnknownBits
     unknown10: UnknownBits
@@ -85,7 +85,7 @@ class TamaMessage {
         this.unknown4 = new UnknownBits(null)
         this.unknown5 = new UnknownBits(null)
         this.unknown6 = new UnknownBits(null)
-        this.unknown7 = new UnknownBits(null)
+        this.giftitem = new TamaGiftItem(null)
         this.unknown8 = new UnknownBits(null)
         this.unknown9 = new UnknownBits(null)
         this.unknown10 = new UnknownBits(null)
@@ -101,7 +101,7 @@ class TamaMessage {
             this.unknown4,
             this.unknown5,
             this.unknown6,
-            this.unknown7,
+            this.giftitem,
             this.unknown8,
             this.unknown9,
             this.unknown10,
@@ -129,12 +129,11 @@ class TamaMessage {
         this.unknown4.update(bitstring.slice(88, 96), init)
         this.unknown5.update(bitstring.slice(96, 104), init)
         this.unknown6.update(bitstring.slice(104, 112), init)
-        this.unknown7.update(bitstring.slice(112, 120), init)
+        this.giftitem.update(bitstring.slice(112, 120), init)
         this.unknown8.update(bitstring.slice(120, 128), init)
         this.unknown9.update(bitstring.slice(128, 136), init)
         this.unknown10.update(bitstring.slice(136, 144), init)
         this.unknown11.update(bitstring.slice(144, 152), init)
-
         this.initialized = true
     }
 
@@ -380,6 +379,209 @@ class TamaAppearance extends TamaBits {
         // this is the character who shows up as the fallback if an unknown code 
         // is received
         return lookup ? lookup : "Nazotchi"
+    }
+}
+
+class TamaGiftItem extends TamaBits {
+    gift_items = new Map<number, string>([
+        [0, "Scone"],
+        [1, "Sushi"],
+        [2, "Bread	"],
+        [3, "Cereal"],
+        [4, "Omelet"],
+        [5, "Milk"],
+        [6, "Hamburger"],
+        [7, "BBQ"],
+        [8, "Sandwich"],
+        [9, "Beef Bowl"],
+        [10, "Cheese"],
+        [11, "Pizza"],
+        [12, "Steak"],
+        [13, "Taco"],
+        [14, "Sausage on stick"],
+        [15, "Hot Dog"],
+        [16, "Pasta"],
+        [17, "Corn"],
+        [18, "Turkey"],
+        [19, "Noodle"],
+        [20, "Fried Chicken"],
+        [21, "Waffle"],
+        [22, "Choco Bar"],
+        [23, "Escargot"],
+        [24, "Octopus Sausage"],
+        [25, "Chikuwa"],
+        [26, "Rice Ball"],
+        [27, "Curry"],
+        [28, "Kobu Maki"],
+        [29, "Umeboshi"],
+        [30, "Natto"],
+        [31, "Fried Shrimp"],
+        [32, "Takoyaki"],
+        [33, "Oyster"],
+        [34, "Naruto"],
+        [35, "Pigs Feet"],
+        [36, "Cone"],
+        [37, "Pudding"],
+        [38, "Cake"],
+        [39, "Apple"],
+        [40, "Sundae"],
+        [41, "Banana"],
+        [42, "Fries"],
+        [43, "Roll Cake"],
+        [44, "Cupcake"],
+        [45, "Fruit Juice"],
+        [46, "Ice Cream"],
+        [47, "Cheese Cake"],
+        [48, "Apple Pie"],
+        [49, "Energy Drink"],
+        [50, "Corn Dog"],
+        [51, "Donut"],
+        [52, "Soda"],
+        [53, "Popcorn"],
+        [54, "Pear"],
+        [55, "Pineapple"],
+        [56, "Melon"],
+        [57, "Grapes"],
+        [58, "Chocolate heart"],
+        [59, "Cookie"],
+        [60, "Whole Cake"],
+        [61, "Yogurt"],
+        [62, "Lollipop"],
+        [63, "Candy"],
+        [64, "Crepe Suzette"],
+        [65, "Cherry"],
+        [66, "Biscuit"],
+        [67, "Marron Cake"],
+        [68, "Cream Puff"],
+        [69, "Gum"],
+        [70, "Dango"],
+        [71, "Shaved Ice"],
+        [72, "Sweet Potato"],
+        [73, "Mochi"],
+        [74, "Peanuts"],
+        [75, "Toast"],
+        [76, "Crackers"],
+        [77, "Water"],
+        [78, "Ball"],
+        [79, "Pencil"],
+        [80, "Wig"],
+        [81, "Sunglasses"],
+        [82, "RC Car 1"],
+        [83, "Pen"],
+        [84, "Weights"],
+        [85, "RC Car 2 duck"],
+        [86, "RC Car 3"],
+        [87, "Bow"],
+        [88, "Darts"],
+        [89, "Bldg Block"],
+        [90, "Cap"],
+        [91, "Bow Tie"],
+        [92, "Wings"],
+        [93, "Hair Gel"],
+        [94, "Clock"],
+        [95, "Chest"],
+        [96, "Phonograph"],
+        [97, "Fishing Pole"],
+        [98, "Mirror"],
+        [99, "Make Up"],
+        [100, "Boom Box"],
+        [101, "Music Disc"],
+        [102, "Shirt"],
+        [103, "Shoes"],
+        [104, "Ticket 1"],
+        [105, "Ticket 2"],
+        [106, "Ticket 3"],
+        [107, "Ticket 4"],
+        [108, "Ticket 5"],
+        [109, "Doll 1"],
+        [110, "Umbrella"],
+        [111, "Lamp"],
+        [112, "Roller Blades"],
+        [113, "Action Figure"],
+        [114, "Stuffed Tama 1"],
+        [115, "Stuffed Tama 2"],
+        [116, "Trumpet"],
+        [117, "Drum"],
+        [118, "Throne"],
+        [119, "Music"],
+        [120, "Plant"],
+        [121, "Shovel"],
+        [122, "TV"],
+        [123, "Honey"],
+        [124, "Royal Costume"],
+        [125, "! !"],
+        [126, "Balloon"],
+        [127, "Rope"],
+        [128, "Doll 2"],
+        [129, "Tama Drink"],
+        [130, "Castle"],
+        [131, "Shaver"],
+        [132, "Cone"],
+        [133, "Flower"],
+        [134, "Poop"],
+        [135, "Jack in the box"],
+        [136, "Cake"],
+        [137, "Heart"],
+        [138, "Snake"],
+        [139, "Blank/nothing"],
+        [140, "Ghost thing"],
+        [141, "Sickness"],
+        [142, "Passport"],
+        [143, "Key"],
+        [144, "Key 2"],
+        [145, "Map"],
+        [146, "Book "],
+        [147, "Laptop"],
+        [148, "Medal"],
+        [149, "Cell phone"],
+        [150, "Bicycle"],
+        [151, "Skis souvenir"],
+        [152, "Island souvenir"],
+        [153, "Surfboard souvenir"],
+        [154, "Panda souvenir"],
+        [155, "Maracas souvenir"],
+        [156, "Diamond Ring?"],
+        [157, "Robe/Cape"],
+        [158, "Crown"],
+        [159, "Skate board"],
+        [160, "3 balloons"],
+        [161, "Baseball hat?"],
+        [162, "Teddy bear"],
+        [163, "CD "],
+        [164, "Rare shoes"],
+        [165, "Poster 1"],
+        [166, "Poster 2"],
+        [167, "Poster 3"],
+        [168, "Microphone"],
+        [169, "Suitcase"],
+        [170, "Trophy"],
+        [171, "Mona Lisa"],
+        [172, "Small Crown"],
+        [173, "Glasses"],
+        [174, "Sword"],
+        [175, "Camera"],
+        [176, "Heart key"],
+        [177, "Sparkly heart"],
+        [178, "Sparkly star"],
+        [179, "M Ball (no idea what this is)"],
+        [180, "Heart ring"],
+    ])
+
+    update(bitstring: string, init: boolean = false) {
+        if (bitstring.length !== 8) {
+            throw Error(`Invalid bitstring length for GiftItem: expected 8, got ${bitstring.length}`)
+        }
+        super.update(bitstring, init)
+    }
+
+    getName() {
+        let lookup = null;
+        if (this.bitstring !== null) {
+            lookup = this.gift_items.get(parseInt(this.bitstring, 2))
+        }
+        // this is the item that shows up as the fallback if an unknown code 
+        // is received
+        return lookup ? lookup : "Scone"
     }
 }
 
