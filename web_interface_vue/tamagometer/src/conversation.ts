@@ -1,6 +1,6 @@
 export { Conversation, StoredConversation }
 
-import { TamaMessage } from "./model"
+import { TamaMessage, TamaMessage4 } from "./model"
 
 class Conversation {
     // Store 4 messages
@@ -9,7 +9,7 @@ class Conversation {
     message1: TamaMessage
     message2: TamaMessage
     message3: TamaMessage
-    message4: TamaMessage
+    message4: TamaMessage4
     conversationID: any
     name: string
     constructor(dbId: number | null) {
@@ -17,7 +17,7 @@ class Conversation {
         this.message1 = new TamaMessage(null)
         this.message2 = new TamaMessage(null)
         this.message3 = new TamaMessage(null)
-        this.message4 = new TamaMessage(null)
+        this.message4 = new TamaMessage4(null)
         // If the conversation came from the database, it will have an ID set. 
     }
 

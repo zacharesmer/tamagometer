@@ -1,4 +1,4 @@
-export { TamaMessage, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem }
+export { TamaMessage, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -56,6 +56,7 @@ class TamaBits implements TamaChunk {
 }
 
 class TamaMessage {
+    whichMessage: number
     hardcodedThing: UnknownBits
     unknown1: UnknownBits
     deviceID: TamaID
@@ -65,7 +66,8 @@ class TamaMessage {
     unknown4: UnknownBits
     unknown5: UnknownBits
     unknown6: UnknownBits
-    giftitem: TamaGiftItem
+    // giftitem: TamaGiftItem
+    unknown7: UnknownBits
     unknown8: UnknownBits
     unknown9: UnknownBits
     unknown10: UnknownBits
@@ -75,6 +77,7 @@ class TamaMessage {
 
     chunks: TamaChunk[]
     constructor(bitstring: string | null) {
+        this.whichMessage = NaN
         // To add a new section, also update update() and EditConversationMessage.vue
         this.hardcodedThing = new UnknownBits(null);
         this.unknown1 = new UnknownBits(null);
@@ -85,7 +88,7 @@ class TamaMessage {
         this.unknown4 = new UnknownBits(null)
         this.unknown5 = new UnknownBits(null)
         this.unknown6 = new UnknownBits(null)
-        this.giftitem = new TamaGiftItem(null)
+        this.unknown7 = new UnknownBits(null)
         this.unknown8 = new UnknownBits(null)
         this.unknown9 = new UnknownBits(null)
         this.unknown10 = new UnknownBits(null)
@@ -101,7 +104,7 @@ class TamaMessage {
             this.unknown4,
             this.unknown5,
             this.unknown6,
-            this.giftitem,
+            this.unknown7,
             this.unknown8,
             this.unknown9,
             this.unknown10,
@@ -129,7 +132,7 @@ class TamaMessage {
         this.unknown4.update(bitstring.slice(88, 96), init)
         this.unknown5.update(bitstring.slice(96, 104), init)
         this.unknown6.update(bitstring.slice(104, 112), init)
-        this.giftitem.update(bitstring.slice(112, 120), init)
+        this.unknown7.update(bitstring.slice(112, 120), init)
         this.unknown8.update(bitstring.slice(120, 128), init)
         this.unknown9.update(bitstring.slice(128, 136), init)
         this.unknown10.update(bitstring.slice(136, 144), init)
@@ -182,6 +185,36 @@ class TamaMessage {
         } else { return "" }
     }
 
+}
+
+class TamaMessage4 extends TamaMessage {
+    giftitem: TamaGiftItem
+    constructor(bitstring: string | null) {
+        super(bitstring)
+        this.whichMessage = 4
+        this.giftitem = new TamaGiftItem(null)
+        this.chunks = [
+            this.hardcodedThing,
+            this.unknown1,
+            this.deviceID,
+            this.appearance,
+            this.name,
+            this.unknown3,
+            this.unknown4,
+            this.unknown5,
+            this.unknown6,
+            this.giftitem,
+            this.unknown8,
+            this.unknown9,
+            this.unknown10,
+            this.unknown11,
+        ]
+    }
+
+    update(bitstring: string, init?: boolean): void {
+        super.update(bitstring, init)
+        this.giftitem.update(bitstring.slice(112, 120), init)
+    }
 }
 
 class TamaName implements TamaChunk {

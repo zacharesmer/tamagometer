@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import EditConversationBitChunk from './EditConversationBitChunk.vue';
-import { TamaMessage } from '@/model';
+import { TamaMessage, TamaMessage4 } from '@/model';
 import EditConversationNameBits from './EditConversationNameBits.vue'
 import EditConversationChecksumBits from './EditConversationChecksumBits.vue';
 import EditConversationAppearance from './EditConversationAppearance.vue';
@@ -44,12 +44,13 @@ let bitstring = computed({
       <EditConversationBitChunk :model="message.unknown4"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown5"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown6"></EditConversationBitChunk>
-      <EditConversationGiftItem :model="message.giftitem"></EditConversationGiftItem>
+      <EditConversationGiftItem :model="message.giftitem" v-if="(message instanceof TamaMessage4)">
+      </EditConversationGiftItem>
+      <EditConversationBitChunk :model="message.unknown7" v-else></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown8"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown9"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown10"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown11"></EditConversationBitChunk>
-
       <EditConversationChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())">
       </EditConversationChecksumBits>
     </div>
