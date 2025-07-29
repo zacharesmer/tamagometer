@@ -50,7 +50,6 @@ const imageSource = computed(() => {
 
 img {
     image-rendering: pixelated;
-    width: 40px;
     height: 40px;
 }
 </style>
