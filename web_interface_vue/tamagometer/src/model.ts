@@ -1,4 +1,4 @@
-export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity, TamaConversationType }
+export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity, TamaConversationType, TamaGame }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -71,8 +71,8 @@ class TamaMessage {
     unknown8: UnknownBits
     unknown9: UnknownBits
     unknown10: UnknownBits
+    gameType: TamaGame
     unknown11: UnknownBits
-
     initialized = false
 
     chunks: TamaChunk[]
@@ -92,6 +92,7 @@ class TamaMessage {
         this.unknown8 = new UnknownBits(null)
         this.unknown9 = new UnknownBits(null)
         this.unknown10 = new UnknownBits(null)
+        this.gameType = new TamaGame(null)
         this.unknown11 = new UnknownBits(null)
 
         this.chunks = [
@@ -108,6 +109,7 @@ class TamaMessage {
             this.unknown8,
             this.unknown9,
             this.unknown10,
+            this.gameType,
             this.unknown11,
         ]
 
@@ -135,7 +137,8 @@ class TamaMessage {
         this.unknown7.update(bitstring.slice(112, 120), init)
         this.unknown8.update(bitstring.slice(120, 128), init)
         this.unknown9.update(bitstring.slice(128, 136), init)
-        this.unknown10.update(bitstring.slice(136, 144), init)
+        this.unknown10.update(bitstring.slice(136, 141), init)
+        this.gameType.update(bitstring.slice(141, 144), init)
         this.unknown11.update(bitstring.slice(144, 152), init)
         this.initialized = true
     }
@@ -209,6 +212,7 @@ class TamaMessage3 extends TamaMessage {
             this.unknown8,
             this.unknown9,
             this.unknown10,
+            this.gameType,
             this.unknown11,
         ]
     }
@@ -245,6 +249,7 @@ class TamaMessage4 extends TamaMessage {
             this.giftactivity,
             this.unknown9,
             this.unknown10,
+            this.gameType,
             this.unknown11,
         ]
     }
@@ -714,18 +719,18 @@ class TamaGiftActivity extends TamaBits {
 }
 
 class TamaConversationType extends TamaBits {
-    conversationType: Map<number, string>
+    conversationTypes: Map<number, string>
     constructor(bitstring: string | null, message: 3 | 4) {
         super(bitstring)
         if (message === 3) {
-            this.conversationType = new Map<number, string>([
+            this.conversationTypes = new Map<number, string>([
                 [8, "Visit"],
                 [4, "Gift"],
                 [6, "Gift And Visit"],
                 [2, "Game"]
             ])
         } else if (message === 4) {
-            this.conversationType = new Map<number, string>([
+            this.conversationTypes = new Map<number, string>([
                 [9, "Visit"],
                 [5, "Gift"],
                 [7, "Gift And Visit"],
@@ -754,6 +759,34 @@ class TamaID extends TamaBits {
             return parseInt(this.bitstring, 2)
         }
         return 0
+    }
+}
+
+class TamaGame extends TamaBits {
+    games = new Map<number, string>([
+        [0, "Ball"],
+        [1, "???"],
+        [2, "Balloon"],
+        [3, "Rope"],
+        [4, "Trumpet"],
+        [5, "Bldg Block"],
+        [6, "RC Car"],
+        [7, "Points"],
+    ])
+    update(bitstring: string, init: boolean = false) {
+        if (bitstring.length !== 3) {
+            throw Error(`Invalid bitstring length for Game: expected 3, got ${bitstring.length}`)
+        }
+        super.update(bitstring, init)
+    }
+    getName() {
+        let lookup = null;
+        if (this.bitstring !== null) {
+            lookup = this.games.get(parseInt(this.bitstring, 2) % 10)
+        }
+        // this is the game that shows up as the fallback if an unknown code 
+        // is received. That shouldn't happen because all options are defined
+        return lookup ? lookup : "???"
     }
 }
 

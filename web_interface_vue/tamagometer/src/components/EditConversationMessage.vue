@@ -10,6 +10,7 @@ import EditConversationGiftItem from './EditConversationGiftItem.vue';
 import EditConversationGiftActivity from './EditConversationGiftActivity.vue';
 import EditConversationVisitActivity from './EditConversationVisitActivity.vue';
 import EditConversationType from './EditConversationType.vue';
+import EditConversationGame from './EditConversationGame.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true },
@@ -41,7 +42,7 @@ let bitstring = computed({
       <EditConversationBitChunk :known="true" :model="message.hardcodedThing" />
       <EditConversationType :model="message.conversationType"
         v-if="(message instanceof TamaMessage3) || (message instanceof TamaMessage4)" />
-      <EditConversationBitChunk :model="message.unknown1" v-else />
+      <EditConversationBitChunk :known="true" :model="message.unknown1" v-else />
       <EditConversationDeviceID :known="true" :model="message.deviceID" />
       <EditConversationAppearance :model="message.appearance" />
       <EditConversationNameBits :model="message.name" />
@@ -56,6 +57,7 @@ let bitstring = computed({
       <EditConversationBitChunk :model="message.unknown8" v-else />
       <EditConversationBitChunk :model="message.unknown9" />
       <EditConversationBitChunk :model="message.unknown10" />
+      <EditConversationGame :model="message.gameType" />
       <EditConversationBitChunk :model="message.unknown11" />
       <EditConversationChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())" />
     </div>

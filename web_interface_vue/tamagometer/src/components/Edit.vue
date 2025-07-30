@@ -18,6 +18,11 @@ const showRetryButton = ref(false)
 
 const statusIndicator = useTemplateRef("statusIndicator")
 
+const show1 = ref(true)
+const show2 = ref(true)
+const show3 = ref(true)
+const show4 = ref(true)
+
 onMounted(async () => {
     const route = useRoute()
     if (route.query.dbid) {
@@ -135,15 +140,22 @@ function retry() {
                 @await-conversation="() => { awaitConversation() }" @stop-waiting="() => { stopWaiting() }">
             </EditButtonsTxRx>
         </div>
+        <div>
+            Show:
+            <input type="checkbox" v-model="show1"><label>Message 1</label></input>
+            <input type="checkbox" v-model="show2"><label>Message 2</label></input>
+            <input type="checkbox" v-model="show3"><label>Message 3</label></input>
+            <input type="checkbox" v-model="show4"><label>Message 4</label></input>
+        </div>
         <div class="messages-container">
             <EditConversationMessage :model="conversation.message1" bitstring-id="editingConversationMessage1"
-                class="message from-tama1"></EditConversationMessage>
+                class="message from-tama1" v-if="show1" />
             <EditConversationMessage :model="conversation.message2" bitstring-id="editingConversationMessage2"
-                class="message from-tama2"></EditConversationMessage>
+                class="message from-tama2" v-if="show2" />
             <EditConversationMessage :model="conversation.message3" bitstring-id="editingConversationMessage3"
-                class="message from-tama1"></EditConversationMessage>
+                class="message from-tama1" v-if="show3" />
             <EditConversationMessage :model="conversation.message4" bitstring-id="editingConversationMessage4"
-                class="message from-tama2"></EditConversationMessage>
+                class="message from-tama2" v-if="show4" />
         </div>
     </div>
     <div v-else>
