@@ -1,4 +1,4 @@
-export { TamaMessage, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity }
+export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -185,6 +185,37 @@ class TamaMessage {
         } else { return "" }
     }
 
+}
+
+class TamaMessage3 extends TamaMessage {
+    visitActivity: TamaVisitActivity
+    constructor(bitstring: string | null) {
+        super(bitstring)
+        this.visitActivity = new TamaVisitActivity(null)
+        this.chunks = [
+            this.hardcodedThing,
+            this.unknown1,
+            this.deviceID,
+            this.appearance,
+            this.name,
+            this.unknown3,
+            this.visitActivity,
+            this.unknown4,
+            this.unknown5,
+            this.unknown6,
+            this.unknown7,
+            this.unknown8,
+            this.unknown9,
+            this.unknown10,
+            this.unknown11,
+        ]
+    }
+
+    update(bitstring: string, init?: boolean): void {
+        super.update(bitstring, init)
+        this.unknown3.update(bitstring.slice(80, 86), init)
+        this.visitActivity.update(bitstring.slice(86, 88), init)
+    }
 }
 
 class TamaMessage4 extends TamaMessage {
@@ -416,6 +447,15 @@ class TamaAppearance extends TamaBits {
         // is received
         return lookup ? lookup : "Nazotchi"
     }
+}
+
+class TamaVisitActivity extends TamaBits {
+    activities = new Map<number, string>([
+        [0, "Scale"],
+        [1, "Spin Around"],
+        [2, "Ball"],
+        [3, "Music"]
+    ])
 }
 
 class TamaGiftItem extends TamaBits {

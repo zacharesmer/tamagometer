@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import EditConversationBitChunk from './EditConversationBitChunk.vue';
-import { TamaMessage, TamaMessage4 } from '@/model';
+import { TamaMessage, TamaMessage3, TamaMessage4 } from '@/model';
 import EditConversationNameBits from './EditConversationNameBits.vue'
 import EditConversationChecksumBits from './EditConversationChecksumBits.vue';
 import EditConversationAppearance from './EditConversationAppearance.vue';
 import EditConversationDeviceID from './EditConversationDeviceID.vue';
 import EditConversationGiftItem from './EditConversationGiftItem.vue';
 import EditConversationGiftActivity from './EditConversationGiftActivity.vue';
+import EditConversationVisitActivity from './EditConversationVisitActivity.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true },
@@ -42,6 +43,8 @@ let bitstring = computed({
       <EditConversationAppearance :model="message.appearance"></EditConversationAppearance>
       <EditConversationNameBits :model="message.name"></EditConversationNameBits>
       <EditConversationBitChunk :model="message.unknown3"></EditConversationBitChunk>
+      <EditConversationVisitActivity :model="message.visitActivity" v-if="(message instanceof TamaMessage3)">
+      </EditConversationVisitActivity>
       <EditConversationBitChunk :model="message.unknown4"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown5"></EditConversationBitChunk>
       <EditConversationBitChunk :model="message.unknown6"></EditConversationBitChunk>

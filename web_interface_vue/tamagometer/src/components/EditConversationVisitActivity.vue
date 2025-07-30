@@ -3,10 +3,10 @@ import { computed } from 'vue';
 
 import EditConversationBitChunk from './EditConversationBitChunk.vue';
 
-import { TamaGiftActivity } from '@/model';
+import { TamaVisitActivity } from '@/model';
 
 const props = defineProps({
-    model: { type: TamaGiftActivity, required: true },
+    model: { type: TamaVisitActivity, required: true },
 })
 
 const character = computed({
@@ -16,7 +16,7 @@ const character = computed({
     },
     set: (newValue: number) => {
         // console.log(newValue)
-        props.model.update(newValue.toString(2).padStart(8, "0"), false)
+        props.model.update(newValue.toString(2).padStart(2, "0"), false)
     }
 });
 
@@ -27,7 +27,7 @@ const character = computed({
 
 <template>
     <div :class="['chunk-container', 'appearance-container', model.differs() ? 'changed' : '']">
-        <label>Pre-Gift Activity</label>
+        <label>Visit Activity</label>
         <EditConversationBitChunk :known="true" :model="model"></EditConversationBitChunk>
         <select v-model="character" class="symbol" aria-label="Gift Item selector">
             <option v-for="[key, value] in model.activities" :value="key">{{ value }}
@@ -37,7 +37,6 @@ const character = computed({
 </template>
 
 <style scoped>
-
 .symbol {
     font-size: large;
 }
