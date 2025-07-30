@@ -20,8 +20,8 @@ onMounted(async () => {
     startBootstrap()
 })
 
-onBeforeUnmount(() => {
-    stopTask().catch(r => { console.log(r) })
+onBeforeUnmount(async () => {
+    await stopTask().catch(r => { console.log(r) })
     serialWorker.removeEventListener("message", bootstrapEventListener)
 })
 

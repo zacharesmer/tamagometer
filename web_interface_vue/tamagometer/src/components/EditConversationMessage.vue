@@ -9,6 +9,7 @@ import EditConversationDeviceID from './EditConversationDeviceID.vue';
 import EditConversationGiftItem from './EditConversationGiftItem.vue';
 import EditConversationGiftActivity from './EditConversationGiftActivity.vue';
 import EditConversationVisitActivity from './EditConversationVisitActivity.vue';
+import EditConversationType from './EditConversationType.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true },
@@ -37,28 +38,26 @@ let bitstring = computed({
   <div class="bitstring-display-container">
     <div class="bit-chunk-container" v-if="bitstring.length === 160">
       <!-- To add a new chunk also update model.ts -->
-      <EditConversationBitChunk :known="true" :model="message.hardcodedThing"></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown1"></EditConversationBitChunk>
-      <EditConversationDeviceID :known="true" :model="message.deviceID"></EditConversationDeviceID>
-      <EditConversationAppearance :model="message.appearance"></EditConversationAppearance>
-      <EditConversationNameBits :model="message.name"></EditConversationNameBits>
-      <EditConversationBitChunk :model="message.unknown3"></EditConversationBitChunk>
-      <EditConversationVisitActivity :model="message.visitActivity" v-if="(message instanceof TamaMessage3)">
-      </EditConversationVisitActivity>
-      <EditConversationBitChunk :model="message.unknown4"></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown5"></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown6"></EditConversationBitChunk>
-      <EditConversationGiftItem :model="message.giftitem" v-if="(message instanceof TamaMessage4)">
-      </EditConversationGiftItem>
-      <EditConversationBitChunk :model="message.unknown7" v-else></EditConversationBitChunk>
-      <EditConversationGiftActivity :model="message.giftactivity" v-if="(message instanceof TamaMessage4)">
-      </EditConversationGiftActivity>
-      <EditConversationBitChunk :model="message.unknown8" v-else></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown9"></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown10"></EditConversationBitChunk>
-      <EditConversationBitChunk :model="message.unknown11"></EditConversationBitChunk>
-      <EditConversationChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())">
-      </EditConversationChecksumBits>
+      <EditConversationBitChunk :known="true" :model="message.hardcodedThing" />
+      <EditConversationType :model="message.conversationType"
+        v-if="(message instanceof TamaMessage3) || (message instanceof TamaMessage4)" />
+      <EditConversationBitChunk :model="message.unknown1" v-else />
+      <EditConversationDeviceID :known="true" :model="message.deviceID" />
+      <EditConversationAppearance :model="message.appearance" />
+      <EditConversationNameBits :model="message.name" />
+      <EditConversationBitChunk :model="message.unknown3" />
+      <EditConversationVisitActivity :model="message.visitActivity" v-if="(message instanceof TamaMessage3)" />
+      <EditConversationBitChunk :model="message.unknown4" />
+      <EditConversationBitChunk :model="message.unknown5" />
+      <EditConversationBitChunk :model="message.unknown6" />
+      <EditConversationGiftItem :model="message.giftitem" v-if="(message instanceof TamaMessage4)" />
+      <EditConversationBitChunk :model="message.unknown7" v-else />
+      <EditConversationGiftActivity :model="message.giftactivity" v-if="(message instanceof TamaMessage4)" />
+      <EditConversationBitChunk :model="message.unknown8" v-else />
+      <EditConversationBitChunk :model="message.unknown9" />
+      <EditConversationBitChunk :model="message.unknown10" />
+      <EditConversationBitChunk :model="message.unknown11" />
+      <EditConversationChecksumBits :bits="message.getChecksumString(message.getBitsNoChecksum())" />
     </div>
     <p v-else>Open a recorded signal in "View Saved", or record a new one in the "Record" tab.</p>
     <input type="textarea" class="bitstring-input" v-model="bitstring">

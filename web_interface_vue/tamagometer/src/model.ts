@@ -1,4 +1,4 @@
-export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity }
+export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity, TamaConversationType }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -189,12 +189,14 @@ class TamaMessage {
 
 class TamaMessage3 extends TamaMessage {
     visitActivity: TamaVisitActivity
+    conversationType: TamaConversationType
     constructor(bitstring: string | null) {
         super(bitstring)
         this.visitActivity = new TamaVisitActivity(null)
+        this.conversationType = new TamaConversationType(null, 3)
         this.chunks = [
             this.hardcodedThing,
-            this.unknown1,
+            this.conversationType,
             this.deviceID,
             this.appearance,
             this.name,
@@ -215,20 +217,23 @@ class TamaMessage3 extends TamaMessage {
         super.update(bitstring, init)
         this.unknown3.update(bitstring.slice(80, 86), init)
         this.visitActivity.update(bitstring.slice(86, 88), init)
+        this.conversationType.update(bitstring.slice(8, 16), init)
     }
 }
 
 class TamaMessage4 extends TamaMessage {
     giftitem: TamaGiftItem
     giftactivity: TamaGiftActivity
+    conversationType: TamaConversationType
     constructor(bitstring: string | null) {
         super(bitstring)
         this.whichMessage = 4
         this.giftitem = new TamaGiftItem(null)
         this.giftactivity = new TamaGiftActivity(null)
+        this.conversationType = new TamaConversationType(null, 4)
         this.chunks = [
             this.hardcodedThing,
-            this.unknown1,
+            this.conversationType,
             this.deviceID,
             this.appearance,
             this.name,
@@ -248,6 +253,7 @@ class TamaMessage4 extends TamaMessage {
         super.update(bitstring, init)
         this.giftitem.update(bitstring.slice(112, 120), init)
         this.giftactivity.update(bitstring.slice(120, 128), init)
+        this.conversationType.update(bitstring.slice(8, 16), init)
     }
 }
 
@@ -456,6 +462,22 @@ class TamaVisitActivity extends TamaBits {
         [2, "Ball"],
         [3, "Music"]
     ])
+
+    update(bitstring: string, init: boolean = false) {
+        if (bitstring.length !== 2) {
+            throw Error(`Invalid bitstring length for Activity: expected 2, got ${bitstring.length}`)
+        }
+        super.update(bitstring, init)
+    }
+
+    getName() {
+        let lookup = null;
+        if (this.bitstring !== null) {
+            lookup = this.activities.get(parseInt(this.bitstring, 2))
+        }
+        // this is the fallback if an unknown code is received
+        return lookup ? lookup : "Scale"
+    }
 }
 
 class TamaGiftItem extends TamaBits {
@@ -689,7 +711,34 @@ class TamaGiftActivity extends TamaBits {
         // is received. That shouldn't happen because this one cycles through mod 10
         return lookup ? lookup : "look at windows"
     }
+}
 
+class TamaConversationType extends TamaBits {
+    conversationType: Map<number, string>
+    constructor(bitstring: string | null, message: 3 | 4) {
+        super(bitstring)
+        if (message === 3) {
+            this.conversationType = new Map<number, string>([
+                [8, "Visit"],
+                [4, "Gift"],
+                [6, "Gift And Visit"],
+                [2, "Game"]
+            ])
+        } else if (message === 4) {
+            this.conversationType = new Map<number, string>([
+                [9, "Visit"],
+                [5, "Gift"],
+                [7, "Gift And Visit"],
+                [3, "Game"]
+            ])
+        }
+    }
+    update(bitstring: string, init: boolean = false) {
+        if (bitstring.length != 8) {
+            throw Error(`Invalid bitstring length for Visit Type: expected 8, got ${bitstring.length}`)
+        }
+        super.update(bitstring, init)
+    }
 }
 
 class TamaID extends TamaBits {
