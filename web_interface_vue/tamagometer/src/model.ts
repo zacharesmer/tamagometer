@@ -1,4 +1,4 @@
-export { TamaMessage, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem }
+export { TamaMessage, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -189,10 +189,12 @@ class TamaMessage {
 
 class TamaMessage4 extends TamaMessage {
     giftitem: TamaGiftItem
+    giftactivity: TamaGiftActivity
     constructor(bitstring: string | null) {
         super(bitstring)
         this.whichMessage = 4
         this.giftitem = new TamaGiftItem(null)
+        this.giftactivity = new TamaGiftActivity(null)
         this.chunks = [
             this.hardcodedThing,
             this.unknown1,
@@ -204,7 +206,7 @@ class TamaMessage4 extends TamaMessage {
             this.unknown5,
             this.unknown6,
             this.giftitem,
-            this.unknown8,
+            this.giftactivity,
             this.unknown9,
             this.unknown10,
             this.unknown11,
@@ -214,6 +216,7 @@ class TamaMessage4 extends TamaMessage {
     update(bitstring: string, init?: boolean): void {
         super.update(bitstring, init)
         this.giftitem.update(bitstring.slice(112, 120), init)
+        this.giftactivity.update(bitstring.slice(120, 128), init)
     }
 }
 
@@ -616,6 +619,37 @@ class TamaGiftItem extends TamaBits {
         // is received
         return lookup ? lookup : "Scone"
     }
+}
+
+class TamaGiftActivity extends TamaBits {
+    activities = new Map<number, string>([
+        [0, "look at windows"],
+        [1, "video games"],
+        [2, "look at flowers"],
+        [3, "look at stars"],
+        [4, "look at moon "],
+        [5, "look at sunrise or sunset"],
+        [6, "fireplace and Christmas tree"],
+        [7, "snowmen"],
+        [8, "ocean with clouds or mountains"],
+        [9, "two chairs and cake"],
+    ])
+    update(bitstring: string, init: boolean = false) {
+        if (bitstring.length !== 8) {
+            throw Error(`Invalid bitstring length for GiftItem: expected 8, got ${bitstring.length}`)
+        }
+        super.update(bitstring, init)
+    }
+    getName() {
+        let lookup = null;
+        if (this.bitstring !== null) {
+            lookup = this.activities.get(parseInt(this.bitstring, 2) % 10)
+        }
+        // this is the item that shows up as the fallback if an unknown code 
+        // is received. That shouldn't happen because this one cycles through mod 10
+        return lookup ? lookup : "look at windows"
+    }
+
 }
 
 class TamaID extends TamaBits {
