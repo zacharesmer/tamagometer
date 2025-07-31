@@ -11,6 +11,7 @@ import EditConversationGiftActivity from './EditConversationGiftActivity.vue';
 import EditConversationVisitActivity from './EditConversationVisitActivity.vue';
 import EditConversationType from './EditConversationType.vue';
 import EditConversationGame from './EditConversationGame.vue';
+import EditConversationWager from './EditConversationWager.vue';
 
 let props = defineProps({
   bitstringId: { type: String, required: true },
@@ -55,7 +56,8 @@ let bitstring = computed({
       <EditConversationBitChunk :model="message.unknown7" v-else />
       <EditConversationGiftActivity :model="message.giftactivity" v-if="(message instanceof TamaMessage4)" />
       <EditConversationBitChunk :model="message.unknown8" v-else />
-      <EditConversationBitChunk :model="message.unknown9" />
+      <EditConversationWager :model="message.wager" v-if="(message instanceof TamaMessage3)" />
+      <EditConversationBitChunk :model="message.unknown9" v-else />
       <EditConversationBitChunk :model="message.unknown10" />
       <EditConversationGame :model="message.gameType" />
       <EditConversationBitChunk :model="message.unknown11" />

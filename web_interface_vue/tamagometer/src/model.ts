@@ -1,4 +1,4 @@
-export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity, TamaConversationType, TamaGame }
+export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits, TamaAppearance, TamaID, TamaGiftItem, TamaGiftActivity, TamaVisitActivity, TamaConversationType, TamaGame, TamaWager }
 
 
 // Any chunk of the TamaMessage, whether it's made up of other TamaChunks or bits
@@ -206,6 +206,7 @@ class TamaMessage {
 class TamaMessage3 extends TamaMessage {
     visitActivity = new TamaVisitActivity(null)
     conversationType = new TamaConversationType(null, 3)
+    wager = new TamaWager(null)
     constructor(bitstring: string | null) {
         super(bitstring)
         this.chunks = [
@@ -221,7 +222,7 @@ class TamaMessage3 extends TamaMessage {
             this.unknown6,
             this.unknown7,
             this.unknown8,
-            this.unknown9,
+            this.wager,
             this.unknown10,
             this.gameType,
             this.unknown11,
@@ -230,6 +231,7 @@ class TamaMessage3 extends TamaMessage {
             this.unknown3.update(bitstring.slice(80, 86), true)
             this.visitActivity.update(bitstring.slice(86, 88), true)
             this.conversationType.update(bitstring.slice(8, 16), true)
+            this.wager.update(bitstring.slice(128, 136), true)
         }
     }
 
@@ -238,6 +240,7 @@ class TamaMessage3 extends TamaMessage {
         this.unknown3.update(bitstring.slice(80, 86), init)
         this.visitActivity.update(bitstring.slice(86, 88), init)
         this.conversationType.update(bitstring.slice(8, 16), init)
+        this.wager.update(bitstring.slice(128, 136), true)
     }
 }
 
@@ -804,6 +807,22 @@ class TamaGame extends TamaBits {
         // this is the game that shows up as the fallback if an unknown code 
         // is received. That shouldn't happen because all options are defined
         return lookup ? lookup : "???"
+    }
+}
+
+class TamaWager extends TamaBits {
+    update(bitstring: string, init: boolean = false) {
+        if (bitstring.length != 8) {
+            throw Error(`Invalid bitstring length for wager: expected 8, got ${bitstring.length}`)
+        }
+        super.update(bitstring, init)
+    }
+
+    getNumber() {
+        if (this.bitstring !== null) {
+            return parseInt(this.bitstring, 2)
+        }
+        return 0
     }
 }
 
