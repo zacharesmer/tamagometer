@@ -7,6 +7,7 @@ export { TamaMessage, TamaMessage3, TamaMessage4, TamaName, TamaLetter, TamaBits
 export interface TamaChunk {
     update(bitstring: string, init?: boolean): void;
     getBitstring(): string;
+    differs(): boolean;
 }
 
 // 
@@ -122,6 +123,15 @@ class TamaMessage {
             }
             this.update(bitstring, true)
         }
+    }
+
+    differs(): boolean {
+        for (let i = 0; i < this.chunks.length; i++) {
+            if (this.chunks[i].differs()) {
+                return true
+            }
+        }
+        return false
     }
 
     update(bitstring: string, init: boolean = false) {

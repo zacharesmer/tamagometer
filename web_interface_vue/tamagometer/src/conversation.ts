@@ -40,6 +40,10 @@ class Conversation {
             this.message4.getBitstring().length !== 160)
         return result
     }
+
+    differs(): boolean {
+        return this.message1.differs() || this.message2.differs() || this.message3.differs() || this.message4.differs()
+    }
 }
 
 // Can't store objects with methods so this object holds a serialized conversation

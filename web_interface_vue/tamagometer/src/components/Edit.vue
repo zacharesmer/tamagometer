@@ -26,9 +26,18 @@ const show4 = ref(true)
 onMounted(async () => {
     const route = useRoute()
     if (route.query.dbid) {
-        const dbId = parseInt(route.query.dbid as string)
-        const stored = await dbConnection.get(dbId)
-        conversation.initFromStored(stored)
+        if (conversation.differs()) {
+            // timeout is necessary because without it, the message displays before opening the edit page
+            // that's not what the Vue lifecycle documentation suggests should happen in onMounted, but hey, whatever
+            setTimeout(async () => {
+                let go_on = window.confirm("Open conversation has unsaved changes. Open anyway?")
+                if (go_on) {
+                    const dbId = parseInt(route.query.dbid as string)
+                    const stored = await dbConnection.get(dbId)
+                    conversation.initFromStored(stored)
+                }
+            }, 20)
+        }
     }
     serialWorker.addEventListener("message", conversationEventListener)
 })
