@@ -5,7 +5,7 @@ import AppInputConversationName from './AppInputConversationName.vue';
 import AppStatusIndicator from './AppStatusIndicator.vue';
 import AppButtonRetry from './AppButtonRetry.vue';
 
-import { onMounted, ref, useTemplateRef } from 'vue';
+import { computed, onMounted, ref, useTemplateRef } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { toast } from 'vue3-toastify'
 
@@ -23,20 +23,30 @@ const show2 = ref(true)
 const show3 = ref(true)
 const show4 = ref(true)
 
+const nameDirtyComputed = computed({ get: () => { return conversation.nameDirty() }, set: () => { } })
+
 onMounted(async () => {
     const route = useRoute()
     if (route.query.dbid) {
-        if (conversation.differs()) {
+        if (unsavedChanges()) {
             // timeout is necessary because without it, the message displays before opening the edit page
             // that's not what the Vue lifecycle documentation suggests should happen in onMounted, but hey, whatever
+            // also I tried nextTick, doesn't help
             setTimeout(async () => {
                 let go_on = window.confirm("Open conversation has unsaved changes. Open anyway?")
                 if (go_on) {
                     const dbId = parseInt(route.query.dbid as string)
                     const stored = await dbConnection.get(dbId)
                     conversation.initFromStored(stored)
+                    console.log(conversation.name)
                 }
             }, 20)
+        }
+        else {
+            const dbId = parseInt(route.query.dbid as string)
+            const stored = await dbConnection.get(dbId)
+            conversation.initFromStored(stored)
+            console.log(conversation.name)
         }
     }
     serialWorker.addEventListener("message", conversationEventListener)
@@ -46,6 +56,10 @@ onBeforeRouteLeave(async (to, from) => {
     stopTask().catch(r => { })
     serialWorker.removeEventListener("message", conversationEventListener)
 })
+
+function unsavedChanges(): boolean {
+    return conversation.differs() && conversation.initialized()
+}
 
 // Conversation-specific message handling. More general message handling is in serial.ts
 function conversationEventListener(e: MessageEvent) {
@@ -107,7 +121,7 @@ function saveNewConversation(newName: string) {
         return
     }
     const toastId = toast("Saving...")
-    conversation.name = newName;
+    conversation.setName(newName);
     dbConnection.set(conversation.toStored()).then(async dbId => {
         const stored = await dbConnection.get(dbId)
         conversation.initFromStored(stored)
@@ -124,7 +138,7 @@ function saveNewConversation(newName: string) {
 
 function saveName(newName: string) {
     // console.log(newName)
-    conversation.name = newName;
+    conversation.setName(newName)
 }
 
 function retry() {
@@ -137,10 +151,11 @@ function retry() {
 
 <template>
     <div v-if="!conversation.oneOrMoreMessagesAreInvalid()">
-        <div class="name-buttons-container">
+        <div :class="['name-buttons-container']">
             <AppInputConversationName class="name-input"
                 @save-new-conversation="(newName) => { saveNewConversation(newName) }"
-                @save-name="(newName) => { saveName(newName) }" :name="conversation.name">
+                @save-name="(newName) => { saveName(newName) }" :name="conversation.name"
+                :nameDirty="nameDirtyComputed">
             </AppInputConversationName>
             <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
             <AppButtonRetry v-if="showRetryButton" direction="row" @retry="retry">
@@ -191,6 +206,7 @@ function retry() {
 
 <style scoped>
 .name-buttons-container {
+    height: 6rem;
     display: flex;
     flex-direction: row;
     justify-content: space-around;

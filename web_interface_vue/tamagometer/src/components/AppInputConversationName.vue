@@ -9,6 +9,7 @@ const emit = defineEmits<{
 
 const props = defineProps({
     name: { type: String, required: false },
+    nameDirty: { type: Boolean, required: false }
 }
 )
 
@@ -97,7 +98,8 @@ function handleKeyUp(e: KeyboardEvent) {
         </span>
     </div>
     <div v-else class="name-input-container">
-        <h2 @click="startEditingName">{{ newName }}</h2>
+        <h2 @click="startEditingName" :class="['name-display', props.nameDirty ? 'name-changed' : '']">{{ newName }}
+        </h2>
         <span class="name-editing-buttons">
             <button class="icon-label-button" @click="startEditingName">
                 <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -140,5 +142,14 @@ function handleKeyUp(e: KeyboardEvent) {
     display: flex;
     /* align-items: center; */
     gap: 1rem;
+}
+
+.name-display {
+    padding: .5rem;
+}
+
+.name-changed {
+    text-decoration: dashed underline;
+    text-underline-offset: .5rem;
 }
 </style>

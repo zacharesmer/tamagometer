@@ -12,6 +12,7 @@ class Conversation {
     message4: TamaMessage4
     conversationID: any
     name: string
+    previousName: string
     constructor(dbId: number | null) {
         // this.conversationID = conversationID
         this.message1 = new TamaMessage(null)
@@ -27,6 +28,7 @@ class Conversation {
         this.message3.update(stored.message3, true)
         this.message4.update(stored.message4, true)
         this.name = stored.name
+        this.previousName = this.name
     }
 
     toStored() {
@@ -42,7 +44,19 @@ class Conversation {
     }
 
     differs(): boolean {
-        return this.message1.differs() || this.message2.differs() || this.message3.differs() || this.message4.differs()
+        return this.message1.differs() || this.message2.differs() || this.message3.differs() || this.message4.differs() || this.nameDirty()
+    }
+
+    initialized(): boolean {
+        return this.message1.initialized && this.message2.initialized && this.message3.initialized && this.message4.initialized
+    }
+
+    setName(newName: string) {
+        this.name = newName
+    }
+
+    nameDirty(): boolean {
+        return !(this.name === this.previousName)
     }
 }
 

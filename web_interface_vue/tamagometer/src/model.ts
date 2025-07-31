@@ -126,6 +126,9 @@ class TamaMessage {
     }
 
     differs(): boolean {
+        if (!this.initialized) {
+            return false
+        }
         for (let i = 0; i < this.chunks.length; i++) {
             if (this.chunks[i].differs()) {
                 return true
