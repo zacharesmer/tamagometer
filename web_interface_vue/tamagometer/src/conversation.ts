@@ -13,7 +13,9 @@ class Conversation {
     conversationID: any
     name: string
     previousName: string
-    constructor(dbId: number | null) {
+    dbId: IDBValidKey | null
+    constructor() {
+        this.dbId = null
         // this.conversationID = conversationID
         this.message1 = new TamaMessage(null)
         this.message2 = new TamaMessage(null)
@@ -22,7 +24,8 @@ class Conversation {
         // If the conversation came from the database, it will have an ID set. 
     }
 
-    initFromStored(stored: StoredConversation) {
+    initFromStored(stored: StoredConversation, dbId: IDBValidKey) {
+        this.dbId = dbId
         this.message1.update(stored.message1, true)
         this.message2.update(stored.message2, true)
         this.message3.update(stored.message3, true)

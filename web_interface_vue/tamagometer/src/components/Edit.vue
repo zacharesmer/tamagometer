@@ -33,11 +33,11 @@ onMounted(async () => {
             // that's not what the Vue lifecycle documentation suggests should happen in onMounted, but hey, whatever
             // also I tried nextTick, doesn't help
             setTimeout(async () => {
-                let go_on = window.confirm("Open conversation has unsaved changes. Open anyway?")
+                let go_on = window.confirm("This conversation has unsaved changes. Open anyway and discard them?")
                 if (go_on) {
                     const dbId = parseInt(route.query.dbid as string)
                     const stored = await dbConnection.get(dbId)
-                    conversation.initFromStored(stored)
+                    conversation.initFromStored(stored, dbId)
                     console.log(conversation.name)
                 }
             }, 20)
@@ -45,7 +45,7 @@ onMounted(async () => {
         else {
             const dbId = parseInt(route.query.dbid as string)
             const stored = await dbConnection.get(dbId)
-            conversation.initFromStored(stored)
+            conversation.initFromStored(stored, dbId)
             console.log(conversation.name)
         }
     }
@@ -115,16 +115,40 @@ function stopWaiting() {
 
 // Write the current conversation to the database. 
 // Update the selected conversation to the newly created one
-function saveNewConversation(newName: string) {
+function saveNewConversation() {
     if (conversation.oneOrMoreMessagesAreInvalid()) {
         toast("Could not save conversation without all messages", { type: 'error' })
         return
     }
     const toastId = toast("Saving...")
-    conversation.setName(newName);
     dbConnection.set(conversation.toStored()).then(async dbId => {
         const stored = await dbConnection.get(dbId)
-        conversation.initFromStored(stored)
+        conversation.initFromStored(stored, dbId)
+        toast.update(toastId, {
+            render: "Saved",
+            autoClose: true,
+            closeOnClick: true,
+            closeButton: true,
+            type: 'success',
+            isLoading: false,
+        })
+    })
+}
+
+function saveConversation() {
+    if (conversation.oneOrMoreMessagesAreInvalid()) {
+        toast("Could not save conversation without all messages", { type: 'error' })
+        return
+    }
+    const toastId = toast("Saving...")
+    // rest of the owl
+    const stored = conversation.toStored()
+    // @ts-ignore
+    stored.id = conversation.dbId
+    console.log("Saving Conversation id: ", conversation.dbId)
+    dbConnection.set(stored).then(() => {
+        // @ts-ignore
+        conversation.initFromStored(stored, stored.id)
         toast.update(toastId, {
             render: "Saved",
             autoClose: true,
@@ -152,11 +176,9 @@ function retry() {
 <template>
     <div v-if="!conversation.oneOrMoreMessagesAreInvalid()">
         <div :class="['name-buttons-container']">
-            <AppInputConversationName class="name-input"
-                @save-new-conversation="(newName) => { saveNewConversation(newName) }"
-                @save-name="(newName) => { saveName(newName) }" :name="conversation.name"
-                :nameDirty="nameDirtyComputed">
-            </AppInputConversationName>
+            <AppInputConversationName class="name-input" @save-conversation="saveConversation"
+                @save-new-conversation="saveNewConversation" @save-name="(newName) => { saveName(newName) }"
+                :name="conversation.name" :nameDirty="nameDirtyComputed" :save-option="true" />
             <AppStatusIndicator ref="statusIndicator"></AppStatusIndicator>
             <AppButtonRetry v-if="showRetryButton" direction="row" @retry="retry">
             </AppButtonRetry>
@@ -166,7 +188,7 @@ function retry() {
         </div>
         <details class="show-which-messages-container">
             <summary>
-                Choose messages to show
+                Choose which messages to show
             </summary>
             <div class="which-messages-checkboxes-container">
                 <div>

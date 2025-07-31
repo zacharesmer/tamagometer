@@ -6,6 +6,6 @@ export const pageSettings = reactive({
     "persistSettings": false
 })
 
-export let activeConversation: Conversation = reactive(new Conversation(null))
+export let activeConversation: Conversation = reactive(new Conversation())
 
 export const portNeedsToBeRequested = ref(false)

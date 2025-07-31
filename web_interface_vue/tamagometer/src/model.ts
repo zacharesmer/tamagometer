@@ -57,44 +57,26 @@ class TamaBits implements TamaChunk {
 }
 
 class TamaMessage {
-    whichMessage: number
-    hardcodedThing: UnknownBits
-    unknown1: UnknownBits
-    deviceID: TamaID
-    appearance: TamaAppearance
-    name: TamaName
-    unknown3: UnknownBits
-    unknown4: UnknownBits
-    unknown5: UnknownBits
-    unknown6: UnknownBits
-    // giftitem: TamaGiftItem
-    unknown7: UnknownBits
-    unknown8: UnknownBits
-    unknown9: UnknownBits
-    unknown10: UnknownBits
-    gameType: TamaGame
-    unknown11: UnknownBits
+    // To add a new section, also update update() and EditConversationMessage.vue
+    hardcodedThing = new UnknownBits(null);
+    unknown1 = new UnknownBits(null);
+    deviceID = new TamaID(null);
+    appearance = new TamaAppearance(null);
+    name = new TamaName(null);
+    unknown3 = new UnknownBits(null)
+    unknown4 = new UnknownBits(null)
+    unknown5 = new UnknownBits(null)
+    unknown6 = new UnknownBits(null)
+    unknown7 = new UnknownBits(null)
+    unknown8 = new UnknownBits(null)
+    unknown9 = new UnknownBits(null)
+    unknown10 = new UnknownBits(null)
+    gameType = new TamaGame(null)
+    unknown11 = new UnknownBits(null)
     initialized = false
 
     chunks: TamaChunk[]
     constructor(bitstring: string | null) {
-        this.whichMessage = NaN
-        // To add a new section, also update update() and EditConversationMessage.vue
-        this.hardcodedThing = new UnknownBits(null);
-        this.unknown1 = new UnknownBits(null);
-        this.deviceID = new TamaID(null);
-        this.appearance = new TamaAppearance(null);
-        this.name = new TamaName(null);
-        this.unknown3 = new UnknownBits(null)
-        this.unknown4 = new UnknownBits(null)
-        this.unknown5 = new UnknownBits(null)
-        this.unknown6 = new UnknownBits(null)
-        this.unknown7 = new UnknownBits(null)
-        this.unknown8 = new UnknownBits(null)
-        this.unknown9 = new UnknownBits(null)
-        this.unknown10 = new UnknownBits(null)
-        this.gameType = new TamaGame(null)
-        this.unknown11 = new UnknownBits(null)
 
         this.chunks = [
             this.hardcodedThing,
@@ -121,7 +103,25 @@ class TamaMessage {
             if (! /[10]{160}/.test(bitstring)) {
                 console.error(`Incorrect format. Bitstring must be exactly 160 1s and 0s.\nGot: ${bitstring}`)
             }
-            this.update(bitstring, true)
+            // This is inlined because if a child class calls the super() constructor, and then it calls update()
+            // it uses the child's update which complains the class members don't exist. Bah.
+            // I really wish it wasn't!
+            this.hardcodedThing.update(bitstring.slice(0, 8), true);
+            this.unknown1.update(bitstring.slice(8, 16), true);
+            this.deviceID.update(bitstring.slice(16, 32), true);
+            this.appearance.update(bitstring.slice(32, 40), true);
+            this.name.update(bitstring.slice(40, 80), true);
+            this.unknown3.update(bitstring.slice(80, 88), true)
+            this.unknown4.update(bitstring.slice(88, 96), true)
+            this.unknown5.update(bitstring.slice(96, 104), true)
+            this.unknown6.update(bitstring.slice(104, 112), true)
+            this.unknown7.update(bitstring.slice(112, 120), true)
+            this.unknown8.update(bitstring.slice(120, 128), true)
+            this.unknown9.update(bitstring.slice(128, 136), true)
+            this.unknown10.update(bitstring.slice(136, 141), true)
+            this.gameType.update(bitstring.slice(141, 144), true)
+            this.unknown11.update(bitstring.slice(144, 152), true)
+            this.initialized = true
         }
     }
 
@@ -204,12 +204,10 @@ class TamaMessage {
 }
 
 class TamaMessage3 extends TamaMessage {
-    visitActivity: TamaVisitActivity
-    conversationType: TamaConversationType
+    visitActivity = new TamaVisitActivity(null)
+    conversationType = new TamaConversationType(null, 3)
     constructor(bitstring: string | null) {
         super(bitstring)
-        this.visitActivity = new TamaVisitActivity(null)
-        this.conversationType = new TamaConversationType(null, 3)
         this.chunks = [
             this.hardcodedThing,
             this.conversationType,
@@ -228,6 +226,11 @@ class TamaMessage3 extends TamaMessage {
             this.gameType,
             this.unknown11,
         ]
+        if (bitstring != null) {
+            this.unknown3.update(bitstring.slice(80, 86), true)
+            this.visitActivity.update(bitstring.slice(86, 88), true)
+            this.conversationType.update(bitstring.slice(8, 16), true)
+        }
     }
 
     update(bitstring: string, init?: boolean): void {
@@ -239,15 +242,11 @@ class TamaMessage3 extends TamaMessage {
 }
 
 class TamaMessage4 extends TamaMessage {
-    giftitem: TamaGiftItem
-    giftactivity: TamaGiftActivity
-    conversationType: TamaConversationType
+    giftitem = new TamaGiftItem(null)
+    giftactivity = new TamaGiftActivity(null)
+    conversationType = new TamaConversationType(null, 4)
     constructor(bitstring: string | null) {
         super(bitstring)
-        this.whichMessage = 4
-        this.giftitem = new TamaGiftItem(null)
-        this.giftactivity = new TamaGiftActivity(null)
-        this.conversationType = new TamaConversationType(null, 4)
         this.chunks = [
             this.hardcodedThing,
             this.conversationType,
@@ -265,6 +264,11 @@ class TamaMessage4 extends TamaMessage {
             this.gameType,
             this.unknown11,
         ]
+        if (bitstring != null) {
+            this.giftitem.update(bitstring.slice(112, 120), true)
+            this.giftactivity.update(bitstring.slice(120, 128), true)
+            this.conversationType.update(bitstring.slice(8, 16), true)
+        }
     }
 
     update(bitstring: string, init?: boolean): void {

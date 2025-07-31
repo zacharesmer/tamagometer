@@ -4,12 +4,14 @@ import { ref, useTemplateRef, nextTick, watch } from "vue"
 // emitting signals decouples this from the database and makes it more reusable
 const emit = defineEmits<{
     saveName: [newName: string]
-    saveNewConversation: [newName: string]
+    saveNewConversation: [void]
+    saveConversation: [void]
 }>()
 
 const props = defineProps({
     name: { type: String, required: false },
-    nameDirty: { type: Boolean, required: false }
+    nameDirty: { type: Boolean, required: false },
+    saveOption: { type: Boolean, required: false }
 }
 )
 
@@ -59,11 +61,17 @@ function saveName() {
     editingName.value = false
 }
 
+function saveConversation() {
+    emit('saveName', newName.value)
+    emit('saveConversation')
+    editingName.value = false
+}
+
 // Save the name and the conversation to cover cases where this is called while editing
 function saveNewConversation() {
-    editingName.value = false
     emit("saveName", newName.value)
-    emit("saveNewConversation", newName.value)
+    emit("saveNewConversation")
+    editingName.value = false
 }
 
 // Allow keyboard shortcuts to cancel/save the name
@@ -94,7 +102,28 @@ function handleKeyUp(e: KeyboardEvent) {
                     <path d="M24 64L56 16" />
                 </svg>
             </button>
-            <button @click="saveNewConversation">Save as new conversation</button>
+            <button v-if="saveOption" class="icon-label-button" @click="saveConversation">
+                <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M53.1716 13.1716C52.4214 12.4214 51.404 12 50.3431 12H16C13.7909 12 12 13.7909 12 16V64C12 66.2091 13.7909 68 16 68H64C66.2091 68 68 66.2091 68 64V29.6569C68 28.596 67.5786 27.5786 66.8284 26.8284L53.1716 13.1716Z" />
+                    <path d="M60 68V45C60 44.4477 59.5523 44 59 44H21C20.4477 44 20 44.4477 20 45V68" />
+                    <path d="M48 12V27C48 27.5523 47.5523 28 47 28H21C20.4477 28 20 27.5523 20 27V12" />
+                </svg>
+
+                <span>Save</span>
+            </button>
+            <button class="icon-label-button" @click="saveNewConversation">
+                <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M45.1699 15.1762C44.4199 14.4263 43.4027 14.005 42.3422 14.0049L24.0004 14.0029C21.7911 14.0026 20 15.7936 20 18.0029L20 62.0024C20 64.2116 21.7909 66.0024 24 66.0024H56C58.2091 66.0024 60 64.2116 60 62.0024V31.6607C60 30.5997 59.5785 29.5822 58.8282 28.832L58.6276 28.6314L45.3534 15.3597L45.1699 15.1762Z"
+                        stroke="#C2CCDE" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M45.4142 15.4145C44.8923 14.8926 44 15.2622 44 16.0002V26.0002C44 28.2094 45.7909 30.0002 48 30.0002H58C58.738 30.0002 59.1077 29.1079 58.5858 28.586" />
+                    <path d="M49.8926 47.0002H29.8926" />
+                    <path d="M39.8926 57.0002L39.8926 37.0002" />
+                </svg>
+                <span>Save as new</span>
+            </button>
         </span>
     </div>
     <div v-else class="name-input-container">
@@ -111,14 +140,27 @@ function handleKeyUp(e: KeyboardEvent) {
                 </svg>
                 <span>Edit name</span>
             </button>
-            <button class="icon-label-button" @click="saveNewConversation">
+            <button v-if="saveOption" class="icon-label-button" @click="saveConversation">
                 <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M53.1716 13.1716C52.4214 12.4214 51.404 12 50.3431 12H16C13.7909 12 12 13.7909 12 16V64C12 66.2091 13.7909 68 16 68H64C66.2091 68 68 66.2091 68 64V29.6569C68 28.596 67.5786 27.5786 66.8284 26.8284L53.1716 13.1716Z" />
                     <path d="M60 68V45C60 44.4477 59.5523 44 59 44H21C20.4477 44 20 44.4477 20 45V68" />
                     <path d="M48 12V27C48 27.5523 47.5523 28 47 28H21C20.4477 28 20 27.5523 20 27V12" />
                 </svg>
-                <span>Save as new conversation</span>
+
+                <span>Save</span>
+            </button>
+            <button class="icon-label-button" @click="saveNewConversation">
+                <svg class="round-button-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M45.1699 15.1762C44.4199 14.4263 43.4027 14.005 42.3422 14.0049L24.0004 14.0029C21.7911 14.0026 20 15.7936 20 18.0029L20 62.0024C20 64.2116 21.7909 66.0024 24 66.0024H56C58.2091 66.0024 60 64.2116 60 62.0024V31.6607C60 30.5997 59.5785 29.5822 58.8282 28.832L58.6276 28.6314L45.3534 15.3597L45.1699 15.1762Z"
+                        stroke="#C2CCDE" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M45.4142 15.4145C44.8923 14.8926 44 15.2622 44 16.0002V26.0002C44 28.2094 45.7909 30.0002 48 30.0002H58C58.738 30.0002 59.1077 29.1079 58.5858 28.586" />
+                    <path d="M49.8926 47.0002H29.8926" />
+                    <path d="M39.8926 57.0002L39.8926 37.0002" />
+                </svg>
+                <span>Save as new</span>
             </button>
         </span>
     </div>
@@ -140,7 +182,7 @@ function handleKeyUp(e: KeyboardEvent) {
 
 .name-editing-buttons {
     display: flex;
-    /* align-items: center; */
+    align-items: center;
     gap: 1rem;
 }
 
