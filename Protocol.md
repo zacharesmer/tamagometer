@@ -33,28 +33,6 @@ The 2nd byte changes based on the interaction type
 | Message 3 | 00001000 | 00000100 | 00000110| 00000010 |
 | Message 4 | 00001001 | 00000101 | 00000111| 00000011 |
 
-# Bytes 6-10: Name Letters
-A-Z are 0-25
-
-|Byte|Decimal|Symbol|
-|--|--|--|
-| 01111010 | 122 | ! |
-| 01111011 | 123 | ? |
-| 01111100 | 124 | & |
-| 01111101 | 125 | o |
-| 01111110 | 126 | x |
-| 01111111 | 127 | ♥ |
-| 10000000 | 128 | ✿ |
-| 10000001 | 129 | ★ |
-| 10000010 | 130 | @ |
-| 10000011 | 131 | ♪ |
-| 10000100 | 132 | ⛶ |
-| 10000101 | 133 | ↑ |
-| 10000110 | 134 | ↓ |
-| 10000111 | 135 | → |
-| 10001000 | 136 | ← |
-| 10100000 | 160 | _ |
-
 
 # Byte 5: Character
 | 5th byte | Byte as Decimal|Character Name|
@@ -123,6 +101,32 @@ A-Z are 0-25
 | 00111101 | 61 | Mailman|
 | 00111110 | 62 | Mailman|
 | 00111111 | 63 | Mailman|
+
+
+# Bytes 6-10: Name Letters
+A-Z are 0-25
+
+|Byte|Decimal|Symbol|
+|--|--|--|
+| 01111010 | 122 | ! |
+| 01111011 | 123 | ? |
+| 01111100 | 124 | & |
+| 01111101 | 125 | o |
+| 01111110 | 126 | x |
+| 01111111 | 127 | ♥ |
+| 10000000 | 128 | ✿ |
+| 10000001 | 129 | ★ |
+| 10000010 | 130 | @ |
+| 10000011 | 131 | ♪ |
+| 10000100 | 132 | ⛶ |
+| 10000101 | 133 | ↑ |
+| 10000110 | 134 | ↓ |
+| 10000111 | 135 | → |
+| 10001000 | 136 | ← |
+| 10100000 | 160 | _ |
+
+# Byte 13: ??
+If the third bit is not set, the character appears in Nyatchi costume
 
 # Byte 15: Gift Item
 The gift item is controlled by the 15th byte in the 4th message of a gift conversation. 
@@ -385,3 +389,32 @@ The gift item is controlled by the 15th byte in the 4th message of a gift conver
 | 11111101| 253| Probably scone, didn't test   | |
 | 11111110| 254| Probably scone, didn't test   | |
 | 11111111| 255| Scone| |
+
+# Byte 16: Pre-gift activity
+16th byte in 4th message|Decimal|Binary|Activity
+--|--|--|--
+
+
+# Byte 17: Game related
+
+3rd message, gotchi points game: value to wager (max 255, displays as 99). 
+
+# Byte 18: Which game
+Last 3 bits of 18th Byte|Decimal|Game
+--|:-----:|:-----:
+000|0|Ball
+001|1|???
+010|2|Balloon
+011|3|Rope
+100|4|Trumpet
+101|5|Bldg Block
+110|6|RC Car
+111|7|Points
+
+First 2 bits of 18th byte: First note in trumpet game
+
+# Byte 19: Game related
+3rd message, balloon and bldg block games: which item was selected. 0 left, 1 middle, 2 right
+Ball, rc car, rope: how much the meter is filled?
+Gotchi points: 3rd message, if 19th byte is even = the one sending 1st and 3rd messages wins
+Trumpet game: 00 = left button, 01 = middle button, 10 = right button. 2nd, 3rd, 4th, 5th note left to right.

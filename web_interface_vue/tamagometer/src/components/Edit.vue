@@ -140,13 +140,30 @@ function retry() {
                 @await-conversation="() => { awaitConversation() }" @stop-waiting="() => { stopWaiting() }">
             </EditButtonsTxRx>
         </div>
-        <div>
-            Show:
-            <input type="checkbox" v-model="show1"><label>Message 1</label></input>
-            <input type="checkbox" v-model="show2"><label>Message 2</label></input>
-            <input type="checkbox" v-model="show3"><label>Message 3</label></input>
-            <input type="checkbox" v-model="show4"><label>Message 4</label></input>
-        </div>
+        <details class="show-which-messages-container">
+            <summary>
+                Choose messages to show
+            </summary>
+            <div class="which-messages-checkboxes-container">
+                <div>
+                    <input type="checkbox" v-model="show1" id="show-message-1"><label for="show-message-1">Message
+                        1</label></input>
+                </div>
+                <div>
+                    <input type="checkbox" v-model="show2" id="show-message-2"><label for="show-message-2">Message
+                        2</label></input>
+                </div>
+                <div>
+                    <input type="checkbox" v-model="show3" id="show-message-3"><label for="show-message-3">Message
+                        3</label></input>
+                </div>
+                <div>
+                    <input type="checkbox" v-model="show4" id="show-message-4"><label for="show-message-4">Message
+                        4</label></input>
+                </div>
+            </div>
+        </details>
+
         <div class="messages-container">
             <EditConversationMessage :model="conversation.message1" bitstring-id="editingConversationMessage1"
                 class="message from-tama1" v-if="show1" />
@@ -175,6 +192,17 @@ function retry() {
 .messages-container {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
+}
+
+.show-which-messages-container {
+    padding: 0 0 1rem 1rem;
+}
+
+.which-messages-checkboxes-container {
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
     gap: 1rem;
 }
 </style>
