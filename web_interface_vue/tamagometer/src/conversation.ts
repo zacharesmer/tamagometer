@@ -1,6 +1,6 @@
 export { Conversation, StoredConversation }
 
-import { TamaMessage } from "./model"
+import { TamaMessage, TamaMessage3, TamaMessage4 } from "./model"
 
 class Conversation {
     // Store 4 messages
@@ -8,25 +8,30 @@ class Conversation {
     // wait for a conversation to start
     message1: TamaMessage
     message2: TamaMessage
-    message3: TamaMessage
-    message4: TamaMessage
+    message3: TamaMessage3
+    message4: TamaMessage4
     conversationID: any
     name: string
-    constructor(dbId: number | null) {
+    previousName: string
+    dbId: IDBValidKey | null
+    constructor() {
+        this.dbId = null
         // this.conversationID = conversationID
         this.message1 = new TamaMessage(null)
         this.message2 = new TamaMessage(null)
-        this.message3 = new TamaMessage(null)
-        this.message4 = new TamaMessage(null)
+        this.message3 = new TamaMessage3(null)
+        this.message4 = new TamaMessage4(null)
         // If the conversation came from the database, it will have an ID set. 
     }
 
-    initFromStored(stored: StoredConversation) {
+    initFromStored(stored: StoredConversation, dbId: IDBValidKey) {
+        this.dbId = dbId
         this.message1.update(stored.message1, true)
         this.message2.update(stored.message2, true)
         this.message3.update(stored.message3, true)
         this.message4.update(stored.message4, true)
         this.name = stored.name
+        this.previousName = this.name
     }
 
     toStored() {
@@ -39,6 +44,22 @@ class Conversation {
             this.message3.getBitstring().length !== 160 ||
             this.message4.getBitstring().length !== 160)
         return result
+    }
+
+    differs(): boolean {
+        return this.message1.differs() || this.message2.differs() || this.message3.differs() || this.message4.differs() || this.nameDirty()
+    }
+
+    initialized(): boolean {
+        return this.message1.initialized && this.message2.initialized && this.message3.initialized && this.message4.initialized
+    }
+
+    setName(newName: string) {
+        this.name = newName
+    }
+
+    nameDirty(): boolean {
+        return !(this.name === this.previousName)
     }
 }
 

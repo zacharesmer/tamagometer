@@ -21,7 +21,6 @@ class DatabaseConnection implements DatabaseConnection {
 
     }
     async set(val: StoredConversation) {
-        console.log("saving " + val.name)
         return (await this.dbPromise).put('conversations', val);
     }
     async del(key: number) {

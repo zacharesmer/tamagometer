@@ -25,7 +25,8 @@ const emit = defineEmits<{
         bitstring: string // the bitstring for the message
     ): void,
     (e: 'clearList'
-    ): void
+    ): void,
+    (e: 'gotAMessage'): void
 }>()
 
 defineExpose({ unstageMessage })
@@ -88,6 +89,7 @@ function snoopEventListener(e: MessageEvent) {
     const message = e.data as FromWorker
     switch (message.kind) {
         case "receivedBitstring": {
+            emit("gotAMessage")
             snoopOutput.value.push(message.bits)
             break
         }

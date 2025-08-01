@@ -30,9 +30,12 @@ function openForEditing(c: StoredConversation): void {
 // Typescript doesn't like the autoincrementing ID key, but it's a number
 // @ts-ignore
 function deleteConversation(dbId) {
-    if (typeof (dbId) === "number") {
-        dbConnection.del(dbId)
-        emit("refreshDb")
+    let go_on = window.confirm("Delete?")
+    if (go_on) {
+        if (typeof (dbId) === "number") {
+            dbConnection.del(dbId)
+            emit("refreshDb")
+        }
     }
 }
 

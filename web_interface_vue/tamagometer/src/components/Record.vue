@@ -7,15 +7,17 @@ import { toast } from 'vue3-toastify';
 
 import { Conversation } from '@/conversation';
 import { dbConnection } from '@/database';
-import { TamaMessage } from '@/model';
+import { TamaMessage, TamaMessage3, TamaMessage4 } from '@/model';
 import RecordBootstrap from './RecordBootstrap.vue';
-import { useRoute } from 'vue-router';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 const conversationName = ref("Recorded Conversation")
 const snoopComponent = useTemplateRef("snoop")
 const bootstrapComponent = useTemplateRef("bootstrap")
 const recordingMode = ref("")
 const route = useRoute()
+
+const dirty = ref(false)
 
 // messages are 1-indexed everywhere except when stored in this array
 const stagedMessages = ref<{ bitstring: string, recordingID: number }[]>([
@@ -34,6 +36,18 @@ onMounted(() => {
     }
 })
 
+onBeforeRouteLeave((to, from, next) => {
+    if (dirty.value) {
+        if (window.confirm("Recording is unsaved, leave anyway?")) {
+            next()
+        }
+        else {
+            next(false)
+        }
+    }
+    next()
+})
+
 watch(
     () => route.params.mode,
     (newMode, oldMode) => {
@@ -47,6 +61,8 @@ watch(
 
 function stageMessage(whichMessage: number, recordingID: number, bitstring: string) {
     stagedMessages.value[whichMessage - 1] = { bitstring, recordingID }
+    // this handles the bootstrap case
+    dirty.value = true
 }
 
 function unstageMessage(whichMessage: number) {
@@ -66,6 +82,7 @@ function clearList() {
         stagedMessages.value[i] = { bitstring: "", recordingID: NaN }
     }
     console.log(stagedMessages.value)
+    dirty.value = false
 }
 
 function saveName(newName: string) {
@@ -100,17 +117,18 @@ function saveConversation() {
         return
     }
 
-    const fromRecordingConversation = new Conversation(null)
+    const fromRecordingConversation = new Conversation()
     fromRecordingConversation.message1 = new TamaMessage(stagedMessages.value[0].bitstring);
     fromRecordingConversation.message2 = new TamaMessage(stagedMessages.value[1].bitstring);
-    fromRecordingConversation.message3 = new TamaMessage(stagedMessages.value[2].bitstring);
-    fromRecordingConversation.message4 = new TamaMessage(stagedMessages.value[3].bitstring);
+    fromRecordingConversation.message3 = new TamaMessage3(stagedMessages.value[2].bitstring);
+    fromRecordingConversation.message4 = new TamaMessage4(stagedMessages.value[3].bitstring);
     fromRecordingConversation.name = conversationName.value;
 
     const toastId = toast("Saving...")
     dbConnection.set(fromRecordingConversation.toStored())
         .then(r => {
             toast.update(toastId, { render: "Saved", })
+            dirty.value = false
         })
         .catch(r => { toast.update(toastId, { render: "Error", type: "error" }) })
 }
@@ -119,13 +137,12 @@ function saveConversation() {
 <template>
     <div class="recording-body-container">
         <RecordSnoop v-if="recordingMode == 'snoop'" @stage-message="stageMessage" @clear-list="() => { clearList() }"
-            ref="snoop" />
+            ref="snoop" @got-a-message="() => (dirty = true)" />
         <RecordBootstrap v-if="recordingMode == 'bootstrap'" @stage-message="stageMessage"
             @clear-list="() => { clearList() }" ref="bootstrap" />
         <div class="staged-messages-container">
             <AppInputConversationName :name="conversationName" @save-name="(newName) => { saveName(newName) }"
-                @save-new-conversation="saveConversation" class="title">
-            </AppInputConversationName>
+                @save-new-conversation="saveConversation" class="title" :save-option="false" />
             <div v-for="(n, index) in 4" class="message-label-container"
                 :class="(index % 2 == 0) ? 'button-on-left' : 'button-on-right'">
                 <button class="message-label round-button"
