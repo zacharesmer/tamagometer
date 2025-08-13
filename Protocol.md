@@ -125,6 +125,30 @@ A-Z are 0-25
 | 10001000 | 136 | ← |
 | 10100000 | 160 | _ |
 
+# Byte 11: ??
+
+In first and second messages:
+
+8th bit
+
+|Bit|Meaning|
+|--|--|
+|0| boy|
+|1| girl|
+
+In third and fourth messages:
+
+7th and 8 bits
+Visit activity
+
+|Bits|Meaning|
+|--|--|
+|00| Scale|
+|01| Spin Around|
+|10| Ball|
+|11| Music|
+
+
 # Byte 13: ??
 If the third bit is not set, the character appears in Nyatchi costume
 
@@ -391,13 +415,23 @@ The gift item is controlled by the 15th byte in the 4th message of a gift conver
 | 11111111| 255| Scone| |
 
 # Byte 16: Pre-gift activity
-16th byte in 4th message|Decimal|Binary|Activity
---|--|--|--
+16th byte in 4th message|Decimal|Activity
+--|--|--|
+| 00000000 | 0 | Windows                        |
+| 00000001 | 1 | Video games                    |
+| 00000010 | 2 | Flowers                        |
+| 00000011 | 3 | Stars                          |
+| 00000100 | 4 | Moon                           |
+| 00000101 | 5 | Sunrise or sunset              |
+| 00000110 | 6 | Fireplace and Christmas tree   |
+| 00000111 | 7 | Snowmen                        |
+| 00001000 | 8 | Ocean with clouds or mountains |
+| 00001001 | 9 | Two chairs and cake            |
 
 
 # Byte 17: Game related
 
-3rd message, gotchi points game: value to wager (max 255, displays as 99). 
+3rd message, gotchi points game: value to wager (max 255, displays as 99 but you get the full amount of points). 
 
 # Byte 18: Which game
 Last 3 bits of 18th Byte|Decimal|Game
