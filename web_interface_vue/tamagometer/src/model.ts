@@ -646,7 +646,7 @@ class TamaGiftItem extends TamaBits {
         [136, "Cake"],
         [137, "Heart"],
         [138, "Snake"],
-        [139, "Blank/nothing"],
+        [139, "Nothing"],
         [140, "Ghost thing"],
         [141, "Sickness"],
         [142, "Passport"],
@@ -686,7 +686,7 @@ class TamaGiftItem extends TamaBits {
         [176, "Heart key"],
         [177, "Sparkly heart"],
         [178, "Sparkly star"],
-        [179, "M Ball (no idea what this is)"],
+        [179, "M Ball"],
         [180, "Heart ring"],
     ])
 
