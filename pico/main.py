@@ -20,7 +20,7 @@ while True:
     read_in = input()
     if read_in.lower().startswith("tamagometer send"):
         try:
-            tx.send_bits(read_in[4:])
+            tx.send_bits(read_in[16:])
         except:
             print("Error")
             pass
